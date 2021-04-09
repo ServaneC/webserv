@@ -13,6 +13,8 @@
 #include "myCGI.hpp"
 #define CGI_BUFSIZE 2000
 
+# define PATH "/index.html"
+
 myCGI::myCGI(Server &serv) 
 	: _server(serv), _request(serv.getRequest())
 {
@@ -42,15 +44,15 @@ myCGI::myCGI(Server &serv)
 	// this->_env["REMOTE_IDENT"] = std::string();
 	// this->_env["REMOTE_USER"] = std::string();
 	// this->_env["REQUEST_METHOD"] = "HEAD";
-	// this->_env["REQUEST_URI"] = "/index.php";
-	// this->_env["SCRIPT_FILENAME"] = "index.php";
-	// this->_env["SCRIPT_NAME"] = "index.php";
+	// this->_env["REQUEST_URI"] = "/index.html";
+	// this->_env["SCRIPT_FILENAME"] = "index.html";
+	// this->_env["SCRIPT_NAME"] = "index.html";
 	// this->_env["SERVER_NAME"] = "localhost";
 	// this->_env["SERVER_PORT"] = "8080";
 	// this->_env["SERVER_PROTOCOL"] = "HTTP/1.1";
 	// this->_env["SERVER_SOFTWARE"] = "webserv/1.0";
-	// this->_env["PATH_TRANSLATED"] = "/index.php";
-	// this->_env["PATH_INFO"] = "/index.php";
+	// this->_env["PATH_TRANSLATED"] = "/index.html";
+	// this->_env["PATH_INFO"] = "/index.html";
 	// this->_env["QUERY_STRING"] = std::string();
 	this->execCGI();
 	// std::cout << "SUCCESS" << std::endl;
@@ -68,14 +70,14 @@ void	myCGI::setPathQuery()
 	this->_env["REQUEST_URI"] = target;
 	this->_env["PATH_TRANSLATED"] = target;
 	this->_env["PATH_INFO"] = target.substr(0, target.find('?'));
-	this->_env["SCRIPT_FILENAME"] = target.substr(0, target.find('?'));
-	this->_env["SCRIPT_NAME"] = target.substr(0, target.find('?'));
+	this->_env["SCRIPT_FILENAME"] = target.substr(1, target.find('?'));
+	this->_env["SCRIPT_NAME"] = target.substr(1, target.find('?'));
 	if (this->_env["PATH_INFO"].empty())
-		this->_env["PATH_INFO"] = "/index.php";
+		this->_env["PATH_INFO"] = PATH;
 	if (this->_env["SCRIPT_FILENAME"].empty())
-		this->_env["SCRIPT_FILENAME"] = "/index.php";
+		this->_env["SCRIPT_FILENAME"] = PATH;
 	if (this->_env["SCRIPT_NAME"].empty())
-		this->_env["SCRIPT_NAME"] = "/";
+		this->_env["SCRIPT_NAME"] = PATH;
 	this->_env["QUERY_STRING"] = std::string();
 	if (target.find('?') != std::string::npos)
 		this->_env["QUERY_STRING"] = target.substr(target.find('?'), target.size()); //maybe wrong if no '?'
@@ -152,8 +154,8 @@ void	myCGI::execCGI()
 
 		dup2(fdIn, STDIN_FILENO);
 		dup2(fdOut, STDOUT_FILENO);
-		// execve("/usr/bin/php-cgi", nll, env_array);
-		execve("cgi_tester", nll, env_array);
+		execve("/usr/bin/php-cgi", nll, env_array);
+		// execve("cgi_tester", nll, env_array);
 		std::cerr <<  "Execve crashed." << std::endl;
 		write(STDOUT_FILENO, "Status: 500\r\n\r\n", 15);
 	}
@@ -196,8 +198,4 @@ void	myCGI::execCGI()
 	if (!(this->_buf = (char *)malloc(sizeof(char) * newBody.size())))
 		exit(EXIT_FAILURE);
 	ft_memcpy(this->_buf, (char *)newBody.c_str(), newBody.size());
-	// std::cout << newBody << std::endl;
-	// return 1;
-	// return (newBody);
-	// Response((*this), this->_server.getSocket());
 }

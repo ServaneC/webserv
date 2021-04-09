@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 17:14:33 by schene            #+#    #+#             */
-/*   Updated: 2021/04/09 10:23:58 by schene           ###   ########.fr       */
+/*   Updated: 2021/04/09 11:14:08 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ void		setenv(std::map<std::string, std::string> &env)
 	env["SERVER_PORT"] = "8080";
 	env["SERVER_PROTOCOL"] = "HTTP/1.1";
 	env["SERVER_SOFTWARE"] = "webserv/1.0";
-	env["PATH_TRANSLATED"] = "/media/sf_Desktop/webserv/srcs/index.html";
+	env["PATH_TRANSLATED"] = "/index.html";
 	env["PATH_INFO"] = "/index.html";
 	env["QUERY_STRING"] = std::string();
 	
@@ -103,8 +103,8 @@ int main(void)
 		// arg[0] = (char *)("../cgi_tester");
 		// arg[1] = (char *)("index.html");
 		// arg[2] = NULL;	
-		execve("../ubuntu_cgi_tester", nll, env_array);
-		// execve("/usr/bin/php-cgi", nll, env_array);
+		// execve("../ubuntu_cgi_tester", nll, env_array);
+		execve("/usr/bin/php-cgi", nll, env_array);
 		std::cerr <<  "Execve crashed." << std::endl;
 		write(STDOUT_FILENO, "Status: 500\r\n\r\n", 15);
 	}

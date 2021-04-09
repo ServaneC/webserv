@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 15:34:32 by schene            #+#    #+#             */
-/*   Updated: 2021/04/05 15:55:39 by schene           ###   ########.fr       */
+/*   Updated: 2021/04/07 11:26:15 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ extern "C"
   #include "libft/include/libft.h"
 }
 
+# include <sys/wait.h>
 # include <iostream>
 # include <sys/types.h> 
 # include <sys/socket.h>

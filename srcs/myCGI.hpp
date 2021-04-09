@@ -19,13 +19,15 @@
 class myCGI
 {
 	private:
-		int									_fd;
+		// int									_fd;
 		Server								&_server;
 		Request								&_request;
 		char								*_buf;
 		std::map<std::string, std::string>	_env;
 
 		void	setPathQuery();
+		char	**env_to_char_array();
+		void	execCGI();
 
 	public:
 		myCGI(Server &serv);

@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "myCGI.hpp"
+#include "include/myCGI.hpp"
 #define CGI_BUFSIZE 2000
 
 # define PATH "/index.html"
@@ -20,40 +20,19 @@ myCGI::myCGI(Server &serv)
 {
 	this->_env["REDIRECT_STATUS"] = "200"; 
 	this->_env["STATUS_CODE"] = "200 OK";
-	this->_env["AUTH_TYPE"] = std::string();
+	// this->_env["AUTH_TYPE"] = std::string();
 	this->_env["CONTENT_LENGTH"] = this->_request.getHeaderField("Content-Length"); //not sure
 	this->_env["CONTENT_TYPE"] = this->_request.getHeaderField("Content-Type");
 	this->_env["GATEWAY_INTERFACE"] = "CGI/1.1";
 	this->setPathQuery();
-	this->_env["REMOTE_ADDR"] = std::string();
-	this->_env["REMOTE_IDENT"] = std::string();
-	this->_env["REMOTE_USER"] = std::string();
+	// this->_env["REMOTE_ADDR"] = std::string();
+	// this->_env["REMOTE_IDENT"] = std::string();
+	// this->_env["REMOTE_USER"] = std::string();
 	this->_env["REQUEST_METHOD"] = this->_request.getMethod();
 	this->_env["SERVER_NAME"] = this->_server.getName();
 	this->_env["SERVER_PORT"] = this->_server.getPort();
 	this->_env["SERVER_PROTOCOL"] = this->_request.getHTTPVersion();
 	this->_env["SERVER_SOFTWARE"] = "webserv/1.0";
-	//___
-	// this->_env["REDIRECT_STATUS"] = "200"; 
-	// this->_env["STATUS_CODE"] = std::string();
-	// this->_env["AUTH_TYPE"] = std::string();
-	// this->_env["CONTENT_LENGTH"] = std::string(); //not sure
-	// this->_env["CONTENT_TYPE"] = std::string();
-	// this->_env["GATEWAY_INTERFACE"] = "CGI/1.1";
-	// this->_env["REMOTE_ADDR"] = std::string();
-	// this->_env["REMOTE_IDENT"] = std::string();
-	// this->_env["REMOTE_USER"] = std::string();
-	// this->_env["REQUEST_METHOD"] = "HEAD";
-	// this->_env["REQUEST_URI"] = "/index.html";
-	// this->_env["SCRIPT_FILENAME"] = "index.html";
-	// this->_env["SCRIPT_NAME"] = "index.html";
-	// this->_env["SERVER_NAME"] = "localhost";
-	// this->_env["SERVER_PORT"] = "8080";
-	// this->_env["SERVER_PROTOCOL"] = "HTTP/1.1";
-	// this->_env["SERVER_SOFTWARE"] = "webserv/1.0";
-	// this->_env["PATH_TRANSLATED"] = "/index.html";
-	// this->_env["PATH_INFO"] = "/index.html";
-	// this->_env["QUERY_STRING"] = std::string();
 	this->execCGI();
 	// std::cout << "SUCCESS" << std::endl;
 	Response((*this), this->_server.getSocket());
@@ -72,19 +51,20 @@ void	myCGI::setPathQuery()
 	this->_env["PATH_INFO"] = target.substr(0, target.find('?'));
 	this->_env["SCRIPT_FILENAME"] = target.substr(1, target.find('?'));
 	this->_env["SCRIPT_NAME"] = target.substr(1, target.find('?'));
-	if (this->_env["PATH_INFO"].empty())
+	if (this->_env["PATH_INFO"].empty() || this->_env["PATH_INFO"].compare("/"))
 		this->_env["PATH_INFO"] = PATH;
-	if (this->_env["SCRIPT_FILENAME"].empty())
-		this->_env["SCRIPT_FILENAME"] = PATH;
-	if (this->_env["SCRIPT_NAME"].empty())
-		this->_env["SCRIPT_NAME"] = PATH;
-	this->_env["QUERY_STRING"] = std::string();
+	if (this->_env["SCRIPT_FILENAME"].empty() || this->_env["SCRIPT_FILENAME"].compare("/"))
+		this->_env["SCRIPT_FILENAME"] = "index.html";
+	if (this->_env["SCRIPT_NAME"].empty() || this->_env["SCRIPT_NAME"].compare("/"))
+		this->_env["SCRIPT_NAME"] = "index.html";
+	// this->_env["QUERY_STRING"] = std::string();
 	if (target.find('?') != std::string::npos)
 		this->_env["QUERY_STRING"] = target.substr(target.find('?'), target.size()); //maybe wrong if no '?'
 }
 
-std::string const	myCGI::getEnvVar(std::string var_name) const
+std::string const	&myCGI::getEnvVar(std::string var_name) const
 {
+	static std::string const	empty;
 	std::map<std::string, std::string>::const_iterator it = this->_env.begin();
 	while (it != this->_env.end())
 	{
@@ -92,25 +72,28 @@ std::string const	myCGI::getEnvVar(std::string var_name) const
 			return it->second;
 		it++;
 	}
-	return std::string();
+	return empty;
 }
 
-std::string const 	myCGI::getBuf() const
+std::string const 	&myCGI::getBuf() const
 {
-	return std::string(this->_buf);
+	static std::string const	ret = this->_buf;
+	return ret;
 }
 
 char	**myCGI::env_to_char_array()
 {
-	char	**array = new char*[_env.size() + 1];
+	char	**array;
 	int		j = 0;
+
+	// array = new char*[this->_env.size() + 1];
+	if (!(array = (char **)malloc(sizeof(char *) * (this->_env.size() + 1))))
+		exit(EXIT_FAILURE);
 
 	for (std::map<std::string, std::string>::const_iterator it = _env.begin(); it != _env.end(); it++) 
 	{
 		std::string	element = it->first + "=" + it->second;
-		// array[j] = ft_strdup((char *)element.c_str());
-		array[j] = new char[element.size() + 1];
-		array[j] = strcpy(array[j], (const char*)element.c_str());
+		array[j] = ft_strdup((char *)element.c_str()); //cast bc c_str() = const char *
 		j++;
 	}
 	array[j] = NULL;
@@ -185,17 +168,15 @@ void	myCGI::execCGI()
 	close(saveStdin);
 	close(saveStdout);
 
-	for (size_t i = 0; env_array[i]; i++)
-	{
-		// std::cout << env_array[i] << std::endl;
-		delete[] env_array[i];
-	}	
-	delete[] env_array;
+	// for (int i = 0; env_array[i]; i++)
+	// 	free(env_array[i]);
+	// free(env_array);
 
 	if (!pid)
 		exit(0);
 
-	if (!(this->_buf = (char *)malloc(sizeof(char) * newBody.size())))
+	if (!(this->_buf = (char *)malloc(sizeof(char) * (newBody.size() + 1))))
 		exit(EXIT_FAILURE);
 	ft_memcpy(this->_buf, (char *)newBody.c_str(), newBody.size());
+	this->_buf[newBody.size()] = 0;
 }

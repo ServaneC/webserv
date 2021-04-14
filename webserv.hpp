@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 15:34:32 by schene            #+#    #+#             */
-/*   Updated: 2021/04/07 11:26:15 by schene           ###   ########.fr       */
+/*   Updated: 2021/04/14 10:15:30 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,9 +45,9 @@ class	myCGI;
 class	Response;
 
 
-# include "srcs/Server.hpp"
-# include "srcs/Request.hpp"
-# include "srcs/myCGI.hpp"
-# include "srcs/Response.hpp"
+# include "srcs/include/Server.hpp"
+# include "srcs/include/Request.hpp"
+# include "srcs/include/myCGI.hpp"
+# include "srcs/include/Response.hpp"
 
 #endif

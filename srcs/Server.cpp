@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   server.cpp                                         :+:      :+:    :+:   */
+/*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/04/05 16:07:59 by schene           ###   ########.fr       */
+/*   Updated: 2021/04/14 10:15:04 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Server.hpp"
+#include "include/Server.hpp"
 
 Server::Server(std::string conf_file) : _rqst(*(new Request))
 {
@@ -22,50 +22,75 @@ Server::Server(std::string conf_file) : _rqst(*(new Request))
     // this->_host.sin_addr.s_addr = inet_addr("127.0.0.1");
     this->_host.sin_port = htons(this->_port);
     this->_addrlen = sizeof(this->_host);
-    this->_fd = socket(PF_INET, SOCK_STREAM, 0);
+    this->_socket = socket(PF_INET, SOCK_STREAM, 0);
 
-    if (bind(this->_fd, (struct sockaddr *)&this->_host, sizeof(this->_host)) < 0)
-    {
-        perror("In bind");
-        exit(EXIT_FAILURE);
-    }    
-    if (listen(this->_fd, 10) < 0)
-    {
-        perror("In listen");
-        exit(EXIT_FAILURE);
-    }
-    std::string hello = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 18\n\nHello c'est schene!";
-    while (1)
-    {
-        printf("\n+++++++ Waiting for new connection ++++++++\n\n");
-        if ((this->_socket = accept(this->_fd, (struct sockaddr *)&this->_host, (socklen_t*)&this->_addrlen))<0)
-        {
-            perror("In accept");
-            exit(EXIT_FAILURE);
-        }
-        fcntl(this->_socket, F_SETFL, O_NONBLOCK);
-        this->_rqst.parseRequest(this->_socket);
-        if (this->_rqst.getTarget().empty())
-        {
-            perror("empty request");
-            exit(EXIT_FAILURE);
-        }
-        std::cout << "target = |" << this->_rqst.getTarget() << '|' << std::endl;
-        // if (this->_rqst.getTarget().compare("test.html") == 0)
-        myCGI((*this));
-        // else
-        //     send(this->_socket, hello.c_str(), hello.size(), 0);
-        // write(this->_socket , hello.c_str() , hello.size());
-        // printf("------------------Hello message sent-------------------\n");
-        close(this->_socket);
-    }
-    //unlink(this->_host.sun_path);
+    this->start_server();
 }
 
 Server::~Server()
 {
     free(&this->_rqst);
 }
+
+void	Server::start_server()
+{    
+    if (bind(this->_socket, (struct sockaddr *)&this->_host, sizeof(this->_host)) < 0)
+    {
+        perror("In bind");
+        exit(EXIT_FAILURE);
+    }    
+    if (listen(this->_socket, 10) < 0)
+    {
+        perror("In listen");
+        exit(EXIT_FAILURE);
+    }
+
+    fd_set current_sockets, ready_sockets;
+
+    //initialize my current set
+    FD_ZERO(&current_sockets);
+    FD_SET(this->_socket, &current_sockets);
+
+    while (1)
+    {
+        ready_sockets = current_sockets; //because select is destructive        
+        if (select(FD_SETSIZE, &ready_sockets, NULL, NULL, NULL) < 0)
+        {
+            perror("In select");
+            exit(EXIT_FAILURE);  
+        }
+        for (int i = 0; i < FD_SETSIZE; i++)
+        {
+            if (FD_ISSET(i, &ready_sockets))
+            {
+                if (i == this->_socket)
+                {
+                    if ((this->_client_socket = accept(this->_socket, (struct sockaddr *)&this->_host, (socklen_t*)&this->_addrlen))<0)
+                    {
+                        perror("In accept");
+                        exit(EXIT_FAILURE);
+                    }
+                    FD_SET(this->_client_socket, &current_sockets);
+                }
+                else
+                {
+                    fcntl(this->_client_socket, F_SETFL, O_NONBLOCK);
+                    this->_rqst.parseRequest(this->_client_socket);
+                    if (this->_rqst.getTarget().empty())
+                    {
+                        perror("empty request");
+                        exit(EXIT_FAILURE);
+                    }
+                    std::cout << "target = |" << this->_rqst.getTarget() << '|' << std::endl;
+                    myCGI((*this));
+                    close(this->_client_socket);
+                    FD_CLR(i, &current_sockets);
+                }
+            }
+        }
+    }
+}
+
 
 int			Server::getPort() const
 {
@@ -78,12 +103,12 @@ std::string	Server::getName() const
 }
 int			Server::getFd() const
 {
-    return this->_fd;
+    return this->_socket;
 }
 
 int			Server::getSocket() const
 {
-    return this->_socket;
+    return this->_client_socket;
 }
 
 Request		&Server::getRequest() const

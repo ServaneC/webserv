@@ -6,11 +6,11 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/25 10:54:51 by schene            #+#    #+#             */
-/*   Updated: 2021/03/29 16:53:22 by schene           ###   ########.fr       */
+/*   Updated: 2021/04/14 10:39:35 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Server.hpp"
+#include "../webserv.hpp"
 
 int main (int ac, char **av) //the conf file is the only possible argument 
 {

@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:29:26 by schene            #+#    #+#             */
-/*   Updated: 2021/04/05 16:17:58 by schene           ###   ########.fr       */
+/*   Updated: 2021/04/14 11:43:59 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,17 +36,6 @@ int main(int argc, char const *argv[])
     int size = info.st_size;
     int fd = open("request.txt", O_RDONLY);
 
-    if (!(buf = (char *)malloc(sizeof(char) * size)))
-    {
-        perror("Malloc failed !");
-        return -1;
-    }
-    read(fd, buf, size);
-    close(fd);
-    // std::string hello = "GET test.html HTTP/1.1\nHost: 127.0.0.1:8080\n\n";
-    // std::string hello = "GET YoupiBanane/youpi.bla HTTP/1.1\nHost: 127.0.0.1:8080\n\n";
-   
-    std::cout << buf << std::endl;
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
         printf("\n Socket creation error \n");
@@ -71,6 +60,18 @@ int main(int argc, char const *argv[])
         return -1;
     }
     // send(sock , hello.c_str() , hello.size(), 0);
+    if (!(buf = (char *)malloc(sizeof(char) * size + 1)))
+    {
+        perror("Malloc failed !");
+        return -1;
+    }
+    int r = read(fd, buf, size);
+    buf [r] = 0;
+    close(fd);
+    // std::string hello = "GET test.html HTTP/1.1\nHost: 127.0.0.1:8080\n\n";
+    // std::string hello = "GET YoupiBanane/youpi.bla HTTP/1.1\nHost: 127.0.0.1:8080\n\n";
+   
+    std::cout << buf << std::endl;
     send(sock , buf , size, 0);
     free(buf);
     printf("Request sent\n");

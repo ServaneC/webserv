@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 15:34:32 by schene            #+#    #+#             */
-/*   Updated: 2021/04/14 10:15:30 by schene           ###   ########.fr       */
+/*   Updated: 2021/04/20 14:24:27 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,26 +24,29 @@ extern "C"
   #include "libft/include/libft.h"
 }
 
+// # include <arpa/inet.h>
+// # include <stdlib.h>
 # include <sys/wait.h>
-# include <iostream>
+# include <stdio.h>
 # include <sys/types.h> 
 # include <sys/socket.h>
 # include <sys/stat.h>
-# include <arpa/inet.h>
-# include <sys/time.h>
-# include <map>
 # include <unistd.h>
-# include <stdlib.h>
 # include <netinet/in.h>
-# include <string.h>
-# include <stdio.h>
 # include <fcntl.h>
+
+# include <iostream>
+# include <string>
+# include <map>
+# include <algorithm>
+# include <exception>
+# include <ctime>
+# include <cstring>
 
 class	Server;
 class	Request;
 class	myCGI;
 class	Response;
-
 
 # include "srcs/include/Server.hpp"
 # include "srcs/include/Request.hpp"

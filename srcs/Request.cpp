@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 16:24:45 by schene            #+#    #+#             */
-/*   Updated: 2021/04/14 16:07:59 by schene           ###   ########.fr       */
+/*   Updated: 2021/04/21 10:28:50 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,28 +39,40 @@ int		Request::parseRequest(int fd)
 	this->_fd = fd;
 	std::string line_s;
 	
-	if (get_next_line(this->_fd, &line) > 0) //parse request line
+	//while to "ignore at least one CRLF before request line"
+	while  (get_next_line(this->_fd, &line) > 0) // parse request line
 	{
 		line_s = std::string(line);
-		this->parseRequestLine(line_s);
-		// this->_method = line_s.substr(0, line_s.find(' ')); // parse method
-		// line_s.erase(0, line_s.find(' ') + 1);
-		// this->_target = line_s.substr(0, line_s.find(' ')); //parse target
-		// line_s.erase(0, line_s.find(' ') + 1);
-		// this->_http_version = line_s.substr(0, line_s.find('\r')); //parse http-version
-		free(line);
+		if (!(line_s[0] == '\r' || line_s.empty()))
+		{
+			std::cout << line_s << std::endl;
+			this->parseRequestLine(line_s);
+			break ;
+		}
+		if (line)
+			free(line);
 		line = NULL;
 	}
 	while (get_next_line(this->_fd, &line) > 0 && line) //parse header fields
 	{
 		line_s = std::string(line);
+		std::cout << line_s << std::endl;
+
 		std::string field = line_s.substr(0, line_s.find(':')); //parse field_name
 		
 		std::map<std::string, std::string>::iterator it = this->_headers.begin();
 		while (it != this->_headers.end())
 		{
-			if (field.compare(it->first) == 0)
-				it->second = line_s.substr(line_s.find(':') + 2, line_s.find('\r')); // store header value in map
+			if (field.compare(it->first) == 0 && it->second.empty())
+			{
+				std::string value = line_s.substr(line_s.find(':') + 2, line_s.find('\r'));
+				while (ft_isspace(value[0])) // handle OWS between ':' and field-value
+					value.erase(0, 1);
+				while (ft_isspace(*(value.end() - 1))) // handle OWS between field-value and CRLF
+					value.erase(value.end() - 1);
+				it->second = value;// store header value in map
+				// std::cout << it->first << "|" << it->second << "|" << std::endl;
+			}
 			it++;
 		}
 		free(line);
@@ -75,17 +87,16 @@ void		Request::parseRequestLine(std::string line)
 	this->_method = line.substr(0, line.find(' ')); // parse method
 	line.erase(0, line.find(' ') + 1);
 	std::string tmp = line.substr(0, line.find(' ')); //parse target
-	// this->_target = line.substr(0, line.find(' ')); //parse target
 	if (tmp.compare(0, 7, "http://") == 0)
 	{
 		tmp.erase(0 , 7);
-		std::cout << "tmp = " << tmp << std::endl;
-		this->_headers["Host"] = tmp.substr(0, tmp.find('/'));
+		// std::cout << "tmp = " << tmp << std::endl;
+		this->_headers["Host"] = tmp.substr(0, tmp.find('/')); //set Host
 		tmp.erase(0, tmp.find('/'));
 	}
 	this->_target = tmp;
 	line.erase(0, line.find(' ') + 1);
-	this->_http_version = line.substr(0, line.find('\r')); 
+	this->_http_version = line.substr(0, line.find('\r')); //set http version
 }
 
 
@@ -104,8 +115,10 @@ std::string const	&Request::getHTTPVersion() const
 	return this->_http_version;
 }
 
-std::string const	Request::getHeaderField(std::string field_name) const
+std::string const	&Request::getHeaderField(std::string field_name) const
 {
+	static std::string const	empty;
+
 	std::map<std::string, std::string>::const_iterator it = this->_headers.begin();
 	while (it != this->_headers.end())
 	{
@@ -113,7 +126,7 @@ std::string const	Request::getHeaderField(std::string field_name) const
 			return it->second;
 		it++;
 	}
-	return std::string();
+	return empty;
 }
 
 

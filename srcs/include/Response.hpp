@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 13:50:28 by schene            #+#    #+#             */
-/*   Updated: 2021/04/14 10:14:20 by schene           ###   ########.fr       */
+/*   Updated: 2021/04/21 18:29:04 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,10 +14,6 @@
 # define RESPONSE_HPP
 
 # include "../../webserv.hpp"
-// # include <iostream>
-// # include <map>
-// # include "Server.hpp"
-// # include "myCGI.hpp"
 
 class Response
 {
@@ -32,12 +28,14 @@ class Response
 		void		setDate();
 		void		setLastModified();
 		std::string	formatDate(time_t timestamp);
+		void		writeStatusLine();
 		void		send_response();
+		std::string	search_header(std::string field_name) const;
 
 	public:
 		Response(myCGI &my_CGI, int socket);
 		~Response();
-		std::string		search_header(std::string field_name) const;
+		
 };
 
 #endif

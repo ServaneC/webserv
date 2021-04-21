@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:29:26 by schene            #+#    #+#             */
-/*   Updated: 2021/04/14 11:43:59 by schene           ###   ########.fr       */
+/*   Updated: 2021/04/21 10:21:36 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,7 @@ int main(int argc, char const *argv[])
     // std::string hello = "GET test.html HTTP/1.1\nHost: 127.0.0.1:8080\n\n";
     // std::string hello = "GET YoupiBanane/youpi.bla HTTP/1.1\nHost: 127.0.0.1:8080\n\n";
    
-    std::cout << buf << std::endl;
+    // std::cout << buf << std::endl;
     send(sock , buf , size, 0);
     free(buf);
     printf("Request sent\n");

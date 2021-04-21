@@ -28,6 +28,7 @@ class myCGI
 		void	setPathQuery();
 		char	**env_to_char_array();
 		void	execCGI();
+		void	execGET();
 
 	public:
 		myCGI(Server &serv);

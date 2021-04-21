@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 17:14:33 by schene            #+#    #+#             */
-/*   Updated: 2021/04/12 12:03:43 by schene           ###   ########.fr       */
+/*   Updated: 2021/04/21 10:22:05 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,7 +123,7 @@ int main(void)
 			memset(buffer, 0, CGI_BUFSIZE);
 			// ret = recv(fdOut, buffer, CGI_BUFSIZE - 1, 0);
 			ret = read(fdOut, buffer, CGI_BUFSIZE - 1);
-			std::cout << buffer << std::endl;
+			// std::cout << buffer << std::endl;
 			newBody += buffer;
 		}
 	}

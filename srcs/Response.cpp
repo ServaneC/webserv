@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 14:42:45 by schene            #+#    #+#             */
-/*   Updated: 2021/04/14 11:35:33 by schene           ###   ########.fr       */
+/*   Updated: 2021/04/21 20:15:11 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ Response::Response(myCGI &my_CGI, int socket) :
 	this->parse_cgi_buf();
 	this->_headers["Allow"] = std::string();
 	this->_headers["Content-Language"] = std::string();
-	char *tmp = ft_itoa(this->_buf.size());
+	char *tmp = ft_itoa(this->_buf.size()); // maybe need modify that
 	this->_headers["Content-Length"] = std::string(tmp);
 	this->_headers["Content-Location"] = std::string();
 	this->setDate();
@@ -39,6 +39,8 @@ Response::~Response() // memory reuse ?
 
 void		Response::parse_cgi_buf()
 {
+	if (!(this->_buf.empty()) ||this->_buf[0] == '<')
+		return ;
 	while (this->_buf.find(':') != std::string::npos)
 	{
 		if (this->_buf[0] == '\r') // end of the header 
@@ -52,19 +54,36 @@ void		Response::parse_cgi_buf()
 	}
 }
 
+void			Response::writeStatusLine()
+{
+	// Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase CRLF
+	this->_response = this->_cgi.getEnvVar("SERVER_PROTOCOL") + ' '; // HTTP-Version SP 
+	this->_response += this->_headers.find("Status")->second + "\r\n"; // Status-Code SP Reason-Phrase CRLF
+	this->_headers.erase("Status"); // Erase status from header to not print it as a header field
+}
+
 void			Response::send_response() // here print = add to response string
 {
-	this->_response = this->_cgi.getEnvVar("SERVER_PROTOCOL") + ' ';
-	this->_response += this->_headers.find("Status")->second + "\r\n"; // print status line
-	this->_headers.erase("Status"); // Erase status from header to not print it as a header field
+	// status line
+	this->writeStatusLine();
+	// Headers
 	std::map<std::string, std::string>::iterator it;
 	for (it = this->_headers.begin(); it != this->_headers.end(); it++) // loop to print all headers fields
 	{
 		if (!(it->second.empty()))
 			this->_response.append(this->search_header(it->first));
 	}
-	// this->_response.append("\r\n"); //CRLF to separate header and body (commented bc  already in buf)
-	this->_response.append(this->_buf); // print body
+	//CRLF to separate header and body (or end)
+	this->_response.append("\r\n"); 
+	// Message-Body
+	if (!this->_buf.empty())
+	{
+		this->_response.append(this->_buf); // add body
+	}
+	std::cout << "------------ RESPONSE -----------------" << std::endl;
+	std::cout << this->_response << std::endl;
+	std::cout << "---------------------------------------" << std::endl;
+
 	send(this->_socket, this->_response.c_str(), this->_response.size(), 0); //we send the response 
 }
 
@@ -77,10 +96,10 @@ std::string		Response::search_header(std::string field_name) const
 
 void		Response::setDate()
 {
-	struct timeval	tv;
-
-	gettimeofday(&tv, NULL);
-	this->_headers["Date"] = this->formatDate(tv.tv_sec);
+	time_t			date;
+	
+	time(&date);
+	this->_headers["Date"] = this->formatDate(date);
 }
 
 void			Response::setLastModified()
@@ -92,9 +111,11 @@ void			Response::setLastModified()
 	this->_headers["Last-Modified"] = this->formatDate(info.st_mtime);
 }
 
-std::string		Response::formatDate(time_t timestamp) // ‼️ gmtime is not an authorized function 
+std::string		Response::formatDate(time_t timestamp)
 {
+	//GMT time is 2 hour behind localtime in france (summer hour otherwhise it's 1 hour behind)
 	char			buffer[30];
+ 
 	struct tm tm = *gmtime(&timestamp);
 	strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S GMT", &tm);
 	return std::string(buffer);

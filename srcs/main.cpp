@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/25 10:54:51 by schene            #+#    #+#             */
-/*   Updated: 2021/04/14 10:39:35 by schene           ###   ########.fr       */
+/*   Updated: 2021/04/21 10:21:39 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ int main (int ac, char **av) //the conf file is the only possible argument
 		Server("default.conf");
 	else	// ERROR
 	{
-		std::cout << "ERROR" << std::endl;
+		// std::cout << "ERROR" << std::endl;
 		return -1;
 	}
 	return 0;

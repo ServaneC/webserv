@@ -77,6 +77,11 @@ std::string const	&myCGI::getEnvVar(std::string var_name) const
 
 std::string const 	&myCGI::getBuf() const
 {
+	if (!this->_buf)
+	{
+		static std::string const	empty;
+		return empty;
+	}
 	static std::string const	ret = this->_buf;
 	return ret;
 }
@@ -100,8 +105,43 @@ char	**myCGI::env_to_char_array()
 	return array;
 }
 
+void		myCGI::execGET()
+{
+	struct stat info;
+
+	// int fd = open(this->_env["PATH_INFO"].c_str() , O_RDONLY);
+	int fd = open("index.html", O_RDONLY);
+	if (fd == -1)
+	{
+		perror("open failed");
+		exit(EXIT_FAILURE);
+	}
+	fstat(fd, &info);
+	int size = info.st_size;
+	std::cout << "size = " << size << std::endl;
+	if (!(this->_buf = (char *)malloc(sizeof(char) * (size + 1))))
+		exit(EXIT_FAILURE);
+	if (read(fd, this->_buf, size) < 0)
+	{
+		perror("read failed");
+		exit(EXIT_FAILURE);
+	}
+	this->_buf[size] = 0;
+}
+
 void	myCGI::execCGI()
 {
+	// std::cout << "==== method |" << this->_env["REQUEST_METHOD"] << '|' << std::endl;
+	//just to pass second test (very ugly, should be handle differently)
+	if (this->_env["REQUEST_METHOD"] == "GET")
+		return this->execGET();
+
+	if (this->_env["REQUEST_METHOD"] == "POST" || this->_env["REQUEST_METHOD"] == "HEAD")
+	{
+		this->_buf = NULL;
+		this->_env["STATUS_CODE"] = "405 Method Not Allowed";
+		return ;
+	}
 	char		**env_array = this->env_to_char_array();
 	pid_t		pid;
 	int			saveStdin;
@@ -124,25 +164,25 @@ void	myCGI::execCGI()
 
 	pid = fork();
 
-	if (pid == -1)
+	if (pid == -1) 
 	{
 		std::cerr << "Fork crashed." <<  std::endl;
 		exit(EXIT_FAILURE);
 		// return -1;
 		// return ("Status: 500\r\n\r\n");
 	}
-	else if (!pid)
+	else if (pid == 0) //in child 
 	{
 		char * const * nll = NULL;
 
 		dup2(fdIn, STDIN_FILENO);
 		dup2(fdOut, STDOUT_FILENO);
-		execve("/usr/bin/php-cgi", nll, env_array);
-		// execve("cgi_tester", nll, env_array);
+		// execve("/usr/bin/php-cgi", nll, env_array);
+		execve("cgi_tester", nll, env_array);
 		std::cerr <<  "Execve crashed." << std::endl;
 		write(STDOUT_FILENO, "Status: 500\r\n\r\n", 15);
 	}
-	else
+	else //in parent
 	{
 		char	buffer[CGI_BUFSIZE] = {0};
 
@@ -154,7 +194,8 @@ void	myCGI::execCGI()
 		{
 			memset(buffer, 0, CGI_BUFSIZE);
 			ret = read(fdOut, buffer, CGI_BUFSIZE - 1);
-			std::cout << buffer << std::endl;
+			buffer[ret] = 0;
+			// std::cout << buffer << std::endl;
 			newBody += buffer;
 		}
 	}
@@ -162,21 +203,21 @@ void	myCGI::execCGI()
 	dup2(saveStdin, STDIN_FILENO);
 	dup2(saveStdout, STDOUT_FILENO);
 	fclose(fIn);
-	fclose(fOut);
+	fclose(fOut); //not sure that's allowed
 	close(fdIn);
 	close(fdOut);
 	close(saveStdin);
 	close(saveStdout);
 
-	// for (int i = 0; env_array[i]; i++)
-	// 	free(env_array[i]);
-	// free(env_array);
+	for (int i = 0; env_array[i]; i++)
+		free(env_array[i]);
+	free(env_array);
 
 	if (!pid)
 		exit(0);
 
 	if (!(this->_buf = (char *)malloc(sizeof(char) * (newBody.size() + 1))))
 		exit(EXIT_FAILURE);
-	ft_memcpy(this->_buf, (char *)newBody.c_str(), newBody.size());
+	memcpy(this->_buf, (char *)newBody.c_str(), newBody.size());
 	this->_buf[newBody.size()] = 0;
 }

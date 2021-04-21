@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 11:20:51 by schene            #+#    #+#             */
-/*   Updated: 2021/04/14 10:14:23 by schene           ###   ########.fr       */
+/*   Updated: 2021/04/20 14:20:31 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@ class Server
 {
 	private:
 		Request								&_rqst;
+		// std::string							_buf;
 		int									_port;
 		std::string 						_name;
 		int									_socket;

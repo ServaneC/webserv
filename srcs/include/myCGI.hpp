@@ -23,6 +23,7 @@ class myCGI
 		Server								&_server;
 		Request								&_request;
 		char								*_buf;
+		time_t								_last_modified;
 		std::map<std::string, std::string>	_env;
 
 		void	setPathQuery();
@@ -34,8 +35,10 @@ class myCGI
 		myCGI(Server &serv);
 		~myCGI();
 
+		void				free_buf();
 		std::string const	&getEnvVar(std::string var_name) const;
 		std::string const 	&getBuf() const;
+		time_t				getLastModified() const;
 };
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 13:50:28 by schene            #+#    #+#             */
-/*   Updated: 2021/04/21 18:29:04 by schene           ###   ########.fr       */
+/*   Updated: 2021/04/23 15:36:55 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,12 +30,11 @@ class Response
 		std::string	formatDate(time_t timestamp);
 		void		writeStatusLine();
 		void		send_response();
-		std::string	search_header(std::string field_name) const;
+		void		format_header();
 
 	public:
 		Response(myCGI &my_CGI, int socket);
 		~Response();
-		
 };
 
 #endif

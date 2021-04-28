@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:29:26 by schene            #+#    #+#             */
-/*   Updated: 2021/04/21 10:21:36 by schene           ###   ########.fr       */
+/*   Updated: 2021/04/27 12:11:37 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,19 +60,21 @@ int main(int argc, char const *argv[])
         return -1;
     }
     // send(sock , hello.c_str() , hello.size(), 0);
-    if (!(buf = (char *)malloc(sizeof(char) * size + 1)))
+    if (!(buf = (char *)malloc(sizeof(char) * size + 3)))
     {
         perror("Malloc failed !");
         return -1;
     }
     int r = read(fd, buf, size);
-    buf [r] = 0;
+    buf [r] = '\r';
+    buf [r + 1] = '\n';
+    buf [r + 2] = 0;
     close(fd);
     // std::string hello = "GET test.html HTTP/1.1\nHost: 127.0.0.1:8080\n\n";
     // std::string hello = "GET YoupiBanane/youpi.bla HTTP/1.1\nHost: 127.0.0.1:8080\n\n";
    
     // std::cout << buf << std::endl;
-    send(sock , buf , size, 0);
+    send(sock , buf , size + 3, 0);
     free(buf);
     printf("Request sent\n");
     char buffer[1024] = {0};

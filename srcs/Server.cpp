@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/04/21 10:21:56 by schene           ###   ########.fr       */
+/*   Updated: 2021/04/28 13:12:40 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,6 @@ Server::Server(std::string conf_file) : _rqst(*(new Request))
     this->_name = "localhost";
     this->_host.sin_family = PF_INET;
     this->_host.sin_addr.s_addr = INADDR_ANY; // -> 0.0.0.0
-    // this->_host.sin_addr.s_addr = inet_addr("127.0.0.1");
     this->_host.sin_port = htons(this->_port);
     this->_addrlen = sizeof(this->_host);
     this->_socket = socket(PF_INET, SOCK_STREAM, 0);
@@ -77,12 +76,6 @@ void	Server::start_server()
                     fcntl(this->_client_socket, F_SETFL, O_NONBLOCK);
                     
                     this->_rqst.parseRequest(this->_client_socket);
-                    if (this->_rqst.getTarget().empty())
-                    {
-                        perror("empty request");
-                        exit(EXIT_FAILURE);
-                    }
-                    // std::cout << "target = |" << this->_rqst.getTarget() << '|' << std::endl;
                     myCGI((*this));
                     close(this->_client_socket);
                     FD_CLR(i, &current_sockets);

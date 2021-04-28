@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 14:42:45 by schene            #+#    #+#             */
-/*   Updated: 2021/04/21 20:15:11 by schene           ###   ########.fr       */
+/*   Updated: 2021/04/27 12:29:35 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,12 +15,14 @@
 Response::Response(myCGI &my_CGI, int socket) :  
 	_cgi(my_CGI), _socket(socket), _buf(my_CGI.getBuf())
 {
+	// my_CGI.free_buf();
 	this->_headers["Status"] = my_CGI.getEnvVar("STATUS_CODE");
 	this->parse_cgi_buf();
 	this->_headers["Allow"] = std::string();
 	this->_headers["Content-Language"] = std::string();
-	char *tmp = ft_itoa(this->_buf.size()); // maybe need modify that
-	this->_headers["Content-Length"] = std::string(tmp);
+	char *size = ft_itoa(this->_buf.size()); // maybe need modify that
+	this->_headers["Content-Length"] = std::string(size);
+	free(size);
 	this->_headers["Content-Location"] = std::string();
 	this->setDate();
 	this->setLastModified();
@@ -54,46 +56,6 @@ void		Response::parse_cgi_buf()
 	}
 }
 
-void			Response::writeStatusLine()
-{
-	// Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase CRLF
-	this->_response = this->_cgi.getEnvVar("SERVER_PROTOCOL") + ' '; // HTTP-Version SP 
-	this->_response += this->_headers.find("Status")->second + "\r\n"; // Status-Code SP Reason-Phrase CRLF
-	this->_headers.erase("Status"); // Erase status from header to not print it as a header field
-}
-
-void			Response::send_response() // here print = add to response string
-{
-	// status line
-	this->writeStatusLine();
-	// Headers
-	std::map<std::string, std::string>::iterator it;
-	for (it = this->_headers.begin(); it != this->_headers.end(); it++) // loop to print all headers fields
-	{
-		if (!(it->second.empty()))
-			this->_response.append(this->search_header(it->first));
-	}
-	//CRLF to separate header and body (or end)
-	this->_response.append("\r\n"); 
-	// Message-Body
-	if (!this->_buf.empty())
-	{
-		this->_response.append(this->_buf); // add body
-	}
-	std::cout << "------------ RESPONSE -----------------" << std::endl;
-	std::cout << this->_response << std::endl;
-	std::cout << "---------------------------------------" << std::endl;
-
-	send(this->_socket, this->_response.c_str(), this->_response.size(), 0); //we send the response 
-}
-
-std::string		Response::search_header(std::string field_name) const
-{
-	std::string tmp = std::string();
-	tmp = field_name + ": " + this->_headers.find(field_name)->second + "\r\n";
-	return (tmp);
-}
-
 void		Response::setDate()
 {
 	time_t			date;
@@ -104,11 +66,8 @@ void		Response::setDate()
 
 void			Response::setLastModified()
 {
-	std::string path = this->_cgi.getEnvVar("PATH_INFO");
-	struct stat info;
-
-	lstat(path.c_str(), &info);
-	this->_headers["Last-Modified"] = this->formatDate(info.st_mtime);
+	if (this->_cgi.getLastModified())
+		this->_headers["Last-Modified"] = this->formatDate(this->_cgi.getLastModified());
 }
 
 std::string		Response::formatDate(time_t timestamp)
@@ -121,3 +80,47 @@ std::string		Response::formatDate(time_t timestamp)
 	return std::string(buffer);
 }
 
+void			Response::writeStatusLine()
+{
+	// Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase CRLF
+	this->_response = this->_cgi.getEnvVar("SERVER_PROTOCOL") + ' '; // HTTP-Version SP 
+	this->_response += this->_headers.find("Status")->second + "\r\n"; // Status-Code SP Reason-Phrase CRLF
+	this->_headers.erase("Status"); // Erase status from header to not print it as a header field
+}
+
+void			Response::format_header()
+{
+	// header-field = field-name ":" OWS field-value OWS CRLF
+	std::map<std::string, std::string>::iterator it = this->_headers.begin();
+	for (; it != this->_headers.end(); it++) // loop to print all headers fields
+	{
+		if (!(it->second.empty()))
+		{
+			std::string tmp = it->first + ": " + this->_headers.find(it->first)->second + "\r\n";
+			this->_response.append(tmp);
+		}
+	}
+}
+
+void			Response::send_response()
+{
+	// status line
+	this->writeStatusLine();
+	// Headers
+	this->format_header();
+	//CRLF to separate header and body (or end)
+	this->_response.append("\r\n"); 
+	// Message-Body
+	if (!this->_buf.empty())
+	{
+		// std::cout << "buf = |" << this->_buf << "|" << std::endl;
+		this->_response.append(this->_buf);
+	}
+	//print on our cout to check
+	std::cout << "------------ RESPONSE -----------------" << std::endl;
+	std::cout << this->_response;
+	std::cout << "---------------------------------------" << std::endl;
+	// Actually sending to socket
+	send(this->_socket, this->_response.c_str(), this->_response.size(), 0);
+	this->_cgi.free_buf();
+}

@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 15:34:32 by schene            #+#    #+#             */
-/*   Updated: 2021/04/20 14:24:27 by schene           ###   ########.fr       */
+/*   Updated: 2021/04/23 09:29:29 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ extern "C"
 # include <unistd.h>
 # include <netinet/in.h>
 # include <fcntl.h>
+# include <errno.h>
 
 # include <iostream>
 # include <string>

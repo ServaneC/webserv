@@ -6,22 +6,14 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 15:29:26 by schene            #+#    #+#             */
-/*   Updated: 2021/04/27 12:11:37 by schene           ###   ########.fr       */
+/*   Updated: 2021/05/06 14:20:50 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 // Client side C/C++ program to demonstrate Socket programming
-#include <stdio.h>
-#include <sys/socket.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <netinet/in.h>
-#include <string.h>
 #include <arpa/inet.h>
-#include <iostream>
-#include <fcntl.h>
-#include <sys/types.h>
 #include <sys/stat.h>
+#include "../webserv.hpp"
 
 #define PORT 8080
 
@@ -59,22 +51,86 @@ int main(int argc, char const *argv[])
         printf("\nConnection Failed \n");
         return -1;
     }
-    // send(sock , hello.c_str() , hello.size(), 0);
     if (!(buf = (char *)malloc(sizeof(char) * size + 3)))
     {
         perror("Malloc failed !");
         return -1;
     }
     int r = read(fd, buf, size);
-    buf [r] = '\r';
-    buf [r + 1] = '\n';
-    buf [r + 2] = 0;
+    // buf [r] = '\r';
+    // buf [r + 1] = '\n';
+    // buf [r + 2] = 0;
+    buf [r] = 0;
     close(fd);
-    // std::string hello = "GET test.html HTTP/1.1\nHost: 127.0.0.1:8080\n\n";
-    // std::string hello = "GET YoupiBanane/youpi.bla HTTP/1.1\nHost: 127.0.0.1:8080\n\n";
-   
+    // char		*line = NULL;
+    // char        *crlf = (char *)"\r\n";
+    // char        *tmp = NULL;
+    
+
+	// if (get_next_line(fd, &line) > 0)
+    // {
+    //     buf = ft_strjoin(line, crlf);
+    //     free(line);
+    //     line = NULL;
+    // }
+	// while (get_next_line(fd, &line) > 0)
+	// {
+    //     if (line)
+    //     {
+    //         tmp = ft_strjoin(line, crlf);
+    //         free(line);
+    //         line = ft_strjoin(buf, tmp);
+    //         free(buf);
+    //         buf = ft_strdup(line);
+    //         free(line);
+    //         free(tmp);
+    //         tmp = NULL;
+    //     }
+    //     else
+    //         break;
+    //     line = NULL;
+    // }
+    // if (line)
+    //     free(line);
+    // line = NULL;
+    // tmp = ft_strjoin(buf, crlf);
+    // free(buf);
+    // buf = ft_strdup(tmp);
+    // free(tmp);
+    // while (get_next_line(fd, &line) > 0) // parse request line
+	// {
+    //     if (line)
+    //     {
+    //         tmp = ft_strjoin(line, (char *)"\n");
+    //         free(line);
+    //         line = ft_strjoin(buf, tmp);
+    //         free(buf);
+    //         buf = ft_strdup(line);
+    //         free(line);
+    //         free(tmp);
+    //         tmp = NULL;
+    //     }
+    //     else
+    //         break;
+    //     line = NULL;
+    // }
+    // if (line)
+    // {
+    //     tmp = ft_strjoin(buf, line);
+    //     free(buf);
+    //     buf = ft_strdup(tmp);
+    //     free(tmp);
+    //     free(line);
+    //     line = NULL;
+    // }
+    close(fd);
+    std::cout << "-----" << std::endl;
+    std::cout << buf;
+    std::cout << "-----" << std::endl;
+
+
     // std::cout << buf << std::endl;
-    send(sock , buf , size + 3, 0);
+    send(sock , buf , size, 0);
     free(buf);
     printf("Request sent\n");
     char buffer[1024] = {0};

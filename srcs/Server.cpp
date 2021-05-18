@@ -6,15 +6,16 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/04/28 13:12:40 by schene           ###   ########.fr       */
+/*   Updated: 2021/04/30 10:18:28 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/Server.hpp"
 
-Server::Server(std::string conf_file) : _rqst(*(new Request))
+Server::Server(std::string conf_file) : _rqst(*(new Request)), _conf(*(new Config))
 {
     (void)conf_file;
+    this->_conf.parseConfFile(conf_file.c_str());
     this->_port = 8080;
     this->_name = "localhost";
     this->_host.sin_family = PF_INET;
@@ -28,7 +29,9 @@ Server::Server(std::string conf_file) : _rqst(*(new Request))
 
 Server::~Server()
 {
-    free(&this->_rqst);
+    delete &this->_rqst;
+    delete &this->_conf;
+    // free(&this->_rqst);
 }
 
 void	Server::start_server()

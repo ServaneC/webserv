@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 14:42:45 by schene            #+#    #+#             */
-/*   Updated: 2021/04/27 12:29:35 by schene           ###   ########.fr       */
+/*   Updated: 2021/05/06 14:45:04 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ Response::~Response() // memory reuse ?
 
 void		Response::parse_cgi_buf()
 {
-	if (!(this->_buf.empty()) ||this->_buf[0] == '<')
+	if (this->_buf.empty() || this->_buf[0] == '<')
 		return ;
 	while (this->_buf.find(':') != std::string::npos)
 	{

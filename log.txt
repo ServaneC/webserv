@@ -1,0 +1,436 @@
+Webserv 
+(12/03/2021)
+
+Simplification des RFC: https://docs.google.com/document/d/1_hyiqjK-wjBFPsQX040qw0_vOuAsTEjliU7gOI8rHkk/edit?usp=sharing
+Fonctions: https://docs.google.com/document/d/1kAKD5ucdXaoeX5MRfoqCjVR78kADcq030BgyIGOLoUk/edit?usp=sharing
+
+Objectif: Validé avant le WED (21 mai) un jour avant le blackhole
+
+‼️ Changement du sujet le 01/06/2021
+
+Authorized functions:
+
+accept, bind, chdir, close, closedir, connect, dup, dup2, errno, execve, exit, fcntl, fork, free, fstat, getcwd, getsockname, gettimeofday, htonl, htons, inet_addr, kill, listen, lseek, lstat,malloc, mkdir, ntohl, ntohs, open, opendir, pipe, read, readdir, recv, rmdir, select, send, setsockopt, signal, socket, stat, strerror, strftime, strptime, unlink, usleep, wait, wait3, wait4, waitpid, write
+
+Authorized headers:
+// Including this header may automatically include other headers, such as <ios>, <streambuf>, <istream>, <ostream> and/or <iosfwd>.
+iostream -> http://www.cplusplus.com/reference/iostream/
+string -> http://www.cplusplus.com/reference/string/
+vector / list / queue / stack / map
+algorithm -> http://www.cplusplus.com/reference/algorithm/
+exception -> http://www.cplusplus.com/reference/exception/
+ctime -> http://www.cplusplus.com/reference/ctime/
+cstring -> http://www.cplusplus.com/reference/cstring/
+HTTP Methods :
+
+Minimum in a webserv:
+-> GET
+-> HEAD
+
+Tested in the tester:
+-> POST
+-> PUT
+
+apparently also required:
+-> DELETE
+-> CONNECT
+-> OPTION
+-> TRACE
+
+Vm = little endian
+
+- [x] Lire les RFC + prendre des notes / surligner 
+- [x] Faire des test avec nginx et telnet 
+
+25/03/2021
+curl -I example.com	=> Renvoi le header HTTP comme un webserver (mais marche si Nginx ne run pas)
+curl -I 'localhost'		=> ne marche que si Nginx run 
+✅ Makefile fait + libft dans le dossier
+-> prise de notes sur les nouvelles fonctions 
+
+29/03/2021
+-> création d’une classe server
+-> essai de faire un server fonctionnel très très simplifié
+	> class Server
+	> class Request
+
+30/03/2021
+- [x] Trier les req. Header / response Header 
+- [x] Faire un map stockant toutes les valeurs des request header field possible
+- [x] Parse request (manque le message body) -> pas utile pour GET
+-> début du setup du CGI (env)
+
+01/04/2021
+- [x] Faire un simple cgi qui ouvre et renvoi un simple fichier html
+- [x] Faire un .hpp avec tout les includes commun = plus propre
+
+02/03/2021
+- [x] Envoyer la réponse au socket 
+- [x] Faire marcher dans la vm !!!
+-> safari dit que la demande est en HTPP/0.9 ?!
+-> j’ai écrit les header fields de la réponse sur cout au lieu du socket 🙄
+- [x] pouvoir la visualiser dans le moteur de recherche (mac + VM 🎉)
+-> to format the date we have gettimeofday(), strftime() and strptime()-> we should probably ignore  strptime()
+- [x] Gérer date avec les fonctions appropriés ‼️ Utilisation de gmtime (fonction apparement non autorisé)
+
+05/04/2021
+- [x] Mettre la request dans un fichier a part et le client lit le fichier puis envoie la request (= plus facilement modifiable)
+- [x] Gérer le last-modified
+- [x] Faire une fonction pour formater les dates 
+—> sur la vm la request arrives vide au server 
+- [x] Faire marcher dans la vm ! (C’est chelou quand même)
+
+06/04/2021
+- [x] Mettre sur github
+- [x] Faire un page index.html
+- [x] Gérer les target avec ‘/‘ (absolut path)
+
+07/04/2021
+- [x] Faire un test simple faisant appelle a php-cgi 
+- [x] Réussir a appeler php-cgi et avoir un retour avec execve
+—> ca marche pas de ouf, la réponse n’arrives pas, ca bloque apparement a un endroit
+(J’avais oublié d’appeler la fonctions execCGI 🤦🏻‍♀️ )
+
+
+08/04/2021
+- [x] Trouver un cgi qui marche pour autre chose que php et surtout pour mac  => CGI dans les ressources !!!
+- [x] Tester les cgi des ressources 
+-> le cgi_tester marche avec execve mais ne renvois rien 
+-> le cgi tourne dans le vide… 💀
+👉 on se re-concentre sur php-cgi
+- [x] Faire marcher php-cgi avec notre WebServ
+-> ça affiche aussi le header field dans le web but on verra ca plus tard !
+👉 Plus le choix faut réussir a faire marcher cgi_tester !
+->execve crash avec cgi_tester 
+- [x] Faire marcher cgi_tester avec execve (meme si retour pas bon)
+🤦🏻‍♀️ a.out était dans srcs et donc pas dans le meme repo que cgi_tester et index.html
+- [x] Comprendre comment bien appeler cgi_tester
+😕 Il n’y a pas de body dans la réponse du cgi…
+
+09/04/21
+- [x] Essayer de passer le file en argument du cgi -> voir si le body apparait
+-> le body apparait pas …
+- [x] Retrouver ce qui marchait avec php-cgi parce que la ca marche plus lol
+🤦🏻‍♀️ J’avais mis HEAD en méthode dans le test.cpp donc forcement y avait plus le body 
+😩 Le cgi_tester ne renvois toujours pas de body !
+- [x] Bosser sur le repo git !
+-> on verra le body plus tard, je tourne en rond !
+-> php-cgi renvoie en header field puis un \n et le body
+- [x] Parser le header field renvoyé par le cgi
+	-> ca marche pour le header renvoyé par cgi_tester (sans body du coup) mais ca diminue le fichier dans la vm avec php-cgi
+	-> il y avais un souci car php-cgi renvoi un header ‘Content-type’ au lieu de ‘Content-Type’  (j’ai régler le souci de manière un peu moche)
+    - [x] Arriver a arrêter le parsing a la fin des headers fields. 
+		-> j’essayais de trouver un \n en début de ligne pour arrêter mais c’était un \r qu’il y avait (CRLF = \r\n)
+	👉 Ca marche aussi avec un 404 (on récupère le bon status)
+
+12/04/2021
+-> ajout des CRLF (\r\n)  au lieu de juste \n dans la réponse HTTP
+- [x] Réorganiser toutes les fonctions => diviser les gros blocs
+	-> J’ai créer une fonction send_response (qui imprime les header_fields dans une boucle)
+	=> réorganisation faite pour Response
+- [x] Deux \n entre header et body dans la response ? -> le \n est deja dans le body
+- [x] Utilisation de select pour read
+
+14/04/2021
+-> J’ai mis tout les .hpp dans un dossier include dans les srcs
+-> J’ai fait un dossier test_dir avec tout les fichier test = c’est un peu moins le bordel 
+‼️ T=� 1 fois sur deux en fin de réponse ?
+	-> J’ai bien terminer le buf avec un 0 au lieu de juste le ft_memcpy
+- [x] Gérer les leak avec -fsanitize=address
+    - [x] Memory access after free dans le response destructor
+	-> juste un clear au lieu dans erase en boucle + clear
+- [x] Parse la request au CRLF et pas juste \n
+- [x] Parse url of type ->  http://localhost:80/
+    - [x] Améliorer le parsing de la request line
+	-> ajout d’une fonction ParseRequestLine
+=> PUSH GitHub
+
+15/04/2021
+-> Réglage du décalage horaire (+ 2h)		 / / je viens du futur, c’etait inutile !
+- [x] Gérer les OWS dans le parsing des header field de la request
+
+
+20/04/2021
+- [x] Modifier ce qu’il faut  car mnt on peut utiliser  ctime  et cstring
+	-> time() au lieu de gettimeofday() = +simple (j’ai enlever le réglage du décalage horaire car GMT n’est pas sensé être l’heure exacte en France)
+	-> gmtime() est mnt autorisé
+    - [x] utiliser cstring plutôt que la libft
+- [x] Utiliser des ref sur string dans les getter
+	-> j’ai mis search_header en private (dans response)
+- [x] Voir pour utiliser getline() au lieu de gnl
+	-> ca semble compliqué il faudrait ouvrir le file avec fstream mais c’est pas autorisé…
+	-> peut être lire tout le file dans un buf puis créer une stream sur le buf ? ->semble pas très optimal
+	-> voir pour lire le socket dans server.cpp et ensuite l’envoyé a request.cpp qui parsera le tout -> on pourra se débarrasser de gnl
+	=> on continue avec gnl pour le moment a voir si ils autorisent fstream a l’avenir…
+- [x] Mieux comprendre le conf file et ce qu’il fait exactement
+
+21/04/2021
+👉 avec php-cgi ubuntu_tester renvoi « FATAL ERROR ON LAST TEST: unexpected EOF » au premier test
+	-> pourquoi ?!
+	-> overflow dans gnl apres plusieur lancement du tester  // on verra plus tard
+    - [x] ajouter un CRLF a la fin du body. // je viens du futur et fallais pas faire ca 
+	🎉 Passage du premier test avec php-cgi (le pb venais juste du CRLF)
+	—> je passe apparement le test POST (j’ai fait en sorte qu’il renvoi une erreur mais de maniere tres moche pour le moment) 
+		-> ca marche pas tout le temps…
+- [x] faire une GET method pas ouf et voir si on passe le premier test
+👉 J’ai fait une fonction  execGET mais elle semble pas parfaite et a retravailler…
+- [x] mieux gérer les CRLF entre les header et le body et a la fin si y a pas de body.
+📝 J’aurais apparement eu raison au début en créant moi meme la reponse a GET, je crois que le CGI est a utiliser seulement pour certaine méthodes
+Sur mac: 2eme test
+	Test POST http://localhost:8080/ with a size of 0
+	2021/04/21 20:02:11 Unsolicited response received on idle HTTP channel starting with "\r\n"; err=<nil>
+✅ Ca marche ! 👉 il ne faut pas mettre de CRLF apres le message-body (juste entre header et body/fin)
+Pour le moment GET ignore le path et ouvre juste index.html
+
+22/04/2021
+- [x] faire ouvrir le bon path / renvoyer le bon message d’erreur pour GET
+Abort apres plusieur refresh et un client en not found 
+	✅ Résolu: création d’une fonction free_buf appelle dans response (a revoir pour quelque chose de plus propre)
+- [x] pb avec last modified (indique 1970)
+	👉 Ajout d’un getter last-modified dans myCGI
+
+23/04/2021
+Tester dans la VM:
+-> probleme de parsing, un buf doit etre mal vidé ou autre… ca fait des trucs chelou
+-> peut etre une erreur avec write ? (write: broken pipe)
+👉 C’est chelou le premier test marche mais les autres passe une fois sur 3
+Tester mac:
+✅ Les trois premiers test passe a chaque fois sans pb (c’est normal j’ai pas géré la réponse du 4ème)
+‼️ Le 2ème et 3ème je renvois juste l’erreur qu’il veut c ‘est pas pro et ca passerais pas c’est complètement a revoir 
+
+🤦🏻‍♀️ Nouveau problème le tester bloque a POST (2eme test)
+-> les meme test en passant par client ne bloques pas
+🙄 Régler j’avais oublié de close le socket (je l’avais commenté pour tester un truc vite fait)
+
+- [x] gérer le body dans request
+	-> c’est géré faudrait juste bien check qu’il y a le CRLF avant et ca sera parfait 
+	+ faire une ( ou 2 ) fonction(s) en plus pour alleger parseRequest()
+👉 essayer de passer les trois premiers test sur la VM
+	-> POST =  read: connection reset by peer / write: broken pipe
+	-> ca vient peut etre de gnl 🤔
+	-> des fois tout passe et des fois ca bloque a POST… 😡
+
+
+
+27/04/2021
+- [x] mettre dans une fonction a part le parsing des headers field dans request
+	+ ajout d’une fonction free_null_line
+- [x] essayer de créer un container docker pour tester avec nginx
+	-> j’ai juste lancer un container sur la vm et j’ai pu envoyer un GET mais faudrait faire bcppppp plus de test
+- [x] améliorer le check si CRLF dans request 
+- [x] ‘use the parsed data to determine if a message body is expected’ 👉 Le parsing du body est peut être a revoir 
+	👉 Content-Lenght ou transfer encoding = message body
+	✅ C ‘est fait mais pas testé
+🤦🏻‍♀️ Leaks gnl  avec le testeur dans la vm (mais rien sur mac) (dans parseRequest)
+- [x] bien check la request et renvoyé erreur si incorrect
+    - [x] renvoyé la bonne réponse si pas de CRLF (bad Request je crois) -> actuellement c’est juste un perror tout pourri et un exit
+		✅  + si space entre field-name et colon = renvoi un 400 bad request
+		👉 peut être a revoir pour mieux gérer mais ca marche 
+
+28/04/2021
+- [x] résoudre la leak dans parse request (sur vm)
+	🤷🏻‍♀️ Je la retrouve pas, j’ai du la résoudre sans faire exprès
+👉 Pour le moment les test bug parfais dans la vm et parfois passent, ca vient peut etre du select ? Je verrais plus tard…
+	👉 En tout cas les trois premier passent a chaque fois sans pb sur mac
+- [x] mieux gérer les erreurs possible dans le parsing de la request line
+    - [x] accepter tout les ws pas just sp comme séparateur 
+		👉MAY instead parse on whitespace-delimited word boundaries 
+		👉 C’est pas obligatoire a géré ❌
+    - [x] renvoyer un bad request si plus que 1 ws entre item
+
+30/04/2021
+👉 Création de la classe config qui serviras a mettres les infos du conf file
+    - [x] lire le file dans une string
+
+03/05/2021
+pistes pour le parsing:
+	-> split tout les server {} puis les traiter chacun dans une autre classe
+	-> Avoir une classe config de base avec un vector de pointeur sur les différents serveurs
+	-> Dans la classe confServer:
+		- server_name
+		- map des routes -> peut etres il faut une class config pour les routes aussi (pour stocker les accepteds method et autre
+			-> un map<string, ConfigRoute> peut-être avec dans configRoute
+				- root =  a directory or a file from where the file should be search 
+				- Vector ou list des méthodes acceptés
+				- default file to answer if the request is a directory 
+				- client body size
+		-  bool pour  « turn on or off directory list »		- limit client body size
+		- map avec les error pages 
+		- host:port
+
+04/05/2021
+- [ ] Comprendre ce que fait chaque méthodes -> écrire une explication avec exemple pour chaque 
+- [x] tester la méthode DELETE avec le cgi_tester -> bad request
+
+06/05/2021
+- [x] modifier le client pour qu’il ajoute le CRLF entre les headers et le body/la fin
+	-> c’est fait mais mnt le serveur capte plus rien 
+    - [x] re tester avec le tester -> Ca marche ✅
+	-> le serveur ne lit pas la request en entier… pourquoi ?
+	-> Je suis revenu a comme avant faut que j’essaye autre chose
+	-> j’ai tenté autre chose mais mnt j’ai un segfault dans le parserequest 🤦🏻‍♀️
+	-> Abandon …
+- [x] Au lieu de check si CRLF entre header et body -> check si CRLF ou juste LF
+- [x] retester DELETE avec cgi_tester -> ca marche pas j’ai peut etre pas compris DELETE
+- [x] tester dans la vm avec php-cgi
+	-> la réponse a un body alors qu’elle ne devrait pas 
+
+‼️ On dirait que le parsing du header du cgi ne marche plus 🤔
+    - [x] revoir la fonction parse_cgi_buf()
+	✅ Résolu -> je returnais si le buf n’étais pas empty donc forcément ca returnais a chaque fois… 🙄
+
+
+- [ ] tester dautre méthodes !
+
+- [ ] Utiliser les exceptions !
+-> peut être continuer avec un seul serveur ?
+
+To do:
+- [ ] Parse le conf file
+- [ ] Gérer un cluster de plusieurs serveur 
+- [ ] Utiliser select pour write
+- [ ] Utiliser un seul select pour read et write (Select should check read and write at the same time)
+- [x] Create response + send it
+- [x] Stocker les header fields dans un  container map
+- [ ] Throw exception (ex: in getHeaderField()
+- [ ] Associer ctrl_C a unlink ?
+- [ ] Utiliser recv ?
+- [ ] Gérer les chunk request
+- [ ] Implémenter HEAD et les autres méthodes
+- [ ] Recoder l’appel au cgi (pour l’instant c’est un cp de GitHub 😬)
+- [ ] call the cgi with the file requested as first argument 
+- [ ] Error pages
+- [ ] Bouger webserv.hpp dans les includes ?
+- [ ] changer le nom de myCGI (execRequest ?)
+- [ ] truc fun a faire : remplir les fichiers de test (Youpi banane et cie)
+
+Piste:
+-> ne définir qu’un server
+-> commencer par juste implement GET et faire les autres méthodes après (ou juste HEAD)
+-> utiliser signal pour détecter le quit du programme et bien unlink le/les sockets 
+-> Faire un fichier conf de base et faire le serveur avec ses conf (voir pour stocker dans une structure ou autre) 
+-> the CGI est celui qui traite la request (si chunk le serveur doit unchunk avant de l’envoyer au CGI)
+-> faire une classe ‘env’ avec toutes les meta-variables a passer au CGI 
+-> stocker les meta-variables dans un container map ✅
+
+
+PHP_CGI
+-> ont y fait appelle de la manière suivante:
+> php-cgi index.php
+> Content-type: text/html; charset=UTF-8
+  <html>
+   <head>
+    <title>Test PHP</title>
+   </head>
+   <body>
+   <p>Bonjour le monde</p> </body>
+  </html>%
+
+
+Conf file:
+-> different « server » can be defined
+-> we should be able to:
+	> choose the port and host for each of them
+	> choose the server name (or not)
+	> setup default error pages
+	> limit client body size
+	> define a list of accepted HTTP methods for the routes
+	> define a directory or a file from where the file should be search 	> turn on or off directory listing 	> default file to answer if the request is a directory 	> execute CGI based on certain file extension 
+ 
+Test simple:
+telnet example.com 80
+HEAD /index.html HTTP/1.1
+Host: example.com
+
+
+- Create a directory YoupiBanane with:
+	-a file name youpi.bad_extension
+	-a file name youpi.bla
+	-a sub directory called nop
+		-a file name youpi.bad_extension in nop
+		-a file name other.pouic in nop
+	-a sub directory called Yeah
+		-a file name not_happy.bad_extension in Yeah
+
+Setup the configuration file as follow:
+- / must answer to GET request ONLY
+- /put_test/* must answer to PUT request and save files to a directory of your choice
+- any file with .bla as extension must answer to POST request by calling the cgi_test executable
+- /post_body must answer anything to POST request with a maxBody of 100
+- /directory/ must answer to GET request and the root of it would be the repository YoupiBanane and if no file are requested, it should search for youpi.bad_extension files
+
+
+
+Write = send avec 0 a la fin
+
+REDIRECT_STATUS=200 REQUEST_METHOD=GET SCRIPT_FILENAME=htdocs/index.php SCRIPT_NAME=/index.php PATH_INFO=/ SERVER_NAME=site.tld SERVER_PROTOCOL=HTTP/1.1 REQUEST_URI=/nl/page HTTP_HOST=site.tld /usr/bin/php-cgi 
+
+
+HTTP-message =	start-line
+		*( header-field CRLF )
+		CRLF
+		[ message-body ]
+
+	Request	Response
+Accept-Charsets	✅	❌
+Accept-Language	✅	❌
+Allow	❌	✅
+Authorization	✅	❌
+Content-Language	❌	✅
+Content-Length	✅	✅
+Content-Location 	❌	✅
+Content-Type 	✅	✅
+Date 	✅	✅
+Host 	✅	❌
+Last-Modified 	❌	✅
+Location 	❌	✅
+Referer 	✅	❌
+Retry-After 	❌	✅
+Server 	❌	✅
+Transfer-Encoding 	✅	✅
+User-Agent 	✅	❌
+WWW-Authenticate	❌	✅
+TOTAL	10	12
+
+
+request du tester:
+
+GET / HTTP/1.1
+Host: localhost:8080
+User-Agent: Go-http-client/1.1
+Accept-Encoding: gzip
+
+POST / HTTP/1.1
+Host: localhost:8080
+User-Agent: Go-http-client/1.1
+Transfer-Encoding: chunked
+Content-Type: test/file
+Accept-Encoding: gzip
+
+0
+👉 devrait renvoyer une erreur car « / must answer to GET request ONLY » (405 Method Not Allowed)
+
+HEAD / HTTP/1.1
+Host: localhost:8080
+User-Agent: Go-http-client/1.1
+👉 devrait renvoyer une erreur car « / must answer to GET request ONLY » (405 Method Not Allowed)
+
+GET /directory HTTP/1.1
+Host: localhost:8080
+User-Agent: Go-http-client/1.1
+Accept-Encoding: gzip
+
+GET /directory/youpi.bad_extension HTTP/1.1
+Host: localhost:8080
+User-Agent: Go-http-client/1.1
+Accept-Encoding: gzip
+
+GET /directory/youpi.bla HTTP/1.1
+Host: localhost:8080
+User-Agent: Go-http-client/1.1
+Accept-Encoding: gzip
+
+GET /directory/oulalala HTTP/1.1
+Host: localhost:8080
+User-Agent: Go-http-client/1.1
+Accept-Encoding: gzip

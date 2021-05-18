@@ -19,6 +19,7 @@ myCGI::myCGI(Server &serv)
 	: _server(serv), _request(serv.getRequest())
 {
 	this->_env["SERVER_PROTOCOL"] = "HTTP/1.1";
+	//std::cout << "CGI -> " << this->_request.getBadRequest() << std::endl;
 	if (!this->_request.getBadRequest())
 	{
 		this->_env["REQUEST_METHOD"] = this->_request.getMethod();
@@ -123,7 +124,7 @@ void		myCGI::execGET()
 
 void	myCGI::execCGI()
 {
-	// std::cout << "==== method |" << this->_env["REQUEST_METHOD"] << '|' << std::endl;
+	std::cout << "==== method |" << this->_env["REQUEST_METHOD"] << '|' << std::endl;
 	//just to pass second test (very ugly, should be handle differently)
 	this->_buf = NULL;
 	if (this->_request.getBadRequest())

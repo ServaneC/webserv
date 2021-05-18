@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 16:24:45 by schene            #+#    #+#             */
-/*   Updated: 2021/04/28 13:19:16 by schene           ###   ########.fr       */
+/*   Updated: 2021/05/18 15:41:20 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,9 +40,11 @@ int		Request::parseRequest(int fd)
 	this->_fd = fd;
 	std::string line_s;
 	
+	std::cout << "========= REQUEST =========" << std::endl;
 	//while because "ignore at least one CRLF before request line"
 	while (get_next_line(this->_fd, &line) > 0) // parse request line
 	{
+		std::cout << line << std::endl;
 		line_s = std::string(line);
 		if (!(line_s[0] == '\r' || line_s.empty()))
 		{
@@ -53,14 +55,15 @@ int		Request::parseRequest(int fd)
 	}
 	while (get_next_line(this->_fd, &line) > 0) //parse header fields
 	{
+		std::cout << "|" << line << "|" << std::endl;
 		line_s = std::string(line);
 		if (line_s.find(':') == std::string::npos) //check if we are still in the headers fields
 			break ;
 		this->parseHeaderFields(line_s);
 		line = this->free_null_line(line);
 	}
-	//check if CRLF (no CRLF = error) CRLF -> line = "\r"
-	if (!line || (line && ((line[0] != '\r')  || line[1])))
+	//check if CRLF or LF (no CRLF or LF = error) CRLF -> line = "\r" LF = line = empty
+	if (!(!line || (line[0] == '\r' && !line[1])))
 		this->_bad_request = true;
 	line = this->free_null_line(line);
 	// if payload-body -> read it (need testing)
@@ -73,6 +76,7 @@ int		Request::parseRequest(int fd)
 			int ret = get_next_line(this->_fd, &line);
 			if (line)
 			{
+				std::cout << "|" << line << "|" << std::endl;
 				this->_body.append(std::string(line));
 				if (ret > 0)
 					this->_body.append("\n");
@@ -123,6 +127,7 @@ void		Request::parseHeaderFields(std::string line)
 			while (ft_isspace(*(value.end() - 1))) // handle OWS between field-value and CRLF
 				value.erase(value.end() - 1);
 			it->second = value;// store header value in map
+			//std::cout << it->first << " = " << it->second << std::endl;
 		}
 		it++;
 	}

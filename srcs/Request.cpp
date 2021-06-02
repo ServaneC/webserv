@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 16:24:45 by schene            #+#    #+#             */
-/*   Updated: 2021/05/18 15:41:20 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/01 13:32:17 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,7 @@ void		Request::parseRequestLine(std::string line)
 	// request-line = method SP request-target SP HTTP-version CRLF
 	this->_method = line.substr(0, line.find(' ')); // parse method
 	line.erase(0, line.find(' ') + 1);
-	if (ft_isspace(line[0]))
+	if (isspace(line[0]))
 		this->_bad_request = true;
 	std::string tmp = line.substr(0, line.find(' ')); //parse request-target
 	if (tmp.compare(0, 7, "http://") == 0)
@@ -105,7 +105,7 @@ void		Request::parseRequestLine(std::string line)
 	}
 	this->_target = tmp;
 	line.erase(0, line.find(' ') + 1);
-	if (ft_isspace(line[0]))
+	if (isspace(line[0]))
 		this->_bad_request = true;
 	this->_http_version = line.substr(0, line.find('\r')); //set http version
 }
@@ -114,7 +114,7 @@ void		Request::parseHeaderFields(std::string line)
 {
 	std::string field_name = line.substr(0, line.find(':')); //parse field_name
 		
-	if (ft_isspace(field_name[field_name.size() - 1])) //No whitespace is allowed between the header field-name and colon
+	if (isspace(field_name[field_name.size() - 1])) //No whitespace is allowed between the header field-name and colon
 		this->_bad_request = true;
 	std::map<std::string, std::string>::iterator it = this->_headers.begin();
 	while (it != this->_headers.end())
@@ -122,9 +122,9 @@ void		Request::parseHeaderFields(std::string line)
 		if (field_name.compare(it->first) == 0 && it->second.empty())
 		{
 			std::string value = line.substr(line.find(':') + 2, line.find('\r'));
-			while (ft_isspace(value[0])) // handle OWS between ':' and field-value
+			while (isspace(value[0])) // handle OWS between ':' and field-value
 				value.erase(0, 1);
-			while (ft_isspace(*(value.end() - 1))) // handle OWS between field-value and CRLF
+			while (isspace(*(value.end() - 1))) // handle OWS between field-value and CRLF
 				value.erase(value.end() - 1);
 			it->second = value;// store header value in map
 			//std::cout << it->first << " = " << it->second << std::endl;

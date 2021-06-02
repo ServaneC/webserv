@@ -4,38 +4,16 @@ Webserv
 Simplification des RFC: https://docs.google.com/document/d/1_hyiqjK-wjBFPsQX040qw0_vOuAsTEjliU7gOI8rHkk/edit?usp=sharing
 Fonctions: https://docs.google.com/document/d/1kAKD5ucdXaoeX5MRfoqCjVR78kADcq030BgyIGOLoUk/edit?usp=sharing
 
-Objectif: Validé avant le WED (21 mai) un jour avant le blackhole
+La libft n'est plus autorisé !
+Authorized functions: everything in c++98
+htons, htonl, ntohs, ntohl, select, poll, epoll, kqueue, socket, accept, listen, send, recv, bind, connect, inet_addr, setsockopt, getsockname, fcntl
 
-‼️ Changement du sujet le 01/06/2021
-
-Authorized functions:
-
-accept, bind, chdir, close, closedir, connect, dup, dup2, errno, execve, exit, fcntl, fork, free, fstat, getcwd, getsockname, gettimeofday, htonl, htons, inet_addr, kill, listen, lseek, lstat,malloc, mkdir, ntohl, ntohs, open, opendir, pipe, read, readdir, recv, rmdir, select, send, setsockopt, signal, socket, stat, strerror, strftime, strptime, unlink, usleep, wait, wait3, wait4, waitpid, write
-
-Authorized headers:
-// Including this header may automatically include other headers, such as <ios>, <streambuf>, <istream>, <ostream> and/or <iosfwd>.
-iostream -> http://www.cplusplus.com/reference/iostream/
-string -> http://www.cplusplus.com/reference/string/
-vector / list / queue / stack / map
-algorithm -> http://www.cplusplus.com/reference/algorithm/
-exception -> http://www.cplusplus.com/reference/exception/
-ctime -> http://www.cplusplus.com/reference/ctime/
-cstring -> http://www.cplusplus.com/reference/cstring/
 HTTP Methods :
 
 Minimum in a webserv:
 -> GET
--> HEAD
-
-Tested in the tester:
 -> POST
--> PUT
-
-apparently also required:
 -> DELETE
--> CONNECT
--> OPTION
--> TRACE
 
 Vm = little endian
 
@@ -211,7 +189,6 @@ Tester mac:
 	-> des fois tout passe et des fois ca bloque a POST… 😡
 
 
-
 27/04/2021
 - [x] mettre dans une fonction a part le parsing des headers field dans request
 	+ ajout d’une fonction free_null_line
@@ -279,8 +256,14 @@ pistes pour le parsing:
     - [x] revoir la fonction parse_cgi_buf()
 	✅ Résolu -> je returnais si le buf n’étais pas empty donc forcément ca returnais a chaque fois… 🙄
 
+01/06/2021 (NEW SUBJECT !)
+- [x] comprendre ce qu'est 'poll' => variation de select ( a voir si c'est mieux)
+- [ ] modifier le code afin de ne plus utiliser la libft puis la retirer complètement
+	-> ft_isspace -> isspaxe
+	-> ! PB: gnl n'est plus utilisable, il faut donc revoir tout les appels a gnl
+	-> il faut surement remplacer par l'utilisation des streams
+	-> pb: stream ne marche pas sur les fd, il faut probablement lire toutes la requete et ensuite la parser
 
-- [ ] tester dautre méthodes !
 
 - [ ] Utiliser les exceptions !
 -> peut être continuer avec un seul serveur ?

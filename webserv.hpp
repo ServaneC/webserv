@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 15:34:32 by schene            #+#    #+#             */
-/*   Updated: 2021/04/30 09:53:25 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/01 13:28:06 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,8 @@ extern "C"
 # include <exception>
 # include <ctime>
 # include <cstring>
+# include <cctype>
+# include <fstream>
 
 class	Server;
 class	Request;

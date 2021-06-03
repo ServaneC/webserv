@@ -20,9 +20,9 @@ Response::Response(myCGI &my_CGI, int socket) :
 	this->parse_cgi_buf();
 	this->_headers["Allow"] = std::string();
 	this->_headers["Content-Language"] = std::string();
-	char *size = ft_itoa(this->_buf.size()); // maybe need modify that
-	this->_headers["Content-Length"] = std::string(size);
-	free(size);
+	//char *size = itoa(this->_buf.size()); // maybe need modify that
+	//this->_headers["Content-Length"] = std::string(size);
+	//free(size);
 	this->_headers["Content-Location"] = std::string();
 	this->setDate();
 	this->setLastModified();

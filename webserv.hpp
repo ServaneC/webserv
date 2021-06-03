@@ -19,11 +19,6 @@
 #ifndef WEBSERV_HPP
 # define WEBSERV_HPP
 
-extern "C" 
-{
-  #include "libft/include/libft.h"
-}
-
 // # include <arpa/inet.h>
 // # include <stdlib.h>
 # include <sys/wait.h>
@@ -44,6 +39,7 @@ extern "C"
 # include <ctime>
 # include <cstring>
 # include <cctype>
+// # include <cstdlib>
 # include <fstream>
 
 class	Server;

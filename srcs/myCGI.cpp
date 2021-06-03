@@ -83,7 +83,9 @@ char	**myCGI::env_to_char_array()
 	for (std::map<std::string, std::string>::const_iterator it = _env.begin(); it != _env.end(); it++) 
 	{
 		std::string	element = it->first + "=" + it->second;
-		array[j] = ft_strdup((char *)element.c_str()); //cast bc c_str() = const char *
+		if (!(array[j] = (char *)malloc(sizeof(char) * element.size() + 1)))
+			return NULL;
+		array[j] = strcpy(array[j], element.c_str()); //cast bc c_str() = const char *
 		j++;
 	}
 	array[j] = NULL;

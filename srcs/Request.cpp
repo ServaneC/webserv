@@ -12,7 +12,9 @@
 
 #include "include/Request.hpp"
 
-Request::Request() : _bad_request(false) //init header map
+#define CHUNK_SIZE 512
+
+Request::Request() : _bad_request(false)//init header map
 {
 	this->_headers["Accept-Charsets"] = std::string();
 	this->_headers["Accept-Language"] = std::string();
@@ -29,43 +31,44 @@ Request::Request() : _bad_request(false) //init header map
 Request::~Request()
 {
 	this->_headers.clear();
-	close(this->_fd);
+	//close(this->_socket);
 }
 
-int		Request::parseRequest(int fd)
+int		Request::parseRequest(int socket)
 {
-	char		*line = NULL;
+	this->_socket = socket;
+	if (this->recvRequest() < 0)
+		return -1;
+	// char		*line = NULL;
 	
-	this->_bad_request = false;
-	this->_fd = fd;
-	std::string line_s;
+	// this->_bad_request = false;
+	// this->_fd = fd;
+	// std::string line_s;
 	
 	std::cout << "========= REQUEST =========" << std::endl;
-	//while because "ignore at least one CRLF before request line"
-	while (get_next_line(this->_fd, &line) > 0) // parse request line
+	std::cout << this->_request << std::endl;
+	std::cout << "========= END OF REQUEST =========" << std::endl;
+	// //while because "ignore at least one CRLF before request line"
+	while (gnlRequest() > 0)
 	{
-		std::cout << line << std::endl;
-		line_s = std::string(line);
-		if (!(line_s[0] == '\r' || line_s.empty()))
+		std::cout << this->_line << std::endl;
+		if (!(this->_line[0] == '\r' || this->_line.empty()))
 		{
-			this->parseRequestLine(line_s);
+			this->parseRequestLine(this->_line);
 			break ;
 		}
-		line = this->free_null_line(line);
+		//line = this->free_null_line(line);
 	}
-	while (get_next_line(this->_fd, &line) > 0) //parse header fields
+	while (gnlRequest() > 0)
 	{
-		std::cout << "|" << line << "|" << std::endl;
-		line_s = std::string(line);
-		if (line_s.find(':') == std::string::npos) //check if we are still in the headers fields
-			break ;
-		this->parseHeaderFields(line_s);
-		line = this->free_null_line(line);
+		std::cout << "|" << this->_line << "|" << std::endl;
+	 	if (this->_line.find(':') == std::string::npos) //check if we are still in the headers fields
+	 		break ;
+	 	this->parseHeaderFields(this->_line);
 	}
-	//check if CRLF or LF (no CRLF or LF = error) CRLF -> line = "\r" LF = line = empty
-	if (!(!line || (line[0] == '\r' && !line[1])))
-		this->_bad_request = true;
-	line = this->free_null_line(line);
+	// //check if CRLF or LF (no CRLF or LF = error) CRLF -> line = "\r" LF = line = empty
+	if (!(this->_line.empty() || (this->_line[0] == '\r' && !this->_line[1])))
+	 	this->_bad_request = true;
 	// if payload-body -> read it (need testing)
 	if (!this->getHeaderField("Content-Length").empty() || 
 			!this->getHeaderField("Transfer-Encoding").empty())
@@ -73,21 +76,58 @@ int		Request::parseRequest(int fd)
 	{
 		while (1)
 		{
-			int ret = get_next_line(this->_fd, &line);
-			if (line)
+			int ret = this->gnlRequest();
+			if (!this->_line.empty())
 			{
-				std::cout << "|" << line << "|" << std::endl;
-				this->_body.append(std::string(line));
+				std::cout << "|" << this->_line << "|" << std::endl;
+				this->_body.append(std::string(this->_line));
 				if (ret > 0)
 					this->_body.append("\n");
-				line = this->free_null_line(line);
 			}
 			if (ret == -1)
 				break ;
 		}
 	}
+	this->_request.clear();
+	std::cout << "method = " << this->_method << std::endl;
 	return 1;
 }
+
+int		Request::recvRequest()
+{
+	char *recv_buf;
+	int  recv_ret;
+
+	if (!(recv_buf = (char *)malloc (sizeof(char) * CHUNK_SIZE + 1)))
+		return (-1);
+	memset(recv_buf, '\0', CHUNK_SIZE);
+	while ((recv_ret = recv(this->_socket, recv_buf, CHUNK_SIZE, 0)) > 0)
+	{
+		recv_buf[recv_ret] = '\0';
+		this->_request.append((const char *)recv_buf);
+		memset(recv_buf, '\0', recv_ret);
+		if (recv_ret < CHUNK_SIZE)
+			break ;
+	}
+	free(recv_buf);
+	recv_buf = NULL;
+	return 1;
+}
+
+int Request::gnlRequest()
+{
+	size_t pos = this->_request.find_first_of('\n');
+
+	this->_line.clear();
+	if (pos != std::string::npos)
+	{
+		this->_line = this->_request.substr(0, pos);
+		this->_request.erase(0, pos + 1);
+		return pos;
+	}
+	return (-1);
+}
+
 
 void		Request::parseRequestLine(std::string line)
 {
@@ -127,7 +167,7 @@ void		Request::parseHeaderFields(std::string line)
 			while (isspace(*(value.end() - 1))) // handle OWS between field-value and CRLF
 				value.erase(value.end() - 1);
 			it->second = value;// store header value in map
-			//std::cout << it->first << " = " << it->second << std::endl;
+			std::cout << it->first << " = " << it->second << std::endl;
 		}
 		it++;
 	}

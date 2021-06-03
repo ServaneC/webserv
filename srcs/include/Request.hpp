@@ -18,14 +18,19 @@
 class Request
 {
 	private:
-		int									_fd;
+		//int									_fd;
+		int									_socket;
 		bool								_bad_request;
+		std::string							_request;
+		std::string							_line;
 		std::string							_method;
 		std::string							_target;
 		std::string 						_http_version;
 		std::map<std::string, std::string>	_headers;
 		std::string							_body;
 
+		int			recvRequest();
+		int			gnlRequest();
 		void		parseRequestLine(std::string line);
 		void		parseHeaderFields(std::string line);
 		char		*free_null_line(char *line);
@@ -35,7 +40,7 @@ class Request
 		~Request();
 		// Request 	&operator=(Request const &rhs);
 
-		int		parseRequest(int fd);
+		int		parseRequest(int socket);
 
 		std::string const	&getMethod() const;
 		std::string const	&getTarget() const;

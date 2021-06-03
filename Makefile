@@ -22,13 +22,9 @@ OBJS		= $(addprefix $(OBJDIR)/, $(SRCS:.cpp=.o))
 
 DPDCS		= $(OBJS:.o=.d)
 
-INCLUDES = -I include/ -I libft/include/
-
-LIB = libft/libft.a
+INCLUDES = -I include/
 
 CFLAGS		= -Wall -Wextra -Werror -std=c++98 -fsanitize=address
-
-LIBFT_FLAGS = 	-Llibft -lft
 
 RM			= rm -f
 
@@ -38,7 +34,6 @@ opti:
 	@make -j all
 
 all : 
-	@printf "[libft] " && make -C libft
 	@make $(NAME)
 
 -include $(DPDCS)
@@ -64,14 +59,9 @@ $(OBJDIR)/%.o : $(SRCSDIR)/%.cpp | $(OBJDIR)
 
 clean :
 			@(rm -rf $(OBJDIR))
-			@(make clean -C libft)
 
-cleanlib :
-			@(make fclean -C libft)
-
-fclean :	cleanlib clean
+fclean :	clean
 			@(rm -rf $(NAME))
-			@(rm -f libft.a)
 			@(rm -rf a.out.dSYM)
 			@(rm -f a.out)
 

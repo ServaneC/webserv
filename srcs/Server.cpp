@@ -35,7 +35,7 @@ Server::~Server()
 
 void	Server::start_server()
 {    
-    if (bind(this->_socket, (struct sockaddr *)&this->_host, sizeof(this->_host)) < 0)
+    if (bind(this->_socket, (struct sockaddr *)&this->_host, this->_addrlen) < 0)
     {
         perror("In bind");
         exit(EXIT_FAILURE);
@@ -46,7 +46,7 @@ void	Server::start_server()
         exit(EXIT_FAILURE);
     }
 
-    fd_set current_sockets, ready_sockets;
+    fd_set current_sockets, read_sockets, write_sockets;
 
     //initialize my current set
     FD_ZERO(&current_sockets);
@@ -54,16 +54,18 @@ void	Server::start_server()
 
     while (1)
     {
-        ready_sockets = current_sockets; //because select is destructive        
-        if (select(FD_SETSIZE, &ready_sockets, NULL, NULL, NULL) < 0)
+        read_sockets = current_sockets; //because select is destructive        
+        write_sockets = current_sockets; //because select is destructive        
+        if (select(FD_SETSIZE, &read_sockets, &write_sockets, NULL, NULL) < 0)
         {
             perror("In select");
             exit(EXIT_FAILURE);  
         }
         for (int i = 0; i < FD_SETSIZE; i++)
         {
-            if (FD_ISSET(i, &ready_sockets))
+            if (FD_ISSET(i, &read_sockets))
             {
+                std::cout << "isset write ? " << FD_ISSET(i, &write_sockets) << std::endl;
                 if (i == this->_socket)
                 {
                     if ((this->_client_socket = accept(this->_socket, (struct sockaddr *)&this->_host, (socklen_t*)&this->_addrlen))<0)
@@ -73,10 +75,9 @@ void	Server::start_server()
                     }
                     FD_SET(this->_client_socket, &current_sockets);
                 }
-                else
+                else if (FD_ISSET(i, &write_sockets))
                 {
                     fcntl(this->_client_socket, F_SETFL, O_NONBLOCK);
-                    
                     this->_rqst.parseRequest(this->_client_socket);
                     execCGI((*this));
                     close(this->_client_socket);

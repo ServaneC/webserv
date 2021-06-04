@@ -291,8 +291,8 @@ pistes pour le parsing:
 - [x] faire un conf file pour ensuite le parser -> webserv.conf
 - [ ] comment parser le conf file ?
 	-> il va fallor modifier la classe server pour qu'elle puisse stocker toutes les infos du conf file
-	- probablement qu'il faudras une classe au dessus de Server pour gerer tous les serveurs
-	
+	- probablement qu'il faudras une classe au dessus de Server pour gérer tous les serveurs
+
 
 ================================== NOTES ==================================
 

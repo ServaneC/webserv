@@ -12,6 +12,8 @@
 
 #include "include/Config.hpp"
 
+# define BUFF_SIZE
+
 Config::Config()
 {
 
@@ -24,12 +26,17 @@ Config::~Config()
 
 void	Config::parseConfFile(char const *path)
 {
-	int fd;
-	// char *line = NULL;
+	std::fstream conf_stream(path, std::ios_base::in); //open file for reading
+	//char *line = NULL;
 	// int ret;
 	// struct stat info;
-
-	fd = open(path, O_RDONLY);
+	//if (!(line = malloc(sizeof(char) * BUFF_SIZE)))
+	//	return -1;
+	//while (1)
+	//{
+	//	conf_stream.getline(line, BUFF_SIZE);
+	//	if ()
+	//}
 	// if (fd < 0)
 	// {
 	// 	perror("can't open conf file");
@@ -50,5 +57,5 @@ void	Config::parseConfFile(char const *path)
 	// 	free(line);
 	// }	
 	// std::cout << this->_content << std::endl;
-	close(fd);
+	conf_stream.close();
 }

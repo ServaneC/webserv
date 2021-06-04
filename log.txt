@@ -277,8 +277,24 @@ pistes pour le parsing:
 - [x] enlever la libft
 	-> pb avec itoa dans response (j'ai commenter en attendant de trouver mieux)
 	-> pb avec strdup dans myCGI (env_to_char_array), j'ai fait un mini strdup pas ouf dans la fonction
-- [ ] tester dans la vm 
 
+
+04/06/2021 
+- [x] tester dans la vm -> ça marche tres bien
+- [x] voir pour remplacer ou faire autrement pour itoa
+	-> creation de la foncton itoa_cpp qui utilise une stream
+- [x] modifier le env to char array -> en fait c'est pas si mal
+- [>] remplacer select par poll
+	-> poll est plus performant que select (et il a l'air plus simple a comprendre)
+	-> epoll pourrait aussi être  interessant mais c'est specifique a linux
+	=> A faire apres le parsing du conf file quandd on aura plusieurs server a gérer
+- [x] faire un conf file pour ensuite le parser -> webserv.conf
+- [ ] comment parser le conf file ?
+	-> il va fallor modifier la classe server pour qu'elle puisse stocker toutes les infos du conf file
+	- probablement qu'il faudras une classe au dessus de Server pour gerer tous les serveurs
+	
+
+================================== NOTES ==================================
 
 To do:
 - [ ] Parse le conf file
@@ -288,8 +304,7 @@ To do:
 - [x] Create response + send it
 - [x] Stocker les header fields dans un  container map
 - [ ] Throw exception (ex: in getHeaderField()
-- [ ] Associer ctrl_C a unlink ?
-- [ ] Utiliser recv ?
+- [x] Utiliser recv ?
 - [ ] Gérer les chunk request
 - [ ] Implémenter HEAD et les autres méthodes
 - [ ] Recoder l’appel au cgi (pour l’instant c’est un cp de GitHub 😬)

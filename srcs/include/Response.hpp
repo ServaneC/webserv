@@ -18,7 +18,7 @@
 class Response
 {
 	private:
-		myCGI								&_cgi;
+		execCGI								&_cgi;
 		int									_socket;
 		std::string							_buf;
 		std::string							_response;
@@ -31,9 +31,10 @@ class Response
 		void		writeStatusLine();
 		void		send_response();
 		void		format_header();
+		std::string	itoa_cpp(int n);
 
 	public:
-		Response(myCGI &my_CGI, int socket);
+		Response(execCGI &my_CGI, int socket);
 		~Response();
 };
 

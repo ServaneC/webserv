@@ -31,7 +31,7 @@ Request::Request() : _bad_request(false)//init header map
 Request::~Request()
 {
 	this->_headers.clear();
-	//close(this->_socket);
+	close(this->_socket);
 }
 
 int		Request::parseRequest(int socket)

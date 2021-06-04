@@ -23,7 +23,6 @@ Server::Server(std::string conf_file) : _rqst(*(new Request)), _conf(*(new Confi
     this->_host.sin_port = htons(this->_port);
     this->_addrlen = sizeof(this->_host);
     this->_socket = socket(PF_INET, SOCK_STREAM, 0);
-
     this->start_server();
 }
 
@@ -79,7 +78,7 @@ void	Server::start_server()
                     fcntl(this->_client_socket, F_SETFL, O_NONBLOCK);
                     
                     this->_rqst.parseRequest(this->_client_socket);
-                    myCGI((*this));
+                    execCGI((*this));
                     close(this->_client_socket);
                     FD_CLR(i, &current_sockets);
                 }

@@ -12,7 +12,7 @@
 
 #include "include/Response.hpp"
 
-Response::Response(myCGI &my_CGI, int socket) :  
+Response::Response(execCGI &my_CGI, int socket) :  
 	_cgi(my_CGI), _socket(socket), _buf(my_CGI.getBuf())
 {
 	// my_CGI.free_buf();
@@ -20,9 +20,7 @@ Response::Response(myCGI &my_CGI, int socket) :
 	this->parse_cgi_buf();
 	this->_headers["Allow"] = std::string();
 	this->_headers["Content-Language"] = std::string();
-	//char *size = itoa(this->_buf.size()); // maybe need modify that
-	//this->_headers["Content-Length"] = std::string(size);
-	//free(size);
+	this->_headers["Content-Length"] = this->itoa_cpp(this->_buf.size());
 	this->_headers["Content-Location"] = std::string();
 	this->setDate();
 	this->setLastModified();
@@ -123,4 +121,11 @@ void			Response::send_response()
 	// Actually sending to socket
 	send(this->_socket, this->_response.c_str(), this->_response.size(), 0);
 	this->_cgi.free_buf();
+}
+
+std::string	Response::itoa_cpp(int n)
+{
+	std::ostringstream convert;
+	convert << n;
+	return (convert.str());
 }

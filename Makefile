@@ -16,7 +16,7 @@ SRCSDIR		=  srcs
 
 OBJDIR		= .obj
 
-SRCS		= Server.cpp main.cpp Request.cpp myCGI.cpp Response.cpp Config.cpp
+SRCS		= Server.cpp main.cpp Request.cpp execCGI.cpp Response.cpp Config.cpp
 
 OBJS		= $(addprefix $(OBJDIR)/, $(SRCS:.cpp=.o))
 

@@ -41,16 +41,17 @@
 # include <cctype>
 // # include <cstdlib>
 # include <fstream>
+# include <sstream>
 
 class	Server;
 class	Request;
-class	myCGI;
+class	execCGI;
 class	Response;
 class Config;
 
 # include "srcs/include/Server.hpp"
 # include "srcs/include/Request.hpp"
-# include "srcs/include/myCGI.hpp"
+# include "srcs/include/execCGI.hpp"
 # include "srcs/include/Response.hpp"
 # include "srcs/include/Config.hpp"
 

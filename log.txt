@@ -289,12 +289,16 @@ pistes pour le parsing:
 	-> epoll pourrait aussi être  interessant mais c'est specifique a linux
 	=> A faire apres le parsing du conf file quandd on aura plusieurs server a gérer
 - [x] faire un conf file pour ensuite le parser -> webserv.conf
-- [ ] comment parser le conf file ?
-	-> il va fallor modifier la classe server pour qu'elle puisse stocker toutes les infos du conf file
-	- probablement qu'il faudras une classe au dessus de Server pour gérer tous les serveurs
+
+07/06/2021 
+-> j'ai modifié + bouger client.cpp (parce que en vrai il avait rien a faire dans les srcs) => directory client
 
 
 ================================== NOTES ==================================
+
+-> comment parser le conf file ?
+	-> il va fallor modifier la classe server pour qu'elle puisse stocker toutes les infos du conf file
+	- probablement qu'il faudras une classe au dessus de Server pour gérer tous les serveurs
 
 To do:
 - [ ] Parse le conf file

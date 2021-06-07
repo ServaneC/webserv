@@ -1,0 +1,4 @@
+GET /index.html HTTP/1.1x0D
+Host: localhost:8080x0D
+User-Agent: Go-http-client/1.1x0D
+Accept-Encoding: gzipx0D

@@ -292,7 +292,12 @@ pistes pour le parsing:
 
 07/06/2021 
 -> j'ai modifié + bouger client.cpp (parce que en vrai il avait rien a faire dans les srcs) => directory client
-
+-> le cgi est php-cgi et marche aussi sur mac 
+	-> j'ai testé avec GET ca marche nickel
+		=> Du coup j'ai supprimé la fonction execGET
+	-> j'ai fait quelque test pour POST mais je comprend pas grand chose et du coup ca marche pas
+	-> j'ai l'impression que quelque soit la méthode ca repond comme un GET
+	
 
 ================================== NOTES ==================================
 

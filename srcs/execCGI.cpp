@@ -91,38 +91,6 @@ char	**execCGI::env_to_char_array()
 	return array;
 }
 
-void		execCGI::execGET()
-{
-	struct stat info;
-
-	//we remove the '/' at the beginning of the path
-	std::string 	path = this->_env["PATH_INFO"].substr(1, this->_env["PATH_INFO"].size());
-	int fd = open(path.c_str() , O_RDONLY);
-	if (fd == -1)
-	{
-		if (errno == 2)
-		{
-			this->_env["STATUS_CODE"] = "404 Not Found";
-			return ;
-		}
-		perror("open failed");
-		exit(EXIT_FAILURE);
-	}
-	fstat(fd, &info);
-	int size = info.st_size;
-	this->_last_modified = info.st_mtime;
-	std::cout << "size = " << size << std::endl;
-	if (!(this->_buf = (char *)malloc(sizeof(char) * (size + 1))))
-		exit(EXIT_FAILURE);
-	if (read(fd, this->_buf, size) < 0)
-	{
-		perror("read failed");
-		exit(EXIT_FAILURE);
-	}
-	this->_buf[size] = 0;
-	close(fd);
-}
-
 void	execCGI::exec_CGI()
 {
 	std::cout << "==== method |" << this->_env["REQUEST_METHOD"] << '|' << std::endl;
@@ -134,14 +102,14 @@ void	execCGI::exec_CGI()
 		return ;
 	}		
 
-	if (this->_env["REQUEST_METHOD"] == "GET")
-		return this->execGET();
+	//if (this->_env["REQUEST_METHOD"] == "GET")
+	//	return this->execGET();
 
-	if (this->_env["REQUEST_METHOD"] == "POST" || this->_env["REQUEST_METHOD"] == "HEAD")
-	{
-		this->_env["STATUS_CODE"] = "405 Method Not Allowed";
-		return ;
-	}
+	//if (this->_env["REQUEST_METHOD"] == "POST" || this->_env["REQUEST_METHOD"] == "HEAD")
+	//{
+	//	this->_env["STATUS_CODE"] = "405 Method Not Allowed";
+	//	return ;
+	//}
 
 	char		**env_array = this->env_to_char_array();
 	pid_t		pid;
@@ -178,8 +146,10 @@ void	execCGI::exec_CGI()
 
 		dup2(fdIn, STDIN_FILENO);
 		dup2(fdOut, STDOUT_FILENO);
-		execve("/usr/bin/php-cgi", nll, env_array);
-		// execve("cgi_tester", nll, env_array);
+		// VM
+		//execve("/usr/bin/php-cgi", nll, env_array);
+		// MAC
+		execve("/usr/local/Cellar/php/8.0.7/bin/php-cgi", nll, env_array);
 		std::cerr <<  "Execve crashed." << std::endl;
 		write(STDOUT_FILENO, "Status: 500\r\n\r\n", 15);
 	}

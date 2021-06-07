@@ -29,7 +29,7 @@ class execCGI
 		void	setPathQuery();
 		char	**env_to_char_array();
 		void	exec_CGI();
-		void	execGET();
+		//void	execGET();
 
 	public:
 		execCGI(Server &serv);

@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 16:24:45 by schene            #+#    #+#             */
-/*   Updated: 2021/06/01 13:32:17 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/07 14:56:20 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ int		Request::parseRequest(int socket)
 	std::cout << "========= REQUEST =========" << std::endl;
 	std::cout << this->_request << std::endl;
 	std::cout << "========= END OF REQUEST =========" << std::endl;
-	// //while because "ignore at least one CRLF before request line"
+	//while because "ignore at least one CRLF before request line"
 	while (gnlRequest() > 0)
 	{
 		std::cout << this->_line << std::endl;
@@ -57,11 +57,10 @@ int		Request::parseRequest(int socket)
 			this->parseRequestLine(this->_line);
 			break ;
 		}
-		//line = this->free_null_line(line);
 	}
 	while (gnlRequest() > 0)
 	{
-		std::cout << "|" << this->_line << "|" << std::endl;
+		std::cout << this->_line << std::endl;
 	 	if (this->_line.find(':') == std::string::npos) //check if we are still in the headers fields
 	 		break ;
 	 	this->parseHeaderFields(this->_line);
@@ -89,7 +88,7 @@ int		Request::parseRequest(int socket)
 		}
 	}
 	this->_request.clear();
-	std::cout << "method = " << this->_method << std::endl;
+	std::cout << this->_body << std::endl;
 	return 1;
 }
 

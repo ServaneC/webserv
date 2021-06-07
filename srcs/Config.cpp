@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/30 09:49:40 by schene            #+#    #+#             */
-/*   Updated: 2021/06/07 18:30:14 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/06/07 19:45:31 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ Config::Config(std::string conf_file) : _servers()
 Config::~Config()
 {
 	this->_content.clear();
+	this->_servers.clear();
 }
 
 int 	Config::readConfFile(char const *path)
@@ -66,7 +67,6 @@ void	Config::createServers(void)
 {
 	size_t last_found = _content.find("server", 0);
 	
-	std::cout << (last_found = _content.find("server", last_found)) << std::endl;
 	while (last_found < _content.size() && last_found < std::string::npos)
 	{
 		std::string single_server_conf = singleServerConfig(last_found);

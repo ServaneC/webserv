@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 11:20:51 by schene            #+#    #+#             */
-/*   Updated: 2021/06/07 16:28:24 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/06/07 19:39:56 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ class Server
 {
 	private:
 		Request								&_rqst;
-		Config								&_conf;
+		Config								&_main_conf;
 		std::string							_server_conf;
 		// std::string							_buf;
 		int									_port;
@@ -40,6 +40,8 @@ class Server
 		int			getFd() const;
 		int			getSocket() const;
 		Request		&getRequest() const;
+		std::string parsingName() const;
+		int			parsingPort() const;
 };
 
 #endif

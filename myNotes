@@ -1,0 +1,37 @@
+NOTES ON WEBSERV :
+
+--> [XSI] Structure used by kernel to store most addresses.
+    struct sockaddr {
+        __uint8_t       sa_len;         /* total length */
+        sa_family_t     sa_family;      /* [XSI] address family */
+        char            sa_data[14];    /* [XSI] addr value (actually larger) */
+    };
+--> Socket address, internet style.
+    struct sockaddr_in {
+        __uint8_t       sin_len;
+        sa_family_t     sin_family;
+        in_port_t       sin_port;
+        struct  in_addr sin_addr;
+        char            sin_zero[8];
+    };
+--> Structure used to store a set of fd.
+    typedef struct fd_set {
+        __int32_t       fds_bits[__DARWIN_howmany(__DARWIN_FD_SETSIZE, __DARWIN_NFDBITS)];
+    } fd_set;
+
+
+FORMAT FOR HTTP REQUESTS
+    1) A Request-line
+        Method <space> Request-URI <space> HTTP-Version <CRLF>
+    2) Zero or more header fields (General|Request|Entity) followed by CRLF
+        Accept-Charset // Accept-Encoding // Accept-Language // Authorization // Expect //
+        From // Host // If-Match // If-Modified-Since // If-None-Match // If-Range //
+        If-Unmodified-Since // Max-Forwards // Proxy-Authorization // Range // Referer //
+        TE // User-Agent
+    3) An empty line indicating the end of the header fields (= nothing preceding CRLF) 
+    4) Optionally a message-body
+ yo
+
+
+Replace memset by std::fill ?
+Maybe don't initialize header fields and just accept any that is given. 

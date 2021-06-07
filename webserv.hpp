@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
+/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 15:34:32 by schene            #+#    #+#             */
-/*   Updated: 2021/06/01 13:28:06 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/07 16:30:49 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@
 # include <iostream>
 # include <string>
 # include <map>
+# include <list>
 # include <algorithm>
 # include <exception>
 # include <ctime>
@@ -47,7 +48,9 @@ class	Server;
 class	Request;
 class	execCGI;
 class	Response;
-class Config;
+class   Config;
+
+size_t  findClosingBracket(std::string str, size_t begin);
 
 # include "srcs/include/Server.hpp"
 # include "srcs/include/Request.hpp"

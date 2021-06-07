@@ -1,34 +1,29 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Config.hpp                                         :+:      :+:    :+:   */
+/*   parsing_utils.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/04/30 09:47:15 by schene            #+#    #+#             */
-/*   Updated: 2021/06/07 16:29:00 by lemarabe         ###   ########.fr       */
+/*   Created: 2021/06/07 15:29:12 by lemarabe          #+#    #+#             */
+/*   Updated: 2021/06/07 18:30:33 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef CONFIG_HPP
-# define CONFIG_HPP
+#include "../webserv.hpp"
 
-#include "../../webserv.hpp"
-
-class Config
+size_t findClosingBracket(std::string str, size_t begin)
 {
-	private:
-		Config();
-		std::string			_content;
-		std::list<Server*>	_servers;
-		std::string singleServerConfig(size_t index);
-
-	public:
-		Config(std::string conf_file);
-		~Config();
-
-		int 	readConfFile(char const *path);
-		void	createServers(void);
-};
-
-#endif
+	size_t end = begin + 1;
+	size_t count = 1;
+	
+    while (count && str[end] && end != std::string::npos)
+    {
+        end = str.find_first_of("{}", end + 1);
+        if (str[end] == '{')
+            count++;
+        else
+            count--;
+    }
+	return (end);
+}

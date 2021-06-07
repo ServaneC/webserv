@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: schene <schene@student.42.fr>              +#+  +:+       +#+         #
+#    By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/25 14:21:19 by schene            #+#    #+#              #
-#    Updated: 2021/04/30 10:09:26 by schene           ###   ########.fr        #
+#    Updated: 2021/06/07 16:30:24 by lemarabe         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,7 +16,7 @@ SRCSDIR		=  srcs
 
 OBJDIR		= .obj
 
-SRCS		= Server.cpp main.cpp Request.cpp execCGI.cpp Response.cpp Config.cpp
+SRCS		= Server.cpp main.cpp Request.cpp execCGI.cpp Response.cpp Config.cpp parsing_utils.cpp
 
 OBJS		= $(addprefix $(OBJDIR)/, $(SRCS:.cpp=.o))
 

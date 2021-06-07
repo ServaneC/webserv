@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
+/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 11:20:51 by schene            #+#    #+#             */
-/*   Updated: 2021/04/30 10:18:09 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/07 16:28:24 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ class Server
 	private:
 		Request								&_rqst;
 		Config								&_conf;
+		std::string							_server_conf;
 		// std::string							_buf;
 		int									_port;
 		std::string 						_name;
@@ -31,7 +32,7 @@ class Server
 		void	start_server();
 			
 	public:
-		Server(std::string conf_file);
+		Server(Config &conf, std::string conf_file);
 		~Server();
 
 		int			getPort() const;

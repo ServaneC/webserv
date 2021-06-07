@@ -3,19 +3,20 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
+/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/04/30 10:18:28 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/07 18:25:58 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/Server.hpp"
 
-Server::Server(std::string conf_file) : _rqst(*(new Request)), _conf(*(new Config))
+Server::Server(Config &conf, std::string server_conf) : _rqst(*(new Request)), _conf(conf), _server_conf(server_conf)
 {
-    (void)conf_file;
-    this->_conf.parseConfFile(conf_file.c_str());
+    // (void)conf_file;
+    // this->_conf.parseConfFile(conf_file.c_str());
+    std::cout << "* CREATING SERVER *" <<std::endl;
     this->_port = 8080;
     this->_name = "localhost";
     this->_host.sin_family = PF_INET;
@@ -23,7 +24,9 @@ Server::Server(std::string conf_file) : _rqst(*(new Request)), _conf(*(new Confi
     this->_host.sin_port = htons(this->_port);
     this->_addrlen = sizeof(this->_host);
     this->_socket = socket(PF_INET, SOCK_STREAM, 0);
-    this->start_server();
+    // std::cout << "* STARTING SERVER *" <<std::endl;
+    // this->start_server();
+    // std::cout << "* SUCCESS *" <<std::endl;
 }
 
 Server::~Server()

@@ -15,7 +15,6 @@
 Server::Server(Config &conf, std::string server_conf) : _rqst(*(new Request)), _main_conf(conf), _server_conf(server_conf)
 {
     // (void)conf_file;
-    // this->_conf.parseConfFile(conf_file.c_str());
     std::cout << "* CREATING SERVER *" <<std::endl;
     // this->_port = 8080;
     this->_port = parsingPort();
@@ -23,13 +22,32 @@ Server::Server(Config &conf, std::string server_conf) : _rqst(*(new Request)), _
     // this->_name = "localhost";
     this->_name = parsingName();
     std::cout << "- ServerName = " << _name << std::endl;
+
+    this->_socket = socket(PF_INET, SOCK_STREAM, 0);
     this->_host.sin_family = PF_INET;
     this->_host.sin_addr.s_addr = INADDR_ANY; // -> 0.0.0.0
     this->_host.sin_port = htons(this->_port);
     this->_addrlen = sizeof(this->_host);
-    this->_socket = socket(PF_INET, SOCK_STREAM, 0);
+
+    int enable = 1;
+    if (setsockopt(this->_socket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
+    {
+        perror("setsockopt(SO_REUSEADDR) failed");
+        exit(EXIT_FAILURE);  
+    }
+    fcntl(this->_socket, F_SETFL, O_NONBLOCK);
+    if (bind(this->_socket, (struct sockaddr *)&this->_host, this->_addrlen) < 0)
+    {
+        perror("In bind");
+        exit(EXIT_FAILURE);
+    }
+    if (listen(this->_socket, 10) < 0)
+    {
+        perror("In listen");
+        exit(EXIT_FAILURE);
+    }
     // std::cout << "* STARTING SERVER *" <<std::endl;
-    // this->start_server();
+    //this->start_server();
     // std::cout << "* SUCCESS *" <<std::endl;
 }
 
@@ -40,61 +58,23 @@ Server::~Server()
     // free(&this->_rqst);
 }
 
-void	Server::start_server()
+int 	Server::exec_accept()
 {    
-    if (bind(this->_socket, (struct sockaddr *)&this->_host, this->_addrlen) < 0)
-    {
-        perror("In bind");
-        exit(EXIT_FAILURE);
-    }    
-    if (listen(this->_socket, 10) < 0)
-    {
-        perror("In listen");
-        exit(EXIT_FAILURE);
-    }
-
-    fd_set current_sockets, read_sockets, write_sockets;
-
-    //initialize my current set
-    FD_ZERO(&current_sockets);
-    FD_SET(this->_socket, &current_sockets);
-
-    while (1)
-    {
-        read_sockets = current_sockets; //because select is destructive        
-        write_sockets = current_sockets; //because select is destructive        
-        if (select(FD_SETSIZE, &read_sockets, &write_sockets, NULL, NULL) < 0)
+        if ((this->_client_socket = accept(this->_socket, (struct sockaddr *)&this->_host, (socklen_t*)&this->_addrlen))<0)
         {
-            perror("In select");
-            exit(EXIT_FAILURE);  
+            perror("In accept");
+            exit(EXIT_FAILURE);
         }
-        for (int i = 0; i < FD_SETSIZE; i++)
-        {
-            if (FD_ISSET(i, &read_sockets))
-            {
-                std::cout << "isset write ? " << FD_ISSET(i, &write_sockets) << std::endl;
-                if (i == this->_socket)
-                {
-                    if ((this->_client_socket = accept(this->_socket, (struct sockaddr *)&this->_host, (socklen_t*)&this->_addrlen))<0)
-                    {
-                        perror("In accept");
-                        exit(EXIT_FAILURE);
-                    }
-                    FD_SET(this->_client_socket, &current_sockets);
-                }
-                else if (FD_ISSET(i, &write_sockets))
-                {
-                    fcntl(this->_client_socket, F_SETFL, O_NONBLOCK);
-                    this->_rqst.parseRequest(this->_client_socket);
-                    execCGI((*this));
-                    close(this->_client_socket);
-                    FD_CLR(i, &current_sockets);
-                }
-            }
-        }
-    }
+        return (this->_client_socket);
 }
 
+void	Server::exec_server()
+{
+    fcntl(this->_client_socket, F_SETFL, O_NONBLOCK);
+    this->_rqst.parseRequest(this->_client_socket);
+    execCGI((*this));
+    close(this->_client_socket);
+}
 
 int			Server::getPort() const
 {
@@ -111,6 +91,11 @@ int			Server::getFd() const
 }
 
 int			Server::getSocket() const
+{
+    return this->_socket;
+}
+
+int			Server::getClientSocket() const
 {
     return this->_client_socket;
 }
@@ -152,4 +137,3 @@ int Server::parsingPort() const
     // std::cout << port_length << std::endl;
     return (std::atoi(_server_conf.substr(port_index, port_length).c_str()));
 }
-

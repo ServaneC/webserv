@@ -21,7 +21,10 @@ class Config
 		Config();
 		std::string			_content;
 		std::list<Server*>	_servers;
+		fd_set 				_current_sockets;
+
 		std::string 		singleServerConfig(size_t index);
+		void				startServers();
 
 	public:
 		Config(std::string conf_file);

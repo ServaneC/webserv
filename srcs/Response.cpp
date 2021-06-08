@@ -22,8 +22,8 @@ Response::Response(execCGI &my_CGI, int socket) :
 	this->_headers["Content-Language"] = std::string();
 	this->_headers["Content-Length"] = this->itoa_cpp(this->_buf.size());
 	this->_headers["Content-Location"] = std::string();
-	this->setDate();
-	this->setLastModified();
+	//this->setDate();
+	//this->setLastModified();
 	this->_headers["Location"] = std::string();
 	this->_headers["Retry-After"] = std::string();
 	this->_headers["Server"] = std::string("webserv/1.0");
@@ -39,6 +39,7 @@ Response::~Response() // memory reuse ?
 
 void		Response::parse_cgi_buf()
 {
+	std::cout << "cgi buf [" << this->_buf << ']' << std::endl;
 	if (this->_buf.empty() || this->_buf[0] == '<')
 		return ;
 	while (this->_buf.find(':') != std::string::npos)

@@ -297,7 +297,22 @@ pistes pour le parsing:
 		=> Du coup j'ai supprimé la fonction execGET
 	-> j'ai fait quelque test pour POST mais je comprend pas grand chose et du coup ca marche pas
 	-> j'ai l'impression que quelque soit la méthode ca repond comme un GET
-	
+LEILA:
+	=> modification de config et debut du parsing du conf file
+	=> modif dans main -> appel a config et non Server 
+
+
+08/06/2021 	
+(dire a leila d'ecrire dans log)
+-> voir comment gere les locations (maybe faire une classe / struct pour stocker les infos)
+	=> class is better bc we are in C++
+-> verifier ce qu'a fait leila puis merge
+	!! pas de merge tant que c'est pas fonctionnel
+	-> revoir completement start_server
+-> bon alors j'ai modifie plein de trucs et ca marche pas de ouf ca arrive a repondre a une requete avant de abort...
+=> je bosse (enfin) sur ma branche git je peux donc faire toutes les modifs que je veux tranquillou
+
+
 
 ================================== NOTES ==================================
 

@@ -23,6 +23,7 @@ class Response
 		std::string							_buf;
 		std::string							_response;
 		std::map<std::string, std::string>	_headers;
+		std::map<int,int>					_socketsMap;
 
 		void		parse_cgi_buf();
 		void		setDate();

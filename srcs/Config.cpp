@@ -20,6 +20,7 @@ Config::Config(std::string conf_file) : _servers()
 {
 	readConfFile(conf_file.c_str());
 	createServers();
+	startServers();
 }
 
 Config::~Config()
@@ -53,13 +54,13 @@ int 	Config::readConfFile(char const *path)
 
 std::string Config::singleServerConfig(size_t index)
 {
-	size_t open_bracket = _content.find_first_not_of("serv \t\n\r\v\f", index);
+	size_t open_bracket = this->_content.find_first_not_of("serv \t\n\r\v\f", index); // why "\t\n\r\v\f" ?
 	// std::cout << open_bracket << " = " << _content[open_bracket] << std::endl;
 	size_t close_bracket = findClosingBracket(_content, open_bracket);
 	// std::cout << close_bracket << " = " << _content[close_bracket] << std::endl;
 	
-	if (_content[open_bracket] == '{' && _content[close_bracket] == '}')
-		return (_content.substr(open_bracket, close_bracket - open_bracket + 1));
+	if (this->_content[open_bracket] == '{' && _content[close_bracket] == '}')
+		return (this->_content.substr(open_bracket, close_bracket - open_bracket + 1));
 	return (std::string());
 }
 
@@ -75,9 +76,54 @@ void	Config::createServers(void)
 		if (!single_server_conf.empty())
 		{
 			// std::cout << "adding one server" << std::endl;
-			_servers.push_back(new Server(*this, single_server_conf));
+			this->_servers.push_back(new Server(*this, single_server_conf));
+			//FD_SET(this->_servers.back()->getSocket(), &this->_current_sockets);
 			// std::cout << "added one server" << std::endl;
 		}
 		last_found = _content.find("server", last_found + 1);
+	}
+}
+
+void	Config::startServers()
+{
+	int ret;
+    fd_set read_sockets, write_sockets;
+	std::list<Server*>::iterator it;
+
+	FD_ZERO(&this->_current_sockets);
+	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
+	{
+		if ((*it)->getSocket() > 0)
+			FD_SET((*it)->getSocket(), &this->_current_sockets);
+	}
+
+    while (1)
+    {
+        read_sockets = this->_current_sockets; //because select is destructive        
+        write_sockets = this->_current_sockets; //because select is destructive        
+        if (select(FD_SETSIZE, &read_sockets, &write_sockets, NULL, NULL) < 0)
+        {
+            perror("In select");
+            exit(EXIT_FAILURE);  
+        }
+    	for (int i = 0; i < FD_SETSIZE; i++)
+    	{
+            if (FD_ISSET(i, &read_sockets))
+            {
+				for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
+				{
+					if (i == (*it)->getSocket())
+					{
+						ret = (*it)->exec_accept();
+						FD_SET(ret, &this->_current_sockets);
+					}
+					if (FD_ISSET(i, &write_sockets))
+					{
+						(*it)->exec_server();
+						FD_CLR(i, &this->_current_sockets);
+					}
+				}
+            }
+        }
 	}
 }

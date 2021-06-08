@@ -40,7 +40,7 @@ execCGI::execCGI(Server &serv)
 	this->_env["SERVER_SOFTWARE"] = "webserv/1.0";
 	this->exec_CGI();
 	// std::cout << "SUCCESS" << std::endl;
-	Response((*this), this->_server.getSocket());
+	Response((*this), this->_server.getClientSocket());
 }
 
 execCGI::~execCGI()
@@ -67,8 +67,8 @@ void	execCGI::setPathQuery()
 	if (this->_env["SCRIPT_NAME"].empty() || !this->_env["SCRIPT_NAME"].compare("/"))
 		this->_env["SCRIPT_NAME"] = "index.html";
 	// this->_env["QUERY_STRING"] = std::string();
-	if (target.find('?') != std::string::npos)
-		this->_env["QUERY_STRING"] = target.substr(target.find('?'), target.size()); //maybe wrong if no '?'
+	//if (target.find('?') != std::string::npos)
+	//	this->_env["QUERY_STRING"] = target.substr(target.find('?'), target.size()); //maybe wrong if no '?'
 }
 
 char	**execCGI::env_to_char_array()
@@ -147,9 +147,10 @@ void	execCGI::exec_CGI()
 		dup2(fdIn, STDIN_FILENO);
 		dup2(fdOut, STDOUT_FILENO);
 		// VM
-		//execve("/usr/bin/php-cgi", nll, env_array);
+		execve("/usr/bin/php-cgi", nll, env_array);
+		//execve("/tester/ubuntu_cgi_tester", nll, env_array);
 		// MAC
-		execve("/usr/local/Cellar/php/8.0.7/bin/php-cgi", nll, env_array);
+		//execve("/usr/local/Cellar/php/8.0.7/bin/php-cgi", nll, env_array);
 		std::cerr <<  "Execve crashed." << std::endl;
 		write(STDOUT_FILENO, "Status: 500\r\n\r\n", 15);
 	}

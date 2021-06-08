@@ -35,10 +35,13 @@ class Server
 		Server(Config &conf, std::string conf_file);
 		~Server();
 
+		int			exec_accept();
+		void			exec_server();
 		int			getPort() const;
 		std::string	getName() const;
 		int			getFd() const;
 		int			getSocket() const;
+		int			getClientSocket() const;
 		Request		&getRequest() const;
 		std::string parsingName() const;
 		int			parsingPort() const;

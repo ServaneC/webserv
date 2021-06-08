@@ -19,6 +19,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <stdlib.h>
+#include <string.h>
 
 #define PORT 8080
 

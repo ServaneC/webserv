@@ -33,5 +33,5 @@ FORMAT FOR HTTP REQUESTS
  yo
 
 
-Replace memset by std::fill ?
+Replace memset by std::fill ? 
 Maybe don't initialize header fields and just accept any that is given. 

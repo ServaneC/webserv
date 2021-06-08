@@ -1,0 +1,9 @@
+[8/06]
+* Gestion des lignes commentées ok
+* J'ai rajouté des exceptions dans le parsing (si il manque des infos, si les nombres donnés sont invalides, etc)
+Pour l'instant ca n'arrete pas le programme, juste le parsing du serveur en cours : si il y a une erreur dans le
+premier serveur, il va quand meme essayer de configurer le suivant, je sais pas si c'est la bonne facon de gerer.
+* Parsing de l'adresse IP : je mets tout dans une structure IPA_t qui contient 4 blocs d'unsigned char,
+en principe on aura juste a lire cette structure comme si c'etait un int (4 * u_char) et c'est notre addresse IP.
+Il faut encore que j'ecrive cette fonction mais il faut un peu de bitwise donc j'ai pas trop le temps today.
+

@@ -11,7 +11,7 @@ NOTES ON WEBSERV :
         __uint8_t       sin_len;
         sa_family_t     sin_family;
         in_port_t       sin_port;
-        struct  in_addr sin_addr;
+        struct  in_addr sin_addr;    // == __uint32_t
         char            sin_zero[8];
     };
 --> Structure used to store a set of fd.

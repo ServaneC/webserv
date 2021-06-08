@@ -30,6 +30,7 @@
 # include <netinet/in.h>
 # include <fcntl.h>
 # include <errno.h>
+#include <poll.h>
 
 # include <iostream>
 # include <string>

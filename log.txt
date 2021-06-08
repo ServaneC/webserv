@@ -303,7 +303,7 @@ LEILA:
 
 
 08/06/2021 	
-(dire a leila d'ecrire dans log)
+(dire a leila d'ecrire dans log / se faire un log a elle)
 -> voir comment gere les locations (maybe faire une classe / struct pour stocker les infos)
 	=> class is better bc we are in C++
 -> verifier ce qu'a fait leila puis merge
@@ -311,6 +311,19 @@ LEILA:
 	-> revoir completement start_server
 -> bon alors j'ai modifie plein de trucs et ca marche pas de ouf ca arrive a repondre a une requete avant de abort...
 => je bosse (enfin) sur ma branche git je peux donc faire toutes les modifs que je veux tranquillou
+-> il va surement falloir changer de CGI parceque php-cgi marche pas sur les macs de l'ecole 
+	=> ou peut etre qu'il faut mettre l'executable php-cgi dans les sources ? ✅
+-> ca marche exactement comme avant avec un seul server dans le conf file
+	-> la gestion de plusieurs serveur est donc a revoir 
+	-> en profiter pour remplacer select par poll
+		=> poll est trop prise de tete et ca marche pas 
+->pb avec les dates dans reponses (last modified a revoir)
+	-> comme on passe par le cgi on a pas direct acces au fichier pour faire un fstat
+		=> On oublie Last-Modified pour le moment
+
+-> revoir tout les retour d'erreur dans Response
+	-> on a que des 200 OK meme quand ca echoue
+	-> reussir a avoir le bon retour avec le cgi
 
 
 

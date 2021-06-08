@@ -22,8 +22,8 @@ Response::Response(execCGI &my_CGI, int socket) :
 	this->_headers["Content-Language"] = std::string();
 	this->_headers["Content-Length"] = this->itoa_cpp(this->_buf.size());
 	this->_headers["Content-Location"] = std::string();
-	//this->setDate();
-	//this->setLastModified();
+	this->setDate();
+	this->setLastModified();
 	this->_headers["Location"] = std::string();
 	this->_headers["Retry-After"] = std::string();
 	this->_headers["Server"] = std::string("webserv/1.0");
@@ -65,7 +65,7 @@ void		Response::setDate()
 
 void			Response::setLastModified()
 {
-	if (this->_cgi.getLastModified())
+	if (this->_cgi.getLastModified() > 0)
 		this->_headers["Last-Modified"] = this->formatDate(this->_cgi.getLastModified());
 }
 

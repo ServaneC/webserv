@@ -16,7 +16,7 @@
 # define PATH "/index.html"
 
 execCGI::execCGI(Server &serv) 
-	: _server(serv), _request(serv.getRequest())
+	: _server(serv), _request(serv.getRequest()), _last_modified(0)
 {
 	this->_env["SERVER_PROTOCOL"] = "HTTP/1.1";
 	//std::cout << "CGI -> " << this->_request.getBadRequest() << std::endl;
@@ -147,9 +147,10 @@ void	execCGI::exec_CGI()
 		dup2(fdIn, STDIN_FILENO);
 		dup2(fdOut, STDOUT_FILENO);
 		// VM
-		execve("/usr/bin/php-cgi", nll, env_array);
+		execve("ubuntu-php-cgi", nll, env_array);
 		//execve("/tester/ubuntu_cgi_tester", nll, env_array);
 		// MAC
+		execve("php-cgi", nll, env_array);
 		//execve("/usr/local/Cellar/php/8.0.7/bin/php-cgi", nll, env_array);
 		std::cerr <<  "Execve crashed." << std::endl;
 		write(STDOUT_FILENO, "Status: 500\r\n\r\n", 15);

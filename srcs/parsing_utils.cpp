@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/07 15:29:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/06/08 20:22:12 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/06/09 03:28:45 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,8 +30,7 @@ size_t findClosingBracket(const std::string str, size_t begin)
 
 std::string getScope(const std::string str, size_t index)
 {
-	// size_t open_bracket = str.find_first_not_of(" \t\n\r\v\f", index);
-	size_t open_bracket = str.find('{', index);
+	size_t open_bracket = str.find_first_not_of(" \t\n\r\v\f", index);
 	// std::cout << open_bracket << " = " << str[open_bracket] << std::endl;
 	size_t close_bracket = findClosingBracket(str, open_bracket);
 	// std::cout << close_bracket << " = " << str[close_bracket] << std::endl;

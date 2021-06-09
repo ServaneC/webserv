@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/06/08 20:28:43 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/06/09 03:27:01 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,9 +28,9 @@ Server::Server(Config &conf, std::string server_conf) : _rqst(*(new Request)), _
         std::cout << "- ServerName = " << _name << std::endl;
 
         this->_host.sin_family = PF_INET;
-        this->_host.sin_addr.s_addr = INADDR_ANY; // -> 0.0.0.0
-        // this->_host.sin_addr.s_addr = convertIPAddress();  // uncomment when function is ready
-        // std::cout << "- ServerAddress = " << this->_host.sin_addr.s_addr << std::endl;
+        // this->_host.sin_addr.s_addr = INADDR_ANY; // -> 0.0.0.0
+        this->_host.sin_addr.s_addr = this->_ipAddress.address;
+        std::cout << "- ServerAddress = " << this->_host.sin_addr.s_addr << std::endl;
         this->_host.sin_port = htons(this->_port);
         this->_addrlen = sizeof(this->_host);
         this->_socket = socket(PF_INET, SOCK_STREAM, 0);
@@ -137,25 +137,18 @@ std::string Server::parsingName() const
     if (name_index == std::string::npos)
         throw confNoServerNameException();  // a voir, je sais pas si un serveur doit forcement avoir un nom donné en config
     name_index += 12;
-    // std::cout << "name index = |" << _server_conf[name_index] << "|" << std::endl;
     size_t name_length = _server_conf.find(";", name_index);
     if (name_length == std::string::npos)
         throw confNoServerNameException();
-    name_length -= name_index;
-    // std::cout << name_length << std::endl;
-    return (_server_conf.substr(name_index, name_length));    
+    return (_server_conf.substr(name_index, name_length - name_index));
 }
 
 void Server::storeIPAddress(size_t index)
 {
-    _ipAddress.block1 = getValueBetweenPoints(_server_conf, &index);
-    // std::cout << "BLOCK 1 = " << (int)_ipAddress.block1 << std::endl;
-    _ipAddress.block2 = getValueBetweenPoints(_server_conf, &index);
-    // std::cout << "BLOCK 2 = " << (int)_ipAddress.block2 << std::endl;
-    _ipAddress.block3 = getValueBetweenPoints(_server_conf, &index);
-    // std::cout << "BLOCK 3 = " << (int)_ipAddress.block3 << std::endl;
-    _ipAddress.block4 = getValueBetweenPoints(_server_conf, &index);  
-    // std::cout << "BLOCK 4 = " << (int)_ipAddress.block4 << std::endl;
+    _ipAddress.block[3] = getValueBetweenPoints(_server_conf, &index);
+    _ipAddress.block[2] = getValueBetweenPoints(_server_conf, &index);
+    _ipAddress.block[1] = getValueBetweenPoints(_server_conf, &index);
+    _ipAddress.block[0] = getValueBetweenPoints(_server_conf, &index);
 }
 
 void Server::parsingIPAddress()
@@ -169,22 +162,12 @@ void Server::parsingIPAddress()
     if (port_index == std::string::npos)
         throw confIPAddrException();
     port_index++;
-    // std::cout << "port index = |" << _server_conf[port_index] << "|" << std::endl;
     size_t port_length = _server_conf.find(";", port_index);
     if (port_length == std::string::npos)
         throw confIPAddrException();
-    port_length -= port_index;
-    // std::cout << port_length << std::endl;
-    this->_port = std::atoi(_server_conf.substr(port_index, port_length).c_str());
+    this->_port = std::atoi(_server_conf.substr(port_index, port_length - port_index).c_str());
     if (this->_port < 0 || this->_port > 65535)
         throw confInvalidPortException();
-}
-
-int Server::convertIPAddress() const
-{
-    int ip = 0;
-    // bitwise operations to convert my IPA_t to an int...
-    return (ip);
 }
 
 void Server::parsingLocations()
@@ -194,10 +177,14 @@ void Server::parsingLocations()
     while (last_found < _server_conf.size() && last_found < std::string::npos)
     {
         last_found += 9;
-        std::string single_location = getScope(_server_conf, last_found, );
-        std::cout << "GOT THIS INSTRUCTION FOR LOCATION : " << single_location << std::endl;
-        if (!single_location.empty())
+        size_t path_index = _server_conf.find_first_not_of(" \t\n\r\v\f", last_found);
+        size_t path_length = _server_conf.find_first_of(" \t\n\r\v\f", path_index) - path_index;
+        std::string path = _server_conf.substr(path_index, path_length);
+        std::string rules = getScope(_server_conf, path_index + path_length);
+        if (!rules.empty())
         {
+            _routes[path] = rules;
+            std::cout << "FOR LOCATION <" << path << ">, RULES ARE : " << rules << std::endl;
             //wtf do i do with this ?? we'll see tomorrow
         }
         last_found = _server_conf.find("location", last_found);

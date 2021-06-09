@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 11:20:51 by schene            #+#    #+#             */
-/*   Updated: 2021/06/08 20:01:35 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/06/09 03:28:28 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,9 +35,8 @@ class Server
 	
 		void		start_server();
 		void 		storeIPAddress(size_t index);
-		std::string parsingName() const;
 		void		parsingIPAddress();
-		int			convertIPAddress() const;
+		std::string parsingName() const;
 		void		parsingLocations();
 			
 	public:

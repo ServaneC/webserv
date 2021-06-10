@@ -13,6 +13,16 @@ blocs comme une adresse IP sur 32 bits.
 string> _routes que t'avais créé, je recupere le path concerné comme etant
 la clé et le scope des instructions comme etant le contenu.
 
+[10/6]
+    - Révision architecture : les fonctions de parsing sont passees dans
+parsing.cpp qui est accompagné de parsing.hpp contenant la definition de
+l'union IPA_t.
+    - Locations : j'arrive pas du tout a trouver de liste exhaustive des
+champs possibles donc ca me parait chaud et/ou inutile d'initialiser des
+champs dans une struct. Et en plus a priori on est censé pouvoir emboiter
+des locations dans des locations, donc faudrait que je revoie le parsing.
+Du coup j'imagine qu'on ne prend pas les champs "fastcgi_pass" ?? je
+comprend pas assez comment marche un cgi pour prendre une decision...
 
 ##########################################
 ##          NOTES ON WEBSERV            ##

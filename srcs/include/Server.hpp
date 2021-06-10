@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 11:20:51 by schene            #+#    #+#             */
-/*   Updated: 2021/06/09 03:28:28 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/06/10 16:20:52 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 # define SERVER_HPP
 
 # include "../../webserv.hpp"
-# include "IPAddress.hpp"
 
 class Server
 {
@@ -24,7 +23,7 @@ class Server
 		Config								&_main_conf;
 		std::string							_server_conf;
 		// std::string							_buf;
-		IPA_t								_ipAddress;
+		unsigned int						_ip;
 		int									_port;
 		std::string 						_name;
 		int									_socket;
@@ -34,10 +33,6 @@ class Server
 		std::map<std::string, std::string>	_routes;
 	
 		void		start_server();
-		void 		storeIPAddress(size_t index);
-		void		parsingIPAddress();
-		std::string parsingName() const;
-		void		parsingLocations();
 			
 	public:
 

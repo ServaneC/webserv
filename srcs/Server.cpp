@@ -16,6 +16,8 @@ Server::Server(Config &conf, std::string server_conf) : _rqst(*(new Request)), _
 {
     try
     {
+        std::cout << "---------------------" << std::endl;
+
         parsingIPAddress();
         // this->_port = 8080;
         std::cout << "- ServerPort = " << _port << std::endl;
@@ -41,46 +43,6 @@ Server::Server(Config &conf, std::string server_conf) : _rqst(*(new Request)), _
     }
     catch (std::exception &e) {
         std::cout << e.what() << std::endl; }
-    // std::cout << "* CREATING SERVER *" <<std::endl;
-    // // (void)conf_file;
-    // std::cout << "* CREATING SERVER *" <<std::endl;
-    // // this->_port = 8080;
-    // this->_port = parsingPort();
-    // std::cout << "- ServerPort = " << _port << std::endl;
-    // // this->_name = "localhost";
-    // this->_name = parsingName();
-    // std::cout << "- ServerName = " << _name << std::endl;
-
-    // this->_socket = socket(PF_INET, SOCK_STREAM, 0);
-    // this->_host.sin_family = PF_INET;
-    // this->_host.sin_addr.s_addr = INADDR_ANY; // -> 0.0.0.0
-    // this->_host.sin_port = htons(this->_port);
-    // this->_addrlen = sizeof(this->_host);
-
-    // int enable = 1;
-    // if (setsockopt(this->_socket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
-    // {
-    //    perror("setsockopt(SO_REUSEADDR) failed");
-    //    close(this->_socket);
-    //    exit(EXIT_FAILURE);  
-    // }
-    // if (fcntl(this->_socket, F_SETFL, O_NONBLOCK) < 0)
-    // {
-    //    perror("fcntl() failed");
-    //    close(this->_socket);
-    //    exit(EXIT_FAILURE); 
-    // }
-    // if (bind(this->_socket, (struct sockaddr *)&this->_host, this->_addrlen) < 0)
-    // {
-    //     perror("In bind");
-    //     exit(EXIT_FAILURE);
-    // }
-    // if (listen(this->_socket, 32) < 0)
-    // {
-    //     perror("In listen");
-    //     exit(EXIT_FAILURE);
-    // }
-    // this->_conf.parseConfFile(conf_file.c_str());
 
     // std::cout << "* STARTING SERVER *" <<std::endl;
     //this->start_server();
@@ -195,7 +157,7 @@ void Server::parsingLocations()
         if (!rules.empty())
         {
             _routes[path] = rules;
-            std::cout << "FOR LOCATION <" << path << ">, RULES ARE : " << rules << std::endl;
+            //std::cout << "FOR LOCATION <" << path << ">, RULES ARE : " << rules << std::endl;
             //wtf do i do with this ?? we'll see tomorrow
         }
         last_found = _server_conf.find("location", last_found);

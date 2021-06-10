@@ -326,6 +326,7 @@ LEILA:
 	a faire avant:
 		-> reussir a bien gerer plusieurs "server"
 			- bon j'ai retenté de remplacer select par poll mais ca fait que bloquer donc je pense completement abbandonne cette piste
+✅ Tout est merge ! bon par contre j'ai quelaue soucis pour acceder aux adresse ip autre que localhost:8081 avec le webserv.conf de leila...
 
 ->il faudrait bouger tout le parsing dans une autre classe au lieu de le melanger au code dans server
 

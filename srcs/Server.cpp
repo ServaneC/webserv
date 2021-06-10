@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/06/07 19:42:44 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/06/09 03:27:01 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,44 +14,74 @@
 
 Server::Server(Config &conf, std::string server_conf) : _rqst(*(new Request)), _main_conf(conf), _server_conf(server_conf)
 {
-    // (void)conf_file;
-    std::cout << "* CREATING SERVER *" <<std::endl;
-    // this->_port = 8080;
-    this->_port = parsingPort();
-    std::cout << "- ServerPort = " << _port << std::endl;
-    // this->_name = "localhost";
-    this->_name = parsingName();
-    std::cout << "- ServerName = " << _name << std::endl;
+    try
+    {
+        parsingIPAddress();
+        // this->_port = 8080;
+        std::cout << "- ServerPort = " << _port << std::endl;
 
-    this->_socket = socket(PF_INET, SOCK_STREAM, 0);
-    this->_host.sin_family = PF_INET;
-    this->_host.sin_addr.s_addr = INADDR_ANY; // -> 0.0.0.0
-    this->_host.sin_port = htons(this->_port);
-    this->_addrlen = sizeof(this->_host);
+        this->_name = parsingName();
+        // this->_name = "localhost";
+        std::cout << "- ServerName = " << _name << std::endl;
 
-    int enable = 1;
-    if (setsockopt(this->_socket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
-    {
-       perror("setsockopt(SO_REUSEADDR) failed");
-       close(this->_socket);
-       exit(EXIT_FAILURE);  
+        this->_host.sin_family = PF_INET;
+        // this->_host.sin_addr.s_addr = INADDR_ANY; // -> 0.0.0.0
+        this->_host.sin_addr.s_addr = this->_ipAddress.address;
+        std::cout << "- ServerAddress = " << this->_host.sin_addr.s_addr << std::endl;
+        this->_host.sin_port = htons(this->_port);
+        this->_addrlen = sizeof(this->_host);
+        this->_socket = socket(PF_INET, SOCK_STREAM, 0);
+        parsingLocations();
+
+        int enable = 1;
+        setsockopt(this->_socket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int));
+        fcntl(this->_socket, F_SETFL, O_NONBLOCK);
+        bind(this->_socket, (struct sockaddr *)&this->_host, this->_addrlen);
+        listen(this->_socket, 32);
     }
-    if (fcntl(this->_socket, F_SETFL, O_NONBLOCK) < 0)
-    {
-       perror("fcntl() failed");
-       close(this->_socket);
-       exit(EXIT_FAILURE); 
-    }
-    if (bind(this->_socket, (struct sockaddr *)&this->_host, this->_addrlen) < 0)
-    {
-        perror("In bind");
-        exit(EXIT_FAILURE);
-    }
-    if (listen(this->_socket, 32) < 0)
-    {
-        perror("In listen");
-        exit(EXIT_FAILURE);
-    }
+    catch (std::exception &e) {
+        std::cout << e.what() << std::endl; }
+    // std::cout << "* CREATING SERVER *" <<std::endl;
+    // // (void)conf_file;
+    // std::cout << "* CREATING SERVER *" <<std::endl;
+    // // this->_port = 8080;
+    // this->_port = parsingPort();
+    // std::cout << "- ServerPort = " << _port << std::endl;
+    // // this->_name = "localhost";
+    // this->_name = parsingName();
+    // std::cout << "- ServerName = " << _name << std::endl;
+
+    // this->_socket = socket(PF_INET, SOCK_STREAM, 0);
+    // this->_host.sin_family = PF_INET;
+    // this->_host.sin_addr.s_addr = INADDR_ANY; // -> 0.0.0.0
+    // this->_host.sin_port = htons(this->_port);
+    // this->_addrlen = sizeof(this->_host);
+
+    // int enable = 1;
+    // if (setsockopt(this->_socket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
+    // {
+    //    perror("setsockopt(SO_REUSEADDR) failed");
+    //    close(this->_socket);
+    //    exit(EXIT_FAILURE);  
+    // }
+    // if (fcntl(this->_socket, F_SETFL, O_NONBLOCK) < 0)
+    // {
+    //    perror("fcntl() failed");
+    //    close(this->_socket);
+    //    exit(EXIT_FAILURE); 
+    // }
+    // if (bind(this->_socket, (struct sockaddr *)&this->_host, this->_addrlen) < 0)
+    // {
+    //     perror("In bind");
+    //     exit(EXIT_FAILURE);
+    // }
+    // if (listen(this->_socket, 32) < 0)
+    // {
+    //     perror("In listen");
+    //     exit(EXIT_FAILURE);
+    // }
+    // this->_conf.parseConfFile(conf_file.c_str());
+
     // std::cout << "* STARTING SERVER *" <<std::endl;
     //this->start_server();
     // std::cout << "* SUCCESS *" <<std::endl;
@@ -116,31 +146,58 @@ std::string Server::parsingName() const
 {
     size_t name_index = _server_conf.find("server_name");
     if (name_index == std::string::npos)
-        return ("NOPE");  // a voir, je sais pas si un serveur doit forcement avoir un nom donné en config
+        throw confNoServerNameException();  // a voir, je sais pas si un serveur doit forcement avoir un nom donné en config
     name_index += 12;
-    // std::cout << "name index = |" << _server_conf[name_index] << "|" << std::endl;
     size_t name_length = _server_conf.find(";", name_index);
     if (name_length == std::string::npos)
-        return ("NOPE");
-    name_length -= name_index;
-    // std::cout << name_length << std::endl;
-    return (_server_conf.substr(name_index, name_length));    
+        throw confNoServerNameException();
+    return (_server_conf.substr(name_index, name_length - name_index));
 }
 
-int Server::parsingPort() const
+void Server::storeIPAddress(size_t index)
 {
-    size_t port_index = _server_conf.find("listen");
+    _ipAddress.block[3] = getValueBetweenPoints(_server_conf, &index);
+    _ipAddress.block[2] = getValueBetweenPoints(_server_conf, &index);
+    _ipAddress.block[1] = getValueBetweenPoints(_server_conf, &index);
+    _ipAddress.block[0] = getValueBetweenPoints(_server_conf, &index);
+}
+
+void Server::parsingIPAddress()
+{
+    size_t addr_index = _server_conf.find("listen");
+    if (addr_index == std::string::npos)
+        throw confNoListenException();
+    addr_index = _server_conf.find_first_not_of(" \t\n\r\v\f", addr_index + 7);
+    storeIPAddress(addr_index);
+    size_t port_index = _server_conf.find(":", addr_index);
     if (port_index == std::string::npos)
-        return (0);
-    port_index = _server_conf.find(":", port_index);
-    if (port_index == std::string::npos)
-        return (0);
+        throw confIPAddrException();
     port_index++;
-    // std::cout << "port index = |" << _server_conf[port_index] << "|" << std::endl;
     size_t port_length = _server_conf.find(";", port_index);
     if (port_length == std::string::npos)
-        return (0);
-    port_length -= port_index;
-    // std::cout << port_length << std::endl;
-    return (std::atoi(_server_conf.substr(port_index, port_length).c_str()));
+        throw confIPAddrException();
+    this->_port = std::atoi(_server_conf.substr(port_index, port_length - port_index).c_str());
+    if (this->_port < 0 || this->_port > 65535)
+        throw confInvalidPortException();
+}
+
+void Server::parsingLocations()
+{
+    size_t last_found = _server_conf.find("location");
+
+    while (last_found < _server_conf.size() && last_found < std::string::npos)
+    {
+        last_found += 9;
+        size_t path_index = _server_conf.find_first_not_of(" \t\n\r\v\f", last_found);
+        size_t path_length = _server_conf.find_first_of(" \t\n\r\v\f", path_index) - path_index;
+        std::string path = _server_conf.substr(path_index, path_length);
+        std::string rules = getScope(_server_conf, path_index + path_length);
+        if (!rules.empty())
+        {
+            _routes[path] = rules;
+            std::cout << "FOR LOCATION <" << path << ">, RULES ARE : " << rules << std::endl;
+            //wtf do i do with this ?? we'll see tomorrow
+        }
+        last_found = _server_conf.find("location", last_found);
+    }
 }

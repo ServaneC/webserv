@@ -1,37 +1,30 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Config.hpp                                         :+:      :+:    :+:   */
+/*   IPAddress.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/04/30 09:47:15 by schene            #+#    #+#             */
-/*   Updated: 2021/06/08 20:13:08 by lemarabe         ###   ########.fr       */
+/*   Created: 2021/06/08 16:33:16 by lemarabe          #+#    #+#             */
+/*   Updated: 2021/06/09 02:14:15 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef CONFIG_HPP
-# define CONFIG_HPP
+#ifndef IP_ADDRESS_STRUCT_H
+# define IP_ADDRESS_STRUCT_H
 
-# include "../../webserv.hpp"
+// typedef struct s_IPAddress
+// {
+//     unsigned char   block1;
+//     unsigned char   block2;
+//     unsigned char   block3;
+//     unsigned char   block4;
+// }               IPA_struct_t;
 
-class Config
+typedef union u_IPAddress
 {
-	private:
-		Config();
-		std::string			_content;
-		std::list<Server*>	_servers;
-		fd_set 				_current_sockets;
-
-		std::string 		singleServerConfig(size_t index);
-		void				startServers();
-
-	public:
-		Config(std::string conf_file);
-		~Config();
-
-		int 	readConfFile(char const *path);
-		void	createServers(void);
-};
+    unsigned char   block[4];
+    unsigned int    address;
+}                       IPA_t;
 
 #endif

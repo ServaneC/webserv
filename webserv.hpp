@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 15:34:32 by schene            #+#    #+#             */
-/*   Updated: 2021/06/07 16:30:49 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/06/09 02:47:06 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,12 +51,18 @@ class	execCGI;
 class	Response;
 class   Config;
 
-size_t  findClosingBracket(std::string str, size_t begin);
+size_t          findClosingBracket(const std::string str, size_t begin);
+std::string     getScope(const std::string str, size_t index);
+// std::string     getScope(const std::string str, size_t index, const char *charset);
+unsigned char   getValueBetweenPoints(const std::string str, size_t *index);
+bool            isCommentLine(const char *line);
 
 # include "srcs/include/Server.hpp"
 # include "srcs/include/Request.hpp"
 # include "srcs/include/execCGI.hpp"
 # include "srcs/include/Response.hpp"
 # include "srcs/include/Config.hpp"
+// # include "srcs/include/IPAddress.hpp"
+# include "srcs/include/exceptions.hpp"
 
 #endif

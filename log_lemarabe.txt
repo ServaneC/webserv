@@ -1,4 +1,22 @@
-NOTES ON WEBSERV :
+[8/06]
+    - Gestion des lignes commentées ok
+    - J'ai rajouté des exceptions dans le parsing (si il manque des infos,
+si les nombres donnés sont invalides, etc). Pour l'instant ca n'arrete pas
+le programme, juste le parsing du serveur en cours : si il y a une erreur
+dans le premier serveur, il va quand meme essayer de configurer le suivant,
+je sais pas si c'est la bonne facon de gerer.
+    - Parsing de l'adresse IP : je mets tout dans un union de ma creation
+(IPA_t) qui contient un unsigned char[4] et un unsigned int et vu qu'ils
+partagent la meme adresse, quand je demande le uint, il interprete les 4
+blocs comme une adresse IP sur 32 bits.
+    - Parsing des locations : pour l'instant j'ai utilisé la map<string,
+string> _routes que t'avais créé, je recupere le path concerné comme etant
+la clé et le scope des instructions comme etant le contenu.
+
+
+##########################################
+##          NOTES ON WEBSERV            ##
+##########################################
 
 --> [XSI] Structure used by kernel to store most addresses.
     struct sockaddr {
@@ -11,7 +29,7 @@ NOTES ON WEBSERV :
         __uint8_t       sin_len;
         sa_family_t     sin_family;
         in_port_t       sin_port;
-        struct  in_addr sin_addr;
+        struct  in_addr sin_addr;    // == __uint32_t
         char            sin_zero[8];
     };
 --> Structure used to store a set of fd.
@@ -30,8 +48,7 @@ FORMAT FOR HTTP REQUESTS
         TE // User-Agent
     3) An empty line indicating the end of the header fields (= nothing preceding CRLF) 
     4) Optionally a message-body
- yo
-
 
 Replace memset by std::fill ? 
 Maybe don't initialize header fields and just accept any that is given. 
+

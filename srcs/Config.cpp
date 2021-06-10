@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/30 09:49:40 by schene            #+#    #+#             */
-/*   Updated: 2021/06/07 19:45:31 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/06/09 03:08:28 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,8 +39,11 @@ int 	Config::readConfFile(char const *path)
 	while (1)
 	{
 		conf_stream.getline(line, BUFF_SIZE);
-		this->_content.append(line);
-		this->_content.push_back('\n');
+		if (!isCommentLine(line))
+		{
+			this->_content.append(line);
+			this->_content.push_back('\n');
+		}
 		memset(line, '\0', BUFF_SIZE);
 		if (conf_stream.eof())
 			break ;
@@ -70,7 +73,8 @@ void	Config::createServers(void)
 	
 	while (last_found < _content.size() && last_found < std::string::npos)
 	{
-		std::string single_server_conf = singleServerConfig(last_found);
+		last_found += 7;
+		std::string single_server_conf = getScope(_content, last_found);
 		// std::cout << "HERE'S WHAT I JUST CREATED :: " << single_server_conf << "\nOK BYE" << std::endl;
 		
 		if (!single_server_conf.empty())
@@ -80,7 +84,7 @@ void	Config::createServers(void)
 			this->_servers.push_back(to_push);
 			// std::cout << "added one server" << std::endl;
 		}
-		last_found = _content.find("server", last_found + 1);
+		last_found = _content.find("server", last_found);
 	}
 }
 

@@ -6,7 +6,7 @@
 #    By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/25 14:21:19 by schene            #+#    #+#              #
-#    Updated: 2021/06/07 19:47:45 by lemarabe         ###   ########.fr        #
+#    Updated: 2021/06/09 02:16:11 by lemarabe         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -24,7 +24,7 @@ DPDCS		= $(OBJS:.o=.d)
 
 INCLUDES = -I include/
 
-CFLAGS		= -Wall -Wextra -Werror -std=c++98 -fsanitize=address
+CFLAGS		= -Wall -Wextra -Werror -std=c++98 -g #-fsanitize=address
 
 RM			= rm -f
 

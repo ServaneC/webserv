@@ -38,7 +38,6 @@ class Request
 	public:
 		Request();
 		~Request();
-		// Request 	&operator=(Request const &rhs);
 
 		int		parseRequest(int socket);
 

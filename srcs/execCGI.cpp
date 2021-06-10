@@ -137,8 +137,6 @@ void	execCGI::exec_CGI()
 	{
 		std::cerr << "Fork crashed." <<  std::endl;
 		exit(EXIT_FAILURE);
-		// return -1;
-		// return ("Status: 500\r\n\r\n");
 	}
 	else if (pid == 0) //in child 
 	{
@@ -147,10 +145,10 @@ void	execCGI::exec_CGI()
 		dup2(fdIn, STDIN_FILENO);
 		dup2(fdOut, STDOUT_FILENO);
 		// VM
-		execve("ubuntu-php-cgi", nll, env_array);
-		//execve("/tester/ubuntu_cgi_tester", nll, env_array);
-		// MAC
-		execve("php-cgi", nll, env_array);
+		//execve("/usr/bin/php-cgi", nll, env_array);
+		// SCHOOL MAC (/Users/$USER/.brew/Cellar/php/8.0.7/bin/php-cgi)
+		execve("/Users/schene/.brew/Cellar/php/8.0.7/bin/php-cgi", nll, env_array);
+		// OTHER MAC
 		//execve("/usr/local/Cellar/php/8.0.7/bin/php-cgi", nll, env_array);
 		std::cerr <<  "Execve crashed." << std::endl;
 		write(STDOUT_FILENO, "Status: 500\r\n\r\n", 15);

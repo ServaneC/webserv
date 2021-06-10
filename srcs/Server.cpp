@@ -17,13 +17,10 @@ Server::Server(Config &conf, std::string server_conf) : _rqst(*(new Request)), _
     try
     {
         std::cout << "---------------------" << std::endl;
-
         parsingIPAddress();
-        // this->_port = 8080;
         std::cout << "- ServerPort = " << _port << std::endl;
 
         this->_name = parsingName();
-        // this->_name = "localhost";
         std::cout << "- ServerName = " << _name << std::endl;
 
         this->_host.sin_family = PF_INET;
@@ -36,17 +33,17 @@ Server::Server(Config &conf, std::string server_conf) : _rqst(*(new Request)), _
         parsingLocations();
 
         int enable = 1;
-        setsockopt(this->_socket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int));
-        fcntl(this->_socket, F_SETFL, O_NONBLOCK);
-        bind(this->_socket, (struct sockaddr *)&this->_host, this->_addrlen);
-        listen(this->_socket, 32);
+        if (setsockopt(this->_socket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
+            throw 20;
+        if (fcntl(this->_socket, F_SETFL, O_NONBLOCK) < 0)
+            throw 20;
+        if (bind(this->_socket, (struct sockaddr *)&this->_host, this->_addrlen) < 0)
+            throw 20;
+        if (listen(this->_socket, 32) < 0)
+            throw 20;
     }
     catch (std::exception &e) {
         std::cout << e.what() << std::endl; }
-
-    // std::cout << "* STARTING SERVER *" <<std::endl;
-    //this->start_server();
-    // std::cout << "* SUCCESS *" <<std::endl;
 }
 
 Server::~Server()
@@ -54,7 +51,6 @@ Server::~Server()
     close(this->_socket);
     delete &this->_rqst;
     delete &this->_main_conf;
-    // free(&this->_rqst);
 }
 
 int 	Server::exec_accept()
@@ -118,10 +114,8 @@ std::string Server::parsingName() const
 
 void Server::storeIPAddress(size_t index)
 {
-    _ipAddress.block[3] = getValueBetweenPoints(_server_conf, &index);
-    _ipAddress.block[2] = getValueBetweenPoints(_server_conf, &index);
-    _ipAddress.block[1] = getValueBetweenPoints(_server_conf, &index);
-    _ipAddress.block[0] = getValueBetweenPoints(_server_conf, &index);
+    for (int i = 3; i > -1; i--)
+        _ipAddress.block[i] = getValueBetweenPoints(_server_conf, &index);
 }
 
 void Server::parsingIPAddress()

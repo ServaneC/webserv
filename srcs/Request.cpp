@@ -39,11 +39,7 @@ int		Request::parseRequest(int socket)
 	this->_socket = socket;
 	if (this->recvRequest() < 0)
 		return -1;
-	// char		*line = NULL;
-	
-	// this->_bad_request = false;
-	// this->_fd = fd;
-	// std::string line_s;
+
 	if (this->_request.empty())
 		return (- 1);
 	std::cout << "========= REQUEST =========" << std::endl;
@@ -69,7 +65,7 @@ int		Request::parseRequest(int socket)
 	// //check if CRLF or LF (no CRLF or LF = error) CRLF -> line = "\r" LF = line = empty
 	if (!(this->_line.empty() || (this->_line[0] == '\r' && !this->_line[1])))
 	 	this->_bad_request = true;
-	// if payload-body -> read it (need testing)
+	// if payload-body -> read it
 	if (!this->getHeaderField("Content-Length").empty() || 
 			!this->getHeaderField("Transfer-Encoding").empty())
 		//if content-lenght, maybe just do a read of the length ? or at least check

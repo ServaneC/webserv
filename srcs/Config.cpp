@@ -106,7 +106,7 @@ void	Config::startServers()
     while (1)
     {
         read_sockets = this->_current_sockets; //because select is destructive        
-        write_sockets = this->_current_sockets; //because select is destructive        
+        write_sockets = this->_current_sockets; //because select is destructive
         if (select(FD_SETSIZE, &read_sockets, &write_sockets, NULL, NULL) < 0)
         {
             perror("In select");

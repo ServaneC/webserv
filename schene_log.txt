@@ -326,8 +326,6 @@ LEILA:
 	a faire avant:
 		-> reussir a bien gerer plusieurs "server"
 			- bon j'ai retenté de remplacer select par poll mais ca fait que bloquer donc je pense completement abbandonne cette piste
-			-> jsp pq avec plusieurs serveur une fois sur 2 la request est vide (et request ne gerait pas ce cas)
-				-> Du coup c'est bon j'arrive a gerer deux serveurs et même 3 !!! 🎉
 
 ->il faudrait bouger tout le parsing dans une autre classe au lieu de le melanger au code dans server
 
@@ -350,7 +348,6 @@ To do:
 - [ ] truc fun a faire : remplir les fichiers de test (Youpi banane et cie)
 - [ ] gerer les methodes POST et DELETE !
 - [ ] revoir tout les retour d'erreur dans Response
-- [ ]The first server for a host:port will be the default for this host:port (meaning it will answer to all request that doesn’t belong to an other server)
 
 Piste:
 -> ne définir qu’un server

@@ -32,15 +32,15 @@ Server::Server(Config &conf, std::string server_conf) : _rqst(*(new Request)), _
     int enable = 1;
     if (setsockopt(this->_socket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
     {
-        perror("setsockopt(SO_REUSEADDR) failed");
-        close(this->_socket);
-        exit(EXIT_FAILURE);  
+       perror("setsockopt(SO_REUSEADDR) failed");
+       close(this->_socket);
+       exit(EXIT_FAILURE);  
     }
     if (fcntl(this->_socket, F_SETFL, O_NONBLOCK) < 0)
     {
-        perror("fcntl() failed");
-        close(this->_socket);
-        exit(EXIT_FAILURE); 
+       perror("fcntl() failed");
+       close(this->_socket);
+       exit(EXIT_FAILURE); 
     }
     if (bind(this->_socket, (struct sockaddr *)&this->_host, this->_addrlen) < 0)
     {
@@ -78,8 +78,8 @@ int 	Server::exec_accept()
 void	Server::exec_server()
 {
     fcntl(this->_client_socket, F_SETFL, O_NONBLOCK);
-    this->_rqst.parseRequest(this->_client_socket);
-    execCGI((*this));
+    if (this->_rqst.parseRequest(this->_client_socket) > 0)
+        execCGI((*this));
     close(this->_client_socket);
 }
 

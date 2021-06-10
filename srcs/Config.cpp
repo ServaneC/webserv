@@ -76,8 +76,8 @@ void	Config::createServers(void)
 		if (!single_server_conf.empty())
 		{
 			// std::cout << "adding one server" << std::endl;
-			this->_servers.push_back(new Server(*this, single_server_conf));
-			//FD_SET(this->_servers.back()->getSocket(), &this->_current_sockets);
+			Server *to_push = new Server(*this, single_server_conf);
+			this->_servers.push_back(to_push);
 			// std::cout << "added one server" << std::endl;
 		}
 		last_found = _content.find("server", last_found + 1);
@@ -94,7 +94,9 @@ void	Config::startServers()
 	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
 	{
 		if ((*it)->getSocket() > 0)
+		{
 			FD_SET((*it)->getSocket(), &this->_current_sockets);
+		}
 	}
 
     while (1)

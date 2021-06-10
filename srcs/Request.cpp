@@ -44,9 +44,10 @@ int		Request::parseRequest(int socket)
 	// this->_bad_request = false;
 	// this->_fd = fd;
 	// std::string line_s;
-	
+	if (this->_request.empty())
+		return (- 1);
 	std::cout << "========= REQUEST =========" << std::endl;
-	std::cout << this->_request << std::endl;
+	std::cout << this->_request;
 	std::cout << "========= END OF REQUEST =========" << std::endl;
 	//while because "ignore at least one CRLF before request line"
 	while (gnlRequest() > 0)

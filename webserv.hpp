@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 15:34:32 by schene            #+#    #+#             */
-/*   Updated: 2021/06/10 16:21:26 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/06/11 18:56:51 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@
 # include <string>
 # include <map>
 # include <list>
+# include <vector>
 # include <algorithm>
 # include <exception>
 # include <ctime>
@@ -56,6 +57,7 @@ class   Config;
 # include "srcs/include/execCGI.hpp"
 # include "srcs/include/Response.hpp"
 # include "srcs/include/Config.hpp"
+# include "srcs/include/Location.hpp"
 # include "srcs/include/parsing.hpp"
 # include "srcs/include/exceptions.hpp"
 

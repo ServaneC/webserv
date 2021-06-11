@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/06/10 16:06:48 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/06/11 19:25:50 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,10 +52,10 @@ void parsingIPAddress(std::string conf, unsigned int *ip, int *port)
         throw confInvalidPortException();
 }
 
-std::map<std::string, std::string> parsingLocations(std::string conf)
+std::list<Location> parsingLocations(std::string conf)
 {
-    size_t last_found = conf.find("location");
-    std::map<std::string, std::string> routes;
+    size_t              last_found = conf.find("location");
+    std::list<Location> routes;
 
     while (last_found < conf.size() && last_found < std::string::npos)
     {
@@ -66,11 +66,34 @@ std::map<std::string, std::string> parsingLocations(std::string conf)
         std::string rules = getScope(conf, path_index + path_length);
         if (!rules.empty())
         {
-            routes[path] = rules;
+            Location *to_push = new Location(path, rules);
+            routes.push_back(*to_push);
             //std::cout << "FOR LOCATION <" << path << ">, RULES ARE : " << rules << std::endl;
-            //wtf do i do with this ?? we'll see tomorrow
         }
         last_found = conf.find("location", last_found);
     }
     return (routes);
+}
+
+int     setMethodCode(std::string method_name)
+{
+    if (method_name == "GET")
+        return (METHOD_GET);
+    if (method_name == "POST")
+        return (METHOD_POST);
+    if (method_name == "DELETE")
+        return (METHOD_DELETE);
+    return (METHOD_NOT_ALLOWED);
+}
+
+std::vector<int> parseAcceptedMethods(std::string location_conf)
+{
+    std::vector<int>    methods;
+    size_t              index = location_conf.find("accepted_method");
+    size_t              end = location_conf.find(';', index);
+
+    if (index == std::string::npos || end == std::string::npos)
+        return (methods);
+    size_t found = location_conf.find_first_of("GPD", index);
+    //// YOU ARE HERE :)
 }

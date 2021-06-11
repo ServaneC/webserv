@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
+/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 16:24:45 by schene            #+#    #+#             */
-/*   Updated: 2021/06/07 14:56:20 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/11 17:44:23 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,6 +133,7 @@ void		Request::parseRequestLine(std::string line)
 {
 	// request-line = method SP request-target SP HTTP-version CRLF
 	this->_method = line.substr(0, line.find(' ')); // parse method
+	this->_method_code = setMethodCode(this->_method);
 	line.erase(0, line.find(' ') + 1);
 	if (isspace(line[0]))
 		this->_bad_request = true;
@@ -216,4 +217,7 @@ bool				Request::getBadRequest() const
 	return this->_bad_request;
 }
 
-
+int					Request::getMethodCode() const
+{
+	return this->_method_code;
+}

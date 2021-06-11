@@ -13,7 +13,7 @@
 #include "include/execCGI.hpp"
 #define CGI_BUFSIZE 2000
 
-# define PATH "/index.html"
+#define PATH "/index.html"
 
 execCGI::execCGI(Server &serv) 
 	: _server(serv), _request(serv.getRequest()), _last_modified(0)
@@ -100,7 +100,23 @@ void	execCGI::exec_CGI()
 	{
 		this->_env["STATUS_CODE"] = "400 Bad Request";
 		return ;
-	}		
+	}
+
+	// switch (this->_request.getMethodCode())
+	// {
+	// 	case METHOD_NOT_ALLOWED:
+	// 		this->_env["STATUS_CODE"] = "405 Method Not Allowed";
+	// 		return ;
+	// 	case METHOD_GET:
+	// 		[...]
+	// 		break;
+	// 	case METHOD_POST:
+	// 		[...]
+	// 		break;
+	// 	case METHOD_DELETE:
+	// 		[...]
+	// 		break;
+	// }	
 
 	//if (this->_env["REQUEST_METHOD"] == "GET")
 	//	return this->execGET();

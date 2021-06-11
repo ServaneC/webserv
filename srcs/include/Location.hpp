@@ -1,37 +1,36 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Config.hpp                                         :+:      :+:    :+:   */
+/*   Location.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/04/30 09:47:15 by schene            #+#    #+#             */
-/*   Updated: 2021/06/11 19:12:35 by lemarabe         ###   ########.fr       */
+/*   Created: 2021/06/11 18:43:38 by lemarabe          #+#    #+#             */
+/*   Updated: 2021/06/11 18:56:40 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef CONFIG_HPP
-# define CONFIG_HPP
+#ifndef LOCATION_HPP
+# define LOCATION_HPP
 
 # include "../../webserv.hpp"
 
-class Config
+class Location
 {
-	private:
-		Config();
-		std::string			_content;
-		std::list<Server*>	_servers;
-		fd_set 				_current_sockets;
+    private :
 
-		std::string 		singleServerConfig(size_t index);
-		void				startServers();
+        std::string         _path;
+        std::string         _location_conf;
+        std::vector<int>    _accepted_methods;
 
-	public:
-		Config(std::string conf_file);
-		~Config();
+        Location();
 
-		int 	readConfFile(char const *path);
-		void	createServers(void);
+    public :
+
+        Location(std::string path, std::string location_conf);
+        ~Location();
+        bool isAcceptedMethod(int code);
+          
 };
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 11:20:51 by schene            #+#    #+#             */
-/*   Updated: 2021/06/10 16:20:52 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/06/11 19:01:38 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,8 @@ class Server
 		struct sockaddr_in					_host;
 		int									_client_socket;
 		int									_addrlen;
-		std::map<std::string, std::string>	_routes;
+		// std::map<std::string, std::string>	_routes;
+		std::list<Location>					_routes;
 	
 		void		start_server();
 			

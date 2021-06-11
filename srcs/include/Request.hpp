@@ -30,6 +30,7 @@ class Request
 		std::string							_body;
 
 		int			recvRequest();
+		int			recvBody();
 		int			gnlRequest();
 		void		parseRequestLine(std::string line);
 		void		parseHeaderFields(std::string line);
@@ -45,6 +46,7 @@ class Request
 		std::string const	&getTarget() const;
 		std::string const	&getHTTPVersion() const;
 		std::string const	&getHeaderField(std::string field_name) const;
+		std::string const	&getBody() const;
 		bool				getBadRequest() const;
 };
 

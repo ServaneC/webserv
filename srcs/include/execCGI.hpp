@@ -25,11 +25,12 @@ class execCGI
 		char								*_buf;
 		time_t								_last_modified;
 		std::map<std::string, std::string>	_env;
+		char 								**_argv;
 
 		void	setPathQuery();
 		char	**env_to_char_array();
 		void	exec_CGI();
-		//void	execGET();
+		int		set_argv();
 
 	public:
 		execCGI(Server &serv);

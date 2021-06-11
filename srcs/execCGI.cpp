@@ -13,11 +13,18 @@
 #include "include/execCGI.hpp"
 #define CGI_BUFSIZE 2000
 
-# define PATH "/index.html"
+# define PATH "/Users/schene/Desktop/webserv/"
 
 execCGI::execCGI(Server &serv) 
 	: _server(serv), _request(serv.getRequest()), _last_modified(0)
 {
+	// VM
+	//std::string cgi_path = "/usr/bin/php-cgi";
+	// 42 MAC
+	std::string cgi_path = "/Users/schene/.brew/Cellar/php/8.0.7/bin/php-cgi";
+	// OTHER MAC
+	//std::string cgi_path = "/usr/local/Cellar/php/8.0.7/bin/php-cgi";
+
 	this->_env["SERVER_PROTOCOL"] = "HTTP/1.1";
 	//std::cout << "CGI -> " << this->_request.getBadRequest() << std::endl;
 	if (!this->_request.getBadRequest())
@@ -38,6 +45,12 @@ execCGI::execCGI(Server &serv)
 	this->_env["SERVER_NAME"] = this->_server.getName();
 	this->_env["SERVER_PORT"] = this->_server.getPort();
 	this->_env["SERVER_SOFTWARE"] = "webserv/1.0";
+	if (!(this->_argv = (char **)malloc(sizeof(char *) * 3)))
+		return ;
+	if (!(this->_argv[0] = (char *)malloc(sizeof(char) * cgi_path.size() + 1)))
+		return ;
+	std::strcpy(_argv[0], cgi_path.c_str());
+	this->_argv[1] = NULL;
 	this->exec_CGI();
 	// std::cout << "SUCCESS" << std::endl;
 	Response((*this), this->_server.getClientSocket());
@@ -45,6 +58,14 @@ execCGI::execCGI(Server &serv)
 
 execCGI::~execCGI()
 {
+	if (this->_argv[0])
+	{
+		free(this->_argv[0]);
+		if (this->_argv[1])
+			free(this->_argv[1]);
+		free(this->_argv);
+	}
+	this->_argv = NULL;
 	// if (this->_buf)
 	// 	free(this->_buf);
 }
@@ -66,7 +87,7 @@ void	execCGI::setPathQuery()
 		this->_env["SCRIPT_FILENAME"] = "index.html";
 	if (this->_env["SCRIPT_NAME"].empty() || !this->_env["SCRIPT_NAME"].compare("/"))
 		this->_env["SCRIPT_NAME"] = "index.html";
-	// this->_env["QUERY_STRING"] = std::string();
+	//this->_env["QUERY_STRING"] = this->_request.getBody();
 	//if (target.find('?') != std::string::npos)
 	//	this->_env["QUERY_STRING"] = target.substr(target.find('?'), target.size()); //maybe wrong if no '?'
 }
@@ -91,9 +112,36 @@ char	**execCGI::env_to_char_array()
 	return array;
 }
 
+int		execCGI::set_argv()
+{
+	std::string file_path = this->_env["PATH_INFO"];
+
+	std::cout << "=> [" << file_path << ']' <<  std::endl;
+	if (this->_argv[1])
+		free(this->_argv[1]);
+	this->_argv[1] = NULL;
+	if (!(this->_argv[1] = (char *)malloc(sizeof(char) * file_path.size() + 1)))
+		return (-1);
+	std::strcpy(_argv[1], file_path.c_str());
+	this->_argv[2] = NULL;
+	return 1;
+}
+
 void	execCGI::exec_CGI()
 {
-	std::cout << "==== method |" << this->_env["REQUEST_METHOD"] << '|' << std::endl;
+	this->_env["HTTP_HOST"] = this->_env["SERVER_NAME"];
+	std::cout << "-> REQUEST_METHOD = |" << this->_env["REQUEST_METHOD"] << '|' << std::endl;
+	std::cout << "-> REDIRECT_STATUS = |" << this->_env["REDIRECT_STATUS"] << '|' << std::endl;
+	std::cout << "-> SCRIPT_FILENAME = |" << this->_env["SCRIPT_FILENAME"] << '|' << std::endl;
+	std::cout << "-> SCRIPT_NAME = |" << this->_env["SCRIPT_NAME"] << '|' << std::endl;
+	std::cout << "-> PATH_INFO = |" << this->_env["PATH_INFO"] << '|' << std::endl;
+	std::cout << "-> SERVER_NAME = |" << this->_env["SERVER_NAME"] << '|' << std::endl;
+	std::cout << "-> SERVER_PROTOCOL = |" << this->_env["SERVER_PROTOCOL"] << '|' << std::endl;
+	std::cout << "-> REQUEST_URI = |" << this->_env["REQUEST_URI"] << '|' << std::endl;
+	std::cout << "-> HTTP_HOST = |" << this->_env["HTTP_HOST"] << '|' << std::endl;
+	std::cout << "-> CONTENT_LENGTH = |" << this->_env["CONTENT_LENGTH"] << '|' << std::endl;
+	//std::cout << "-> QUERY_STRING = |" << this->_env["QUERY_STRING"] << '|' << std::endl;
+	
 	//just to pass second test (very ugly, should be handle differently)
 	this->_buf = NULL;
 	if (this->_request.getBadRequest())
@@ -102,14 +150,6 @@ void	execCGI::exec_CGI()
 		return ;
 	}		
 
-	//if (this->_env["REQUEST_METHOD"] == "GET")
-	//	return this->execGET();
-
-	//if (this->_env["REQUEST_METHOD"] == "POST" || this->_env["REQUEST_METHOD"] == "HEAD")
-	//{
-	//	this->_env["STATUS_CODE"] = "405 Method Not Allowed";
-	//	return ;
-	//}
 
 	char		**env_array = this->env_to_char_array();
 	pid_t		pid;
@@ -117,6 +157,9 @@ void	execCGI::exec_CGI()
 	int			saveStdout;
 	std::string	newBody;
 	std::string _body;
+
+	this->set_argv();
+
 
 	// SAVING STDIN AND STDOUT IN ORDER TO TURN THEM BACK TO NORMAL LATER
 	saveStdin = dup(STDIN_FILENO);
@@ -140,16 +183,11 @@ void	execCGI::exec_CGI()
 	}
 	else if (pid == 0) //in child 
 	{
-		char * const * nll = NULL;
+		//char * const * nll = NULL;
 
 		dup2(fdIn, STDIN_FILENO);
 		dup2(fdOut, STDOUT_FILENO);
-		// VM
-		//execve("/usr/bin/php-cgi", nll, env_array);
-		// SCHOOL MAC (/Users/$USER/.brew/Cellar/php/8.0.7/bin/php-cgi)
-		execve("/Users/schene/.brew/Cellar/php/8.0.7/bin/php-cgi", nll, env_array);
-		// OTHER MAC
-		//execve("/usr/local/Cellar/php/8.0.7/bin/php-cgi", nll, env_array);
+		execve(this->_argv[0], this->_argv, env_array);
 		std::cerr <<  "Execve crashed." << std::endl;
 		write(STDOUT_FILENO, "Status: 500\r\n\r\n", 15);
 	}
@@ -213,8 +251,7 @@ std::string const	&execCGI::getEnvVar(std::string var_name) const
 	return empty;
 }
 
-std::string const 	&execCGI::getBuf() const
-{
+std::string const 	&execCGI::getBuf() const{
 	if (!this->_buf)
 	{
 		static std::string const	empty;

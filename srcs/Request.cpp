@@ -12,7 +12,7 @@
 
 #include "include/Request.hpp"
 
-#define CHUNK_SIZE 512
+#define CHUNK_SIZE 2000
 
 Request::Request() : _bad_request(false)//init header map
 {
@@ -48,7 +48,7 @@ int		Request::parseRequest(int socket)
 	//while because "ignore at least one CRLF before request line"
 	while (gnlRequest() > 0)
 	{
-		std::cout << this->_line << std::endl;
+		//std::cout << this->_line << std::endl;
 		if (!(this->_line[0] == '\r' || this->_line.empty()))
 		{
 			this->parseRequestLine(this->_line);
@@ -57,7 +57,7 @@ int		Request::parseRequest(int socket)
 	}
 	while (gnlRequest() > 0)
 	{
-		std::cout << this->_line << std::endl;
+		//std::cout << this->_line << std::endl;
 	 	if (this->_line.find(':') == std::string::npos) //check if we are still in the headers fields
 	 		break ;
 	 	this->parseHeaderFields(this->_line);
@@ -66,23 +66,11 @@ int		Request::parseRequest(int socket)
 	if (!(this->_line.empty() || (this->_line[0] == '\r' && !this->_line[1])))
 	 	this->_bad_request = true;
 	// if payload-body -> read it
-	if (!this->getHeaderField("Content-Length").empty() || 
-			!this->getHeaderField("Transfer-Encoding").empty())
-		//if content-lenght, maybe just do a read of the length ? or at least check
+	if (!this->getHeaderField("Content-Length").empty())
+	//	//if content-lenght, maybe just do a read of the length ? or at least check
 	{
-		while (1)
-		{
-			int ret = this->gnlRequest();
-			if (!this->_line.empty())
-			{
-				std::cout << "|" << this->_line << "|" << std::endl;
-				this->_body.append(std::string(this->_line));
-				if (ret > 0)
-					this->_body.append("\n");
-			}
-			if (ret == -1)
-				break ;
-		}
+		while (this->_body.empty())
+			this->recvBody();
 	}
 	this->_request.clear();
 	std::cout << this->_body << std::endl;
@@ -104,6 +92,26 @@ int		Request::recvRequest()
 		memset(recv_buf, '\0', recv_ret);
 		if (recv_ret < CHUNK_SIZE)
 			break ;
+	}
+	free(recv_buf);
+	recv_buf = NULL;
+	return 1;
+}
+
+int		Request::recvBody()
+{
+	char *recv_buf;
+	int  recv_ret;
+	int length = std::atoi(this->_headers["Content-Length"].c_str());
+
+	if (!(recv_buf = (char *)malloc (sizeof(char) * length + 1)))
+		return (-1);
+	memset(recv_buf, '\0', length);
+	if ((recv_ret = recv(this->_socket, recv_buf, length, 0)) > 0)
+	{
+		recv_buf[recv_ret] = '\0';
+		this->_body.append((const char *)recv_buf);
+		memset(recv_buf, '\0', recv_ret);
 	}
 	free(recv_buf);
 	recv_buf = NULL;
@@ -155,7 +163,7 @@ void		Request::parseHeaderFields(std::string line)
 	std::map<std::string, std::string>::iterator it = this->_headers.begin();
 	while (it != this->_headers.end())
 	{
-		if (field_name.compare(it->first) == 0 && it->second.empty())
+		if (field_name.compare(it->first) == 0)
 		{
 			std::string value = line.substr(line.find(':') + 2, line.find('\r'));
 			while (isspace(value[0])) // handle OWS between ':' and field-value
@@ -205,6 +213,11 @@ std::string const	&Request::getHeaderField(std::string field_name) const
 		it++;
 	}
 	return empty;
+}
+
+std::string const	&Request::getBody() const
+{
+	return this->_body;
 }
 
 bool				Request::getBadRequest() const

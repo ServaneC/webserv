@@ -330,10 +330,19 @@ LEILA:
 -> l'executable de php-cgi ne suffit pas a le faire marcher quand php n'est pas installé sur un ordi ...
 	-> On va surement etre oblige de demander a installer php
 
+11/06/2021
+-> Il y a 2 champs Content-Type dans le header de reponse -> le compare etait mal fait mais c'est regle 
+	-> header 'X-Powered-By'  ? _> c'est un header non standard qu'il est recommande d'enlever, j'ai rajouter un if qui ne stocke pas le header si il commence par 'X'
+-> le CGI est mnt appelé avec le file en argument (comme demandé dans le sujet mais je sais pas ce que ca change)
+-> reussir a accéder a un fichier autre que index.html avec le cgi
+	-> on peut mais a chaque lancement de webserv on ne peut plus changer le path du fichier auquel on veut accéder, pourquoi ???
+-> reussir a lire le body d'une request
+	✅ Il fallait parser le header, trouver Content-Lenght puis recv en boucle jusqu'a recevoir le body !
+-> trouver comment passer les infos du body au cgi !!!
 
 
-->il faudrait bouger tout le parsing dans une autre classe au lieu de le melanger au code dans server
 
+Pour POST il faudra absolument set Content-Lenght
 ================================== NOTES ==================================
 
 -> comment parser le conf file ?

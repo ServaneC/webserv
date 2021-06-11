@@ -26,7 +26,7 @@ Response::Response(execCGI &my_CGI, int socket) :
 	this->setLastModified();
 	this->_headers["Location"] = std::string();
 	this->_headers["Retry-After"] = std::string();
-	this->_headers["Server"] = std::string("webserv/1.0");
+	this->_headers["Server"] = std::string("webserv/4.2");
 	this->_headers["Transfer-Encoding"] = std::string();
 	this->_headers["WWW-Authenticate"] = std::string();
 	this->send_response();
@@ -39,7 +39,6 @@ Response::~Response() // memory reuse ?
 
 void		Response::parse_cgi_buf()
 {
-	std::cout << "cgi buf [" << this->_buf << ']' << std::endl;
 	if (this->_buf.empty() || this->_buf[0] == '<')
 		return ;
 	while (this->_buf.find(':') != std::string::npos)
@@ -49,9 +48,12 @@ void		Response::parse_cgi_buf()
 		std::string tmp = this->_buf.substr(0, this->_buf.find('\n') - 1); //line with the header field
 		this->_buf.erase(0, this->_buf.find('\n') + 1); // erase the line from the buf
 		std::string name = tmp.substr(0, tmp.find(':')); // separate the field-name
-		if (name.compare("Content-type"))
-			name = "Content-Type";
-		this->_headers[name] = tmp.substr(tmp.find(':') + 2, tmp.size()); // put the name and value in the _header map
+		if (name[0] != 'X')
+		{
+			if (name.compare("Content-type") == 0)
+				name = "Content-Type";
+			this->_headers[name] = tmp.substr(tmp.find(':') + 2, tmp.size()); // put the name and value in the _header map
+		}
 	}
 }
 

@@ -340,10 +340,31 @@ LEILA:
 	✅ Il fallait parser le header, trouver Content-Lenght puis recv en boucle jusqu'a recevoir le body !
 -> trouver comment passer les infos du body au cgi !!!
 
+13/06/2021
+-> il audrait merge aujourd'hui (max demain), avant j'aimerais bien:
+	(au moins un des 4)
+	✅ -> reussir a acceder a differentes pages
+		- je pense que c'est lie a un buf/ une string qui ne se renouvelle pas
+			- l'heure change bien dans Date de response
+			-> remplacer le buf std:string en char * dans response => revoir tout le parsing du buf !
+			-> j'ai fait plein de modif et au final j'ai garder la forme std::string (qu'il faudra peut etre modifier plus tard) et...
+			=> Ça marche !!!! on peut acceder a plein de page diférentes avec un seul lancement de webserv 🎉
+-> avant de push + merge, tout tester surla vm !
 
+-> reussir a faire un GET sur une image
+-> reussir une request POST
+-> faire marcher les query string
+	- il faut apparement parser REFERER
+-> regler le pb "In select: Bad file descriptor"
+-> throw les bonnes exceptions aux bons endroit
+-> appliquer du css
+- utiliser les routes
+
+================================== NOTES ==================================
 
 Pour POST il faudra absolument set Content-Lenght
-================================== NOTES ==================================
+
+<link href="static/style1.css" rel="stylesheet" type="text/css">
 
 -> comment parser le conf file ?
 	-> il va fallor modifier la classe server pour qu'elle puisse stocker toutes les infos du conf file

@@ -14,14 +14,15 @@
 #define CGI_BUFSIZE 2000
 
 # define PATH "/Users/schene/Desktop/webserv/"
+# define INDEX "index.html"
 
 execCGI::execCGI(Server &serv) 
 	: _server(serv), _request(serv.getRequest()), _last_modified(0)
 {
 	// VM
-	//std::string cgi_path = "/usr/bin/php-cgi";
+	std::string cgi_path = "/usr/bin/php-cgi";
 	// 42 MAC
-	std::string cgi_path = "/Users/schene/.brew/Cellar/php/8.0.7/bin/php-cgi";
+	// std::string cgi_path = "/Users/schene/.brew/Cellar/php/8.0.7/bin/php-cgi";
 	// OTHER MAC
 	//std::string cgi_path = "/usr/local/Cellar/php/8.0.7/bin/php-cgi";
 
@@ -73,23 +74,23 @@ execCGI::~execCGI()
 void	execCGI::setPathQuery()
 {
 	std::string	target = this->_request.getTarget();
+	if (target[0] == '/')
+		target.erase(0, 1);
 
+	std::cout << "TARGET -> [" << target << "]" << std::endl;
 	this->_env["REQUEST_URI"] = target;
 	this->_env["PATH_TRANSLATED"] = target;
-	// this->_env["PATH_INFO"] = target;
-	// if (target.find('?') != std::string::npos)
-		this->_env["PATH_INFO"] = target.substr(0, target.find('?'));
-	this->_env["SCRIPT_FILENAME"] = target.substr(1, target.find('?'));
-	this->_env["SCRIPT_NAME"] = target.substr(1, target.find('?'));
-	if (this->_env["PATH_INFO"].empty() || !this->_env["PATH_INFO"].compare("/"))
-		this->_env["PATH_INFO"] = PATH;
+	this->_env["PATH_INFO"] = std::string(PATH) + target.substr(0, target.find('?'));
+	this->_env["SCRIPT_FILENAME"] = target.substr(0, target.find('?'));
+	this->_env["SCRIPT_NAME"] = target.substr(0, target.find('?'));
+	if (target.empty())
+		this->_env["PATH_INFO"] += std::string(INDEX);
 	if (this->_env["SCRIPT_FILENAME"].empty() || !this->_env["SCRIPT_FILENAME"].compare("/"))
-		this->_env["SCRIPT_FILENAME"] = "index.html";
+		this->_env["SCRIPT_FILENAME"] = INDEX;
 	if (this->_env["SCRIPT_NAME"].empty() || !this->_env["SCRIPT_NAME"].compare("/"))
-		this->_env["SCRIPT_NAME"] = "index.html";
-	//this->_env["QUERY_STRING"] = this->_request.getBody();
-	//if (target.find('?') != std::string::npos)
-	//	this->_env["QUERY_STRING"] = target.substr(target.find('?'), target.size()); //maybe wrong if no '?'
+		this->_env["SCRIPT_NAME"] = INDEX;
+	if (target.find('?') != std::string::npos)
+		this->_env["QUERY_STRING"] = target.substr(target.find('?'), target.size()); //maybe wrong if no '?'
 }
 
 char	**execCGI::env_to_char_array()
@@ -140,7 +141,7 @@ void	execCGI::exec_CGI()
 	std::cout << "-> REQUEST_URI = |" << this->_env["REQUEST_URI"] << '|' << std::endl;
 	std::cout << "-> HTTP_HOST = |" << this->_env["HTTP_HOST"] << '|' << std::endl;
 	std::cout << "-> CONTENT_LENGTH = |" << this->_env["CONTENT_LENGTH"] << '|' << std::endl;
-	//std::cout << "-> QUERY_STRING = |" << this->_env["QUERY_STRING"] << '|' << std::endl;
+	std::cout << "-> QUERY_STRING = |" << this->_env["QUERY_STRING"] << '|' << std::endl;
 	
 	//just to pass second test (very ugly, should be handle differently)
 	this->_buf = NULL;
@@ -156,7 +157,7 @@ void	execCGI::exec_CGI()
 	int			saveStdin;
 	int			saveStdout;
 	std::string	newBody;
-	std::string _body;
+	//std::string _body;
 
 	this->set_argv();
 
@@ -171,7 +172,7 @@ void	execCGI::exec_CGI()
 	long	fdOut = fileno(fOut);
 	int		ret = 1;
 
-	write(fdIn, _body.c_str(), _body.size());
+	//write(fdIn, _body.c_str(), _body.size());
 	lseek(fdIn, 0, SEEK_SET);
 
 	pid = fork();
@@ -204,7 +205,6 @@ void	execCGI::exec_CGI()
 			memset(buffer, 0, CGI_BUFSIZE);
 			ret = read(fdOut, buffer, CGI_BUFSIZE - 1);
 			buffer[ret] = 0;
-			// std::cout << buffer << std::endl;
 			newBody += buffer;
 		}
 	}
@@ -227,6 +227,7 @@ void	execCGI::exec_CGI()
 
 	if (!(this->_buf = (char *)malloc(sizeof(char) * (newBody.size() + 1))))
 		exit(EXIT_FAILURE);
+	memset(this->_buf, 0, newBody.size() + 1);
 	memcpy(this->_buf, (char *)newBody.c_str(), newBody.size());
 	this->_buf[newBody.size()] = 0;
 }
@@ -251,14 +252,9 @@ std::string const	&execCGI::getEnvVar(std::string var_name) const
 	return empty;
 }
 
-std::string const 	&execCGI::getBuf() const{
-	if (!this->_buf)
-	{
-		static std::string const	empty;
-		return empty;
-	}
-	static std::string const	ret = this->_buf;
-	return ret;
+char		 *execCGI::getBuf() const
+{
+	return this->_buf;
 }
 
 time_t				execCGI::getLastModified() const

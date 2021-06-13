@@ -38,7 +38,7 @@ class execCGI
 
 		void				free_buf();
 		std::string const	&getEnvVar(std::string var_name) const;
-		std::string const 	&getBuf() const;
+		char				*getBuf() const;
 		time_t				getLastModified() const;
 };
 

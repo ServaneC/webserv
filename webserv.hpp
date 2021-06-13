@@ -64,5 +64,6 @@ bool            isCommentLine(const char *line);
 # include "srcs/include/Config.hpp"
 // # include "srcs/include/IPAddress.hpp"
 # include "srcs/include/exceptions.hpp"
+# include "srcs/include/Utils.hpp"
 
 #endif

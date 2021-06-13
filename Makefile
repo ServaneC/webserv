@@ -6,7 +6,7 @@
 #    By: schene <schene@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/25 14:21:19 by schene            #+#    #+#              #
-#    Updated: 2021/06/13 12:14:22 by schene           ###   ########.fr        #
+#    Updated: 2021/06/13 12:48:26 by schene           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,7 +16,8 @@ SRCSDIR		=  srcs
 
 OBJDIR		= .obj
 
-SRCS		= Server.cpp main.cpp Request.cpp execCGI.cpp Response.cpp Config.cpp parsing_utils.cpp Utils.cpp
+SRCS		= Server.cpp main.cpp Request.cpp execCGI.cpp Response.cpp \
+				Config.cpp parsing_utils.cpp Utils.cpp parsing.cpp Location.cpp
 
 OBJS		= $(addprefix $(OBJDIR)/, $(SRCS:.cpp=.o))
 

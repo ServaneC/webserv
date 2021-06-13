@@ -20,9 +20,9 @@ execCGI::execCGI(Server &serv)
 	: _server(serv), _request(serv.getRequest()), _last_modified(0)
 {
 	// VM
-	std::string cgi_path = "/usr/bin/php-cgi";
+	// std::string cgi_path = "/usr/bin/php-cgi";
 	// 42 MAC
-	// std::string cgi_path = "/Users/schene/.brew/Cellar/php/8.0.7/bin/php-cgi";
+	std::string cgi_path = "/Users/schene/.brew/Cellar/php/8.0.7/bin/php-cgi";
 	// OTHER MAC
 	//std::string cgi_path = "/usr/local/Cellar/php/8.0.7/bin/php-cgi";
 
@@ -149,7 +149,23 @@ void	execCGI::exec_CGI()
 	{
 		this->_env["STATUS_CODE"] = "400 Bad Request";
 		return ;
-	}		
+	}
+
+	// switch (this->_request.getMethodCode())
+	// {
+	// 	case METHOD_NOT_ALLOWED:
+	// 		this->_env["STATUS_CODE"] = "405 Method Not Allowed";
+	// 		return ;
+	// 	case METHOD_GET:
+	// 		[...]
+	// 		break;
+	// 	case METHOD_POST:
+	// 		[...]
+	// 		break;
+	// 	case METHOD_DELETE:
+	// 		[...]
+	// 		break;
+	// }	
 
 
 	char		**env_array = this->env_to_char_array();

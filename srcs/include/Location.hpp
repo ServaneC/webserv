@@ -1,22 +1,36 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   IPAddress.hpp                                      :+:      :+:    :+:   */
+/*   Location.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/06/08 16:33:16 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/06/09 02:14:15 by lemarabe         ###   ########.fr       */
+/*   Created: 2021/06/11 18:43:38 by lemarabe          #+#    #+#             */
+/*   Updated: 2021/06/11 18:56:40 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef IP_ADDRESS_STRUCT_H
-# define IP_ADDRESS_STRUCT_H
+#ifndef LOCATION_HPP
+# define LOCATION_HPP
 
-typedef union u_IPAddress
+# include "../../webserv.hpp"
+
+class Location
 {
-    unsigned char   block[4];
-    unsigned int    address;
-}                       IPA_t;
+    private :
+
+        std::string         _path;
+        std::string         _location_conf;
+        std::vector<int>    _accepted_methods;
+
+        Location();
+
+    public :
+
+        Location(std::string path, std::string location_conf);
+        ~Location();
+        bool isAcceptedMethod(int code);
+          
+};
 
 #endif

@@ -1,3 +1,26 @@
+[11/6]
+    - Locations : avec le cerveau moins en bouillie aujourd'hui j'avais des
+idées concernant la marche a suivre donc je suis en train de parser/stocker
+les accepted_methods.
+    - Creation d'une classe Location comprenant le _path, la _conf et les
+_accepted_methods. Du coup les _routes c'est plus une map<str, str> mais
+une std::list<Location>. Mais j'ai pas fini la fonction de parsing...
+    - J'avais envie de faire un switch parce que c'est super gracieux je
+trouve, du coup je convertis les methodes en codes (0, 1, 2, 3 (mais c'est
+des define tkt)), pour l'instant il est ecrit mais commenté parce que je
+sais pas trop quelles sont les instructions a donner en fct de la methode. 
+--------------------------------------------------------------------------
+[10/6]
+    - Révision architecture : les fonctions de parsing sont passees dans
+parsing.cpp qui est accompagné de parsing.hpp contenant la definition de
+l'union IPA_t.
+    - Locations : j'arrive pas du tout a trouver de liste exhaustive des
+champs possibles donc ca me parait chaud et/ou inutile d'initialiser des
+champs dans une struct. Et en plus a priori on est censé pouvoir emboiter
+des locations dans des locations, donc faudrait que je revoie le parsing.
+Du coup j'imagine qu'on ne prend pas les champs "fastcgi_pass" ?? je
+comprend pas assez comment marche un cgi pour prendre une decision...
+--------------------------------------------------------------------------
 [8/06]
     - Gestion des lignes commentées ok
     - J'ai rajouté des exceptions dans le parsing (si il manque des infos,
@@ -12,7 +35,6 @@ blocs comme une adresse IP sur 32 bits.
     - Parsing des locations : pour l'instant j'ai utilisé la map<string,
 string> _routes que t'avais créé, je recupere le path concerné comme etant
 la clé et le scope des instructions comme etant le contenu.
-
 
 ##########################################
 ##          NOTES ON WEBSERV            ##

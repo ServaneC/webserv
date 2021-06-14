@@ -371,9 +371,17 @@ LEILA:
 	-> je l'ai enlevé et ça marche nickel
 -> tester dans la VM puis PUSH
 	-> La POST request avec le form HTML bloque sur la vm...
-		-> je crois que c'est parceque le body est lui du premier coup 
+		-> je crois que c'est parce que le body est recu du premier coup 
 			-> modifier le parsing pour s'adapter au cas où il y a le body avec la request / si il arrive après.
 		=> ✅ C'est bon ca marche go PUSH
+
+-> reussir a faire un GET avec une image ?
+	-> tout n'est pas stocker dans le body mais tout est bien recu du CGI
+		- il doit y avir une perte a un moment...
+		-> Je crois que y a pas le choix il va falloir remplacer le body string en char * 😩
+		-> pour le moment juste dans CGI et response mais ca ser peut a faire dans request aussi...
+			- commencer par faire un char * dans execCGI et voir si il peut stocker l'integralite des bytes
+			
 
 
 ================================== NOTES ==================================
@@ -386,6 +394,7 @@ LEILA:
 -> throw les bonnes exceptions aux bons endroit
 -> essayer d'appliquer le CSS au php
 - utiliser les routes
+-> gérer l'upload de fichier
 
 POST request from safari after HTML form:
 -----------------------------------------

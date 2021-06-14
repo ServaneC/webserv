@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 14:42:45 by schene            #+#    #+#             */
-/*   Updated: 2021/06/14 11:02:44 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/14 14:14:35 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ Response::~Response()
 
 void		Response::parse_cgi_buf()
 {
-	std::cout << "CGI BUF (" << this->_buf << ')' << std::endl;
+	// std::cout << "CGI BUF (" << this->_buf << ')' << std::endl;
 	if (this->_buf.empty() || this->_buf[0] == '<')
 		return ;
 	while (this->_buf.find(':') != std::string::npos)

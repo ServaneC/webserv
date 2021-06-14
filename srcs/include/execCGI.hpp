@@ -22,6 +22,7 @@ class execCGI
 		Server								&_server;
 		Request								&_request;
 		char								*_buf;
+		char								*_bufb;
 		time_t								_last_modified;
 		std::map<std::string, std::string>	_env;
 		char 								**_argv;
@@ -31,6 +32,7 @@ class execCGI
 		void	exec_CGI();
 		int		set_argv();
 		bool	check_method();
+		int		append_body(char *buffer);
 
 	public:
 		execCGI(Server &serv);

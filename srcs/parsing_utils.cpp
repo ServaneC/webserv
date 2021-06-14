@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parsing_utils.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
+/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/07 15:29:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/06/13 12:47:07 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/14 00:36:47 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,4 +63,21 @@ bool    isCommentLine(const char *line)
     if (str[firstChar] == '#')
         return (true);
     return (false);
+}
+
+int     parseMethod(std::string str, size_t *index)
+{
+    size_t method_index = str.find_first_not_of(" \t\n\r\v\f", *index);
+    size_t method_length = str.find_first_of(" \t\n\r\v\f", method_index) - method_index;
+
+    if (str[method_index + method_length - 1] == ';')
+        method_length--;
+    *index = method_index + method_length;
+    if (!str.compare(method_index, method_length, "GET"))
+        return (METHOD_GET);
+    if (!str.compare(method_index, method_length, "POST"))
+        return (METHOD_POST);
+    if (!str.compare(method_index, method_length, "DELETE"))
+        return (METHOD_DELETE);
+    return (METHOD_NOT_ALLOWED);
 }

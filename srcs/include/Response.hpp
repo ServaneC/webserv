@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 13:50:28 by schene            #+#    #+#             */
-/*   Updated: 2021/06/13 12:22:58 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/14 10:56:23 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ class Response
 		void		writeStatusLine();
 		void		send_response();
 		void		format_header();
+		void		check_content_type();
 
 	public:
 		Response(execCGI &my_CGI, int socket);

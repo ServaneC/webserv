@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
+/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 16:24:53 by schene            #+#    #+#             */
-/*   Updated: 2021/06/11 17:45:03 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/06/14 13:28:33 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@
 class Request
 {
 	private:
-		//int									_fd;
 		int									_socket;
 		bool								_bad_request;
 		std::string							_request;

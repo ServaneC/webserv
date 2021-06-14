@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
+/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 16:24:45 by schene            #+#    #+#             */
-/*   Updated: 2021/06/11 17:44:23 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/06/14 13:29:01 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,14 +66,16 @@ int		Request::parseRequest(int socket)
 	if (!(this->_line.empty() || (this->_line[0] == '\r' && !this->_line[1])))
 	 	this->_bad_request = true;
 	// if payload-body -> read it
+	this->_body.clear();
+	this->_body.assign(this->_request);
 	if (!this->getHeaderField("Content-Length").empty())
-	//	//if content-lenght, maybe just do a read of the length ? or at least check
 	{
+		std::cout << "BODY [" << this->_body << ']' << std::endl;
 		while (this->_body.empty())
 			this->recvBody();
 	}
 	this->_request.clear();
-	std::cout << this->_body << std::endl;
+	std::cout << "BODY [" << this->_body << ']' << std::endl;
 	return 1;
 }
 

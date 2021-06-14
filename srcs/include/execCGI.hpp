@@ -19,7 +19,6 @@
 class execCGI
 {
 	private:
-		// int									_fd;
 		Server								&_server;
 		Request								&_request;
 		char								*_buf;
@@ -31,6 +30,7 @@ class execCGI
 		char	**env_to_char_array();
 		void	exec_CGI();
 		int		set_argv();
+		bool	check_method();
 
 	public:
 		execCGI(Server &serv);

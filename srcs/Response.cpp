@@ -6,16 +6,18 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 14:42:45 by schene            #+#    #+#             */
-/*   Updated: 2021/06/13 12:27:37 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/14 11:02:44 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/Response.hpp"
 
 Response::Response(execCGI &my_CGI, int socket) :  
-	_cgi(my_CGI), _socket(socket), _buf(my_CGI.getBuf())
+	_cgi(my_CGI), _socket(socket)
 {
-	this->_headers["Status"] = my_CGI.getEnvVar("STATUS_CODE");
+	if (this->_cgi.getBuf())
+		this->_buf = this->_cgi.getBuf();
+	this->_headers["Status"] = this->_cgi.getEnvVar("STATUS_CODE");
 	this->parse_cgi_buf();
 	this->_headers["Allow"] = std::string();
 	this->_headers["Content-Language"] = std::string();
@@ -28,6 +30,7 @@ Response::Response(execCGI &my_CGI, int socket) :
 	this->_headers["Server"] = std::string("webserv/4.2");
 	this->_headers["Transfer-Encoding"] = std::string();
 	this->_headers["WWW-Authenticate"] = std::string();
+	this->check_content_type();
 	this->send_response();
 }
 
@@ -38,6 +41,7 @@ Response::~Response()
 
 void		Response::parse_cgi_buf()
 {
+	std::cout << "CGI BUF (" << this->_buf << ')' << std::endl;
 	if (this->_buf.empty() || this->_buf[0] == '<')
 		return ;
 	while (this->_buf.find(':') != std::string::npos)
@@ -102,6 +106,19 @@ void			Response::format_header()
 		}
 	}
 }
+
+void		Response::check_content_type()
+{
+	std::string tmp(this->_cgi.getEnvVar("PATH_INFO"));
+	if (tmp.find('.') != std::string::npos)
+	{
+		tmp.erase(0, tmp.find_last_of('.') + 1);
+		std::cout << "-> " << tmp << std::endl;
+		if (!tmp.compare("css"))
+			this->_headers["Content-Type"] = "text/css";
+	}
+}
+
 
 void			Response::send_response()
 {

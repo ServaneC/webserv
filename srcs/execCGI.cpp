@@ -13,7 +13,6 @@
 #include "include/execCGI.hpp"
 #define CGI_BUFSIZE 2000
 
-# define PATH "/Users/schene/Desktop/webserv/"
 # define INDEX "index.html"
 
 execCGI::execCGI(Server &serv) 
@@ -26,6 +25,7 @@ execCGI::execCGI(Server &serv)
 	// OTHER MAC
 	//std::string cgi_path = "/usr/local/Cellar/php/8.0.7/bin/php-cgi";
 
+
 	this->_env["SERVER_PROTOCOL"] = "HTTP/1.1";
 	//std::cout << "CGI -> " << this->_request.getBadRequest() << std::endl;
 	if (!this->_request.getBadRequest())
@@ -36,6 +36,10 @@ execCGI::execCGI(Server &serv)
 	}
 	this->_env["REDIRECT_STATUS"] = "200"; 
 	this->_env["STATUS_CODE"] = "200 OK";
+	if (this->_request.getBadRequest())
+		this->_env["STATUS_CODE"] = "400 Bad Request";
+	if (!this->check_method())
+		this->_env["STATUS_CODE"] = "405 Method Not Allowed";
 	// this->_env["AUTH_TYPE"] = std::string();
 	this->_env["CONTENT_LENGTH"] = this->_request.getHeaderField("Content-Length"); //not sure
 	this->_env["CONTENT_TYPE"] = this->_request.getHeaderField("Content-Type");
@@ -46,14 +50,17 @@ execCGI::execCGI(Server &serv)
 	this->_env["SERVER_NAME"] = this->_server.getName();
 	this->_env["SERVER_PORT"] = this->_server.getPort();
 	this->_env["SERVER_SOFTWARE"] = "webserv/1.0";
+	
 	if (!(this->_argv = (char **)malloc(sizeof(char *) * 3)))
 		return ;
 	if (!(this->_argv[0] = (char *)malloc(sizeof(char) * cgi_path.size() + 1)))
 		return ;
 	std::strcpy(_argv[0], cgi_path.c_str());
 	this->_argv[1] = NULL;
+
+	std::cout << "exec->cgi()" << std::endl;
 	this->exec_CGI();
-	// std::cout << "SUCCESS" << std::endl;
+	std::cout << "SUCCESS" << std::endl;
 	Response((*this), this->_server.getClientSocket());
 }
 
@@ -80,18 +87,19 @@ void	execCGI::setPathQuery()
 	std::cout << "TARGET -> [" << target << "]" << std::endl;
 	this->_env["REQUEST_URI"] = target;
 	this->_env["PATH_TRANSLATED"] = target;
-	this->_env["PATH_INFO"] = std::string(PATH) + target.substr(0, target.find('?'));
+	this->_env["PATH_INFO"] = target.substr(0, target.find('?'));
 	this->_env["SCRIPT_FILENAME"] = target.substr(0, target.find('?'));
 	this->_env["SCRIPT_NAME"] = target.substr(0, target.find('?'));
 	if (target.empty())
-		this->_env["PATH_INFO"] += std::string(INDEX);
-	if (this->_env["SCRIPT_FILENAME"].empty() || !this->_env["SCRIPT_FILENAME"].compare("/"))
+	{
+		this->_env["PATH_INFO"] = std::string(INDEX);
 		this->_env["SCRIPT_FILENAME"] = INDEX;
-	if (this->_env["SCRIPT_NAME"].empty() || !this->_env["SCRIPT_NAME"].compare("/"))
 		this->_env["SCRIPT_NAME"] = INDEX;
+	}
 	if (target.find('?') != std::string::npos)
 		this->_env["QUERY_STRING"] = target.substr(target.find('?'), target.size()); //maybe wrong if no '?'
 }
+
 
 char	**execCGI::env_to_char_array()
 {
@@ -145,12 +153,8 @@ void	execCGI::exec_CGI()
 	
 	//just to pass second test (very ugly, should be handle differently)
 	this->_buf = NULL;
-	if (this->_request.getBadRequest())
-	{
-		this->_env["STATUS_CODE"] = "400 Bad Request";
+	if (this->_env["STATUS_CODE"].compare("200 OK") != 0)
 		return ;
-	}
-
 	// switch (this->_request.getMethodCode())
 	// {
 	// 	case METHOD_NOT_ALLOWED:
@@ -188,7 +192,7 @@ void	execCGI::exec_CGI()
 	long	fdOut = fileno(fOut);
 	int		ret = 1;
 
-	//write(fdIn, _body.c_str(), _body.size());
+	write(fdIn, this->_request.getBody().c_str(), this->_request.getBody().size());
 	lseek(fdIn, 0, SEEK_SET);
 
 	pid = fork();
@@ -252,6 +256,14 @@ void				execCGI::free_buf()
 {
 	free(this->_buf);
 	this->_buf = NULL;
+}
+
+bool	execCGI::check_method()
+{
+	return (!this->_env["REQUEST_METHOD"].empty() &&
+			(!this->_env["REQUEST_METHOD"].compare("GET") ||
+			!this->_env["REQUEST_METHOD"].compare("POST") ||
+			!this->_env["REQUEST_METHOD"].compare("DELETE")));
 }
 
 // GETTERS

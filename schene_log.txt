@@ -349,22 +349,59 @@ LEILA:
 			-> remplacer le buf std:string en char * dans response => revoir tout le parsing du buf !
 			-> j'ai fait plein de modif et au final j'ai garder la forme std::string (qu'il faudra peut etre modifier plus tard) et...
 			=> Ça marche !!!! on peut acceder a plein de page diférentes avec un seul lancement de webserv 🎉
--> avant de push + merge, tout tester surla vm !
-
--> reussir a faire un GET sur une image
+-> avant de push + merge, tout tester surla vm ! ✅
+-> ameliorer la gestion des 400 bad request (y a un segfault actuellement) -> plus de segfault
+	- renvoyer 405 method not allowed si autre que methode autorise
+	
+14/06/2021
 -> reussir une request POST
+	🎉 Ca marche avec le formulaire HTML dans index ! (fallait juste faire un write sur stdin avant le fork)
+	!! Ca marche une seule fois -> surement encore un pb de buf qui se renouvelle pas ?
+		✅ C'etait bien ca le pb j'ai ajouté un clear avant de lire le body dans Request.
+-> reussir a appliquer une css stylesheet
+	-> le client envoi 2 requete GET: 
+		1. pour index.html
+		2. pour la page CSS
+		-> pq le CSS n'est pas appliqué ?!
+	🎉 Ca marche c'est juste que php-cgi renvoyait html en Content-Type au lieu de css	
+		-> j'ai changer de maniere moche, faudrait faire ça plus propre ✅
+		-> et apres go faire un css stylé ! ✅ -> y a moyen de faire un truc plus beau plus tard
+!! Y a un pb avec select et je peux plus vraiment acceder au lien YOUPI, c'est bizzare...
+	-> Je pense que c'etait a cause du CSS comme c'est pas un fichier html ?
+	-> je l'ai enlevé et ça marche nickel
+-> tester dans la VM puis PUSH
+	-> La POST request avec le form HTML bloque sur la vm...
+		-> je crois que c'est parceque le body est lui du premier coup 
+			-> modifier le parsing pour s'adapter au cas où il y a le body avec la request / si il arrive après.
+		=> ✅ C'est bon ca marche go PUSH
+
+
+================================== NOTES ==================================
+
+-> reussir a faire un GET sur une image ?
+-> reussir une request DELETE
 -> faire marcher les query string
 	- il faut apparement parser REFERER
 -> regler le pb "In select: Bad file descriptor"
 -> throw les bonnes exceptions aux bons endroit
--> appliquer du css
+-> essayer d'appliquer le CSS au php
 - utiliser les routes
 
-================================== NOTES ==================================
-
-Pour POST il faudra absolument set Content-Lenght
-
-<link href="static/style1.css" rel="stylesheet" type="text/css">
+POST request from safari after HTML form:
+-----------------------------------------
+POST /action.php HTTP/1.1
+Host: localhost:8080
+Origin: http://localhost:8080
+Content-Type: application/x-www-form-urlencoded
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+Upgrade-Insecure-Requests: 1
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.2 Safari/605.1.15
+Referer: http://localhost:8080/
+Content-Length: 18
+Accept-Language: en-us
+-----------------------------------------
 
 -> comment parser le conf file ?
 	-> il va fallor modifier la classe server pour qu'elle puisse stocker toutes les infos du conf file

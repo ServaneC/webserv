@@ -1,4 +1,4 @@
-GET /YoupiBanane/youpi.bla HTTP/1.1
+PUT /to_delete.php HTTP/1.1
 Host: localhost:8080
 User-Agent: Go-http-client/1.1
 Accept-Encoding: gzip

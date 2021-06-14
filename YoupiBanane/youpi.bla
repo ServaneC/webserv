@@ -2,6 +2,9 @@
 
 
 <html>
+<head>
+    <title>Welcome to my beautiful webserv!</title>
+</head>
     <body>
     	<h1> Youpi </h1>
         <h2> Banane ? </h2>

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   exceptions.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
+/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/08 17:06:46 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/06/08 19:59:01 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/06/14 12:17:28 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,5 +38,6 @@ class confNoServerNameException : public std::exception {
         const char* what() const throw() {
             return ("Configuration file: No server name was specified"); }
 };
+
 
 #endif

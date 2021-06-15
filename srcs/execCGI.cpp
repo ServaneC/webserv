@@ -22,9 +22,9 @@ execCGI::execCGI(Server &serv)
 	// VM
 	// std::string cgi_path = "/usr/bin/php-cgi";
 	// 42 MAC
-	std::string cgi_path = "/Users/schene/.brew/Cellar/php/8.0.7/bin/php-cgi";
+	// std::string cgi_path = "/Users/schene/.brew/Cellar/php/8.0.7/bin/php-cgi";
 	// OTHER MAC
-	//std::string cgi_path = "/usr/local/Cellar/php/8.0.7/bin/php-cgi";
+	std::string cgi_path = "/usr/local/Cellar/php/8.0.7/bin/php-cgi";
 
 	this->_buf = NULL;
 	this->_env["SERVER_PROTOCOL"] = "HTTP/1.1";
@@ -266,13 +266,13 @@ void		execCGI::append_body(char *buffer, int size)
 		if (this->_buf)
 		{
 			this->_buf = MyRealloc(this->_buf, this->_buf_size, this->_buf_size + size + 1);
-			this->_buf = std::strcat(this->_buf, buffer);
-			// std::memcpy(&this->_buf[this->_buf_size], buffer, size);
+			std::memmove(this->_buf + this->_buf_size, buffer, size);
 		}
 		else
 		{
-			this->_buf = new char[size + 1];
-			this->_buf = std::strcpy(this->_buf, buffer);
+			this->_buf = new unsigned char[size + 1];
+			// this->_buf = std::strcpy(this->_buf, buffer);
+			std::memmove(this->_buf, buffer, size);
 			// std::memcpy(this->_buf, buffer, size);
 		}
 		this->_buf_size += size;
@@ -296,9 +296,9 @@ std::string const	&execCGI::getEnvVar(std::string var_name) const
 	return empty;
 }
 
-char		 *execCGI::getBuf() const
+unsigned  char		 *execCGI::getBuf() const
 {
-	return (char *)this->_buf;
+	return (unsigned char *)this->_buf;
 }
 
 int			execCGI::getBufSize() const

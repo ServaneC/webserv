@@ -21,7 +21,7 @@ class execCGI
 	private:
 		Server								&_server;
 		Request								&_request;
-		char								*_buf;
+		unsigned char						*_buf;
 		int									_buf_size;
 		time_t								_last_modified;
 		std::map<std::string, std::string>	_env;
@@ -40,7 +40,7 @@ class execCGI
 
 		void				free_buf();
 		std::string const	&getEnvVar(std::string var_name) const;
-		char				*getBuf() const;
+		unsigned char				*getBuf() const;
 		int					getBufSize() const;
 		time_t				getLastModified() const;
 };

@@ -403,6 +403,19 @@ LEILA:
 		ou c'est juste un pb avec std::cout qui n'affiche pas tout ?  -> essayer avec un write
 		=> OUF c'est bon tout s'affiche bien avec write, donc tout est bien reçu 
 		-> par contre je crois pas que tout se concatene / stock bien dans le buf 🤔
+	-> Response: faire une string pour le header puis créer un char* avec le header + le buf 
+		-> c'est chelou y a tout une ligne de char ilisible qui apparait en bas
+			=> ����������������������������������������������������������������
+			-> essayer de bien mettre un 0 a la fin
+			- le pb venais de buf_size (la partit ou je decrementait etait commenté)
+			- il m'en reste juste un que j'arrive pas a enlever...
+			-> C'est bon mnt faut tester avec une photo dans l'index
+				-> bon alors ca marche pas mais c'est peut etres parcequ'il faut des unsigned char !
+				- avant de remplacer par des unsigned char il faut changer tout les strcpy/strcat par des memcpy
+					-> Y a un pb avec strchr...
+					-> Tout marche bien, go remplacer les char * par des unsigned char *
+					-> pb avec strcspn dans parse_cgi_buf dans response -> trouver une autre solution qui utilise que des memprout
+					😡 CA MARCHE TOUJOURS PAS 
 
 ================================== NOTES ==================================
 

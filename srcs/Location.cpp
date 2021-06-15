@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
+/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:48:09 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/06/13 12:49:46 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/14 00:38:30 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,10 @@ Location::~Location() {}
 Location::Location(std::string path, std::string location_conf) : _path(path), _location_conf(location_conf)
 {
     this->_accepted_methods = parseAcceptedMethods(location_conf);
+    // std::cout << "LOCATION -> " << _path << " : ";
+    // for (std::vector<int>::iterator it = _accepted_methods.begin(); it != _accepted_methods.end(); it++)
+    //     std::cout << *it << " ";
+    // std::cout << std::endl;
 }
 
 bool Location::isAcceptedMethod(int code)

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parsing.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
+/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/06/13 12:46:22 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/15 15:45:49 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,8 @@ std::vector<int> parseAcceptedMethods(std::string location_conf)
 
     if (index == std::string::npos || end == std::string::npos)
         return (methods);
-    //size_t found = location_conf.find_first_of("GPD", index);
-    //// YOU ARE HERE :)
+    index += 15;
+    while (index != end)
+        methods.push_back(parseMethod(location_conf, &index));
     return (methods);
 }

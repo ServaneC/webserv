@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/08 16:33:16 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/06/11 19:21:36 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/06/15 15:48:58 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,5 +36,6 @@ void                parsingIPAddress(std::string conf, unsigned int *ip, int *po
 std::list<Location> parsingLocations(std::string conf);
 int                 setMethodCode(std::string method_name);
 std::vector<int>    parseAcceptedMethods(std::string location_conf);
+int                 parseMethod(std::string str, size_t *index);
 
 #endif

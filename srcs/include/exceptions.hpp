@@ -39,4 +39,10 @@ class confNoServerNameException : public std::exception {
             return ("Configuration file: No server name was specified"); }
 };
 
+class confInvalidRootException : public std::exception {
+    public :
+        const char* what() const throw() {
+            return ("Configuration file: Invalid root path"); }
+};
+
 #endif

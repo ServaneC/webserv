@@ -30,6 +30,7 @@ class Server
 		struct sockaddr_in					_host;
 		int									_client_socket;
 		int									_addrlen;
+		std::string							_root;
 		// std::map<std::string, std::string>	_routes;
 		std::list<Location>					_routes;
 	
@@ -48,6 +49,7 @@ class Server
 		int			getSocket() const;
 		int			getClientSocket() const;
 		Request		&getRequest() const;
+		std::list<Location> getRelevantLocations(std::string path_info);
 };
 
 #endif

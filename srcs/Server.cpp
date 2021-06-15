@@ -26,6 +26,9 @@ Server::Server(Config &conf, std::string server_conf) : _rqst(*(new Request)), _
         // this->_name = "localhost";
         std::cout << "- ServerName = " << _name << std::endl;
 
+        this->_root = parsingRoot(server_conf);
+        std::cout << "- ServerRoot = " << _root << std::endl;
+
         this->_host.sin_family = PF_INET;
         // this->_host.sin_addr.s_addr = INADDR_ANY; // -> 0.0.0.0
         this->_host.sin_addr.s_addr = this->_ip;
@@ -72,6 +75,37 @@ void	Server::exec_server()
     if (this->_rqst.parseRequest(this->_client_socket) > 0)
         execCGI((*this));
     close(this->_client_socket);
+}
+
+std::list<Location>    Server::getRelevantLocations(std::string path_info)
+{
+    std::list<Location> relevant_locations;
+
+	for (std::list<Location>::iterator it = _routes.begin(); it != _routes.end(); it++)
+    {
+        std::string path = it->getPath();
+        if (path[0] == '/')
+        {
+            std::cout << "SLASH : on compare ->\n";
+            std::cout << "|" << path.substr(0, path.size()) << "|" << std::endl;
+            std::cout << "|" << path_info.substr(0, path.size()) << "|" << std::endl;;
+            if (!path.compare(0, path.size(), path_info))
+                relevant_locations.push_back(*it);
+        }
+        else if (path[0] == '*')
+        {
+            size_t extension_length = path.size() - 1;
+            std::cout << "ETOILE : on check -> " << path[path.size() - extension_length] << std::endl;
+            if (!path.compare(path.size() - extension_length, extension_length, path_info))
+                relevant_locations.push_back(*it);
+        }
+    }
+    std::cout << ">> Relevant locations for this request :\n";
+    for (std::list<Location>::iterator it = relevant_locations.begin(); it != relevant_locations.end(); it++)
+    {
+        std::cout << "\t- [" << it->getPath() << "]\tRoot = " << it->getRoot() << std::endl;
+    }
+    return (relevant_locations);
 }
 
 int			Server::getPort() const

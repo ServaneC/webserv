@@ -1,3 +1,6 @@
+[15/6]
+    - Parsing de root : je recupere la racine generale du serveur et aussi
+les racines dans les locations mais je 
 [11/6]
     - Locations : avec le cerveau moins en bouillie aujourd'hui j'avais des
 idées concernant la marche a suivre donc je suis en train de parser/stocker

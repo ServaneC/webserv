@@ -6,11 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/08 16:33:16 by lemarabe          #+#    #+#             */
-<<<<<<< HEAD
 /*   Updated: 2021/06/15 15:48:58 by lemarabe         ###   ########.fr       */
-=======
-/*   Updated: 2021/06/13 23:50:47 by lemarabe         ###   ########.fr       */
->>>>>>> 58064780177b432f033f0372d32d9d50318e41aa
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,5 +37,6 @@ std::list<Location> parsingLocations(std::string conf);
 int                 setMethodCode(std::string method_name);
 std::vector<int>    parseAcceptedMethods(std::string location_conf);
 int                 parseMethod(std::string str, size_t *index);
+std::string         parsingRoot(std::string conf);
 
 #endif

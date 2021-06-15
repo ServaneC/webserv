@@ -21,6 +21,7 @@ class Location
 
         std::string         _path;
         std::string         _location_conf;
+        std::string         _root;
         std::vector<int>    _accepted_methods;
 
         Location();
@@ -29,8 +30,10 @@ class Location
 
         Location(std::string path, std::string location_conf);
         ~Location();
-        bool isAcceptedMethod(int code);
-          
+        std::string         getPath() const;
+        std::string         getRoot() const;
+        std::vector<int>    getAcceptedMethods() const;
+        bool                isAcceptedMethod(int code);
 };
 
 #endif

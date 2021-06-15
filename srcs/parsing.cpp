@@ -6,11 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-<<<<<<< HEAD
 /*   Updated: 2021/06/15 15:45:49 by lemarabe         ###   ########.fr       */
-=======
-/*   Updated: 2021/06/14 00:38:14 by lemarabe         ###   ########.fr       */
->>>>>>> 58064780177b432f033f0372d32d9d50318e41aa
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,11 +17,23 @@ std::string parsingName(std::string conf)
     size_t name_index = conf.find("server_name");
     if (name_index == std::string::npos)
         throw confNoServerNameException();  // a voir, je sais pas si un serveur doit forcement avoir un nom donné en config
-    name_index += 12;
+    name_index = conf.find_first_not_of(" \t\n\r\v\f", name_index + 12);
     size_t name_length = conf.find(";", name_index);
     if (name_length == std::string::npos)
         throw confNoServerNameException();
     return (conf.substr(name_index, name_length - name_index));
+}
+
+std::string parsingRoot(std::string conf)
+{
+    size_t root_index = conf.find("root");
+    if (root_index == std::string::npos)
+        return (std::string());
+    root_index = conf.find_first_not_of(" \t\n\r\v\f", root_index + 4);
+    size_t root_length = conf.find(";", root_index);
+    if (root_length == std::string::npos)
+        throw confInvalidRootException();
+    return (conf.substr(root_index, root_length - root_index));
 }
 
 unsigned int    convertIPAddress(std::string conf, size_t index)

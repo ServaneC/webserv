@@ -23,6 +23,7 @@ Location::Location(std::string path, std::string location_conf) : _path(path), _
     // for (std::vector<int>::iterator it = _accepted_methods.begin(); it != _accepted_methods.end(); it++)
     //     std::cout << *it << " ";
     // std::cout << std::endl;
+    this->_root = parsingRoot(location_conf);
 }
 
 bool Location::isAcceptedMethod(int code)
@@ -33,4 +34,17 @@ bool Location::isAcceptedMethod(int code)
             return true;
     }
     return false;
+}
+
+std::string         Location::getPath() const 
+{ 
+    return (this->_path);
+}
+std::string         Location::getRoot() const
+{
+    return (this->_root);
+}
+std::vector<int>    Location::getAcceptedMethods() const
+{
+    return (this->_accepted_methods);
 }

@@ -20,9 +20,9 @@ execCGI::execCGI(Server &serv)
 	: _server(serv), _request(serv.getRequest()), _last_modified(0)
 {
 	// VM
-	// std::string cgi_path = "/usr/bin/php-cgi";
+	std::string cgi_path = "/usr/bin/php-cgi";
 	// 42 MAC
-	std::string cgi_path = "/Users/schene/.brew/Cellar/php/8.0.7/bin/php-cgi";
+	// std::string cgi_path = "/Users/schene/.brew/Cellar/php/8.0.7/bin/php-cgi";
 	// OTHER MAC
 	//std::string cgi_path = "/usr/local/Cellar/php/8.0.7/bin/php-cgi";
 
@@ -165,8 +165,10 @@ void	execCGI::exec_CGI()
 	// 	case METHOD_DELETE:
 	// 		[...]
 	// 		break;
-	// }	
+	// }
 
+	std::string			path_info = this->_env["PATH_INFO"];
+	std::list<Location>	location_list = _server.getRelevantLocations(path_info);
 
 	char		**env_array = this->env_to_char_array();
 	pid_t		pid;

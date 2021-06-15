@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/30 09:49:40 by schene            #+#    #+#             */
-/*   Updated: 2021/06/14 12:15:55 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/15 13:46:15 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,13 +100,16 @@ void	Config::startServers()
 		if ((*it)->getSocket() > 0)
 		{
 			FD_SET((*it)->getSocket(), &this->_current_sockets);
+			std::cout << "SOCKET -> " << (*it)->getSocket() << std::endl;
 		}
 	}
 
     while (1)
     {
-        read_sockets = this->_current_sockets; //because select is destructive        
-        write_sockets = this->_current_sockets; //because select is destructive
+		FD_ZERO(&read_sockets);
+		FD_ZERO(&write_sockets);
+		std::memcpy(&read_sockets, &this->_current_sockets, sizeof(this->_current_sockets));
+		std::memcpy(&write_sockets, &this->_current_sockets, sizeof(this->_current_sockets));
         if (select(FD_SETSIZE, &read_sockets, &write_sockets, NULL, NULL) < 0)
         {
             perror("In select");
@@ -122,11 +125,14 @@ void	Config::startServers()
 					{
 						ret = (*it)->exec_accept();
 						FD_SET(ret, &this->_current_sockets);
+						std::cout << "SOCKET -> " << ret << std::endl;
 					}
 					if (FD_ISSET(i, &write_sockets))
 					{
 						(*it)->exec_server();
 						FD_CLR(i, &this->_current_sockets);
+						// std::cout << "CLEAR > " << i << std::endl;
+
 					}
 				}
             }

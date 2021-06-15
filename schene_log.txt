@@ -374,27 +374,47 @@ LEILA:
 		-> je crois que c'est parce que le body est recu du premier coup 
 			-> modifier le parsing pour s'adapter au cas où il y a le body avec la request / si il arrive après.
 		=> ✅ C'est bon ca marche go PUSH
-
 -> reussir a faire un GET avec une image ?
 	-> tout n'est pas stocker dans le body mais tout est bien recu du CGI
-		- il doit y avir une perte a un moment...
-		-> Je crois que y a pas le choix il va falloir remplacer le body string en char * 😩
-		-> pour le moment juste dans CGI et response mais ca ser peut a faire dans request aussi...
-			- commencer par faire un char * dans execCGI et voir si il peut stocker l'integralite des bytes
-			
+	- il doit y avoir une perte a un moment...
+	-> Je crois que y a pas le choix il va falloir remplacer le body string en char * 😩
+	-> pour le moment juste dans CGI et response mais ca ser peut a faire dans request aussi...
+		- commencer par faire un char * dans execCGI et voir si il peut stocker l'integralite des bytes
 
+15/06/2021
+!! ca bloque apres avoir envoyer un formulaire pui cliquer sur le lien Youpi... 🤔
+	-> il faut reset tout les header field a chaque request ! ✅
+-> remplacer un max de malloc par des new/ delete
+	-> j'en ai remplace quelques Uns
+- L'erreur "In select: Bad file descriptor" arrete pas de se repeter 
+	-> voir si c'est a cause des dernières modifs (tester sur la version push)
+		-> C'est pas lié, il faut revoir la gestion de select !
+	-> j'ai remplacer le '=' par un memcpy dans la copy des fd_set
+	✅ Ca semble resoudre le pb pour le moment...
+	-> ca rebug, ça viens d'ailleur ...
+> reussir a faire un GET avec une image ? [SUITE]
+	- commencer par faire un char * dans execCGI et voir si il peut stocker l'integralite des bytes
+	-> c'est fait mnt tout est bien stocker dans un char*, il faut revoir tout le parsing
+		dans Response (parser un char * au lieu d'une string)
+		-> Bon alors c'est plus compliquer que ce que je pensais...
+	-> Content-Length affiche des nombre negatif ???
+	-> essayer de tout traiter en char * sans la gestion de l'image...
+	-> Bon ca me prend la tête ! on dirait que tout n'est pas bien recu par recv 
+		ou c'est juste un pb avec std::cout qui n'affiche pas tout ?  -> essayer avec un write
+		=> OUF c'est bon tout s'affiche bien avec write, donc tout est bien reçu 
+		-> par contre je crois pas que tout se concatene / stock bien dans le buf 🤔
 
 ================================== NOTES ==================================
 
--> reussir a faire un GET sur une image ?
 -> reussir une request DELETE
 -> faire marcher les query string
 	- il faut apparement parser REFERER
--> regler le pb "In select: Bad file descriptor"
+-> regler le pb "In select: Bad file descriptor" => il va falloir completement revoir la gestion de select !
 -> throw les bonnes exceptions aux bons endroit
 -> essayer d'appliquer le CSS au php
 - utiliser les routes
--> gérer l'upload de fichier
+-> gérer l'upload de fichier (il faut passer par POST)
+-> gererles leaks en cas d'erreur / d'arret
 
 POST request from safari after HTML form:
 -----------------------------------------

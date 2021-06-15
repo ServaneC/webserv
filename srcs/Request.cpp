@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 16:24:45 by schene            #+#    #+#             */
-/*   Updated: 2021/06/14 13:29:01 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/15 10:11:55 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,16 +16,7 @@
 
 Request::Request() : _bad_request(false)//init header map
 {
-	this->_headers["Accept-Charsets"] = std::string();
-	this->_headers["Accept-Language"] = std::string();
-	this->_headers["Authorization"] = std::string();
-	this->_headers["Content-Length"] = std::string();
-	this->_headers["Content-Type"] = std::string();
-	this->_headers["Date"] = std::string();
-	this->_headers["Host"] = std::string();
-	this->_headers["Referer"] = std::string();
-	this->_headers["Transfer-Encoding"] = std::string();
-	this->_headers["User-Agent"] = std::string();
+
 }
 
 Request::~Request()
@@ -37,6 +28,8 @@ Request::~Request()
 int		Request::parseRequest(int socket)
 {
 	this->_socket = socket;
+	this->resetHeaders();
+
 	if (this->recvRequest() < 0)
 		return -1;
 
@@ -180,6 +173,21 @@ void		Request::parseHeaderFields(std::string line)
 	}
 }
 
+void		Request::resetHeaders()
+{
+	this->_headers["Accept-Charsets"] = std::string();
+	this->_headers["Accept-Language"] = std::string();
+	this->_headers["Authorization"] = std::string();
+	this->_headers["Content-Length"] = std::string();
+	this->_headers["Content-Type"] = std::string();
+	this->_headers["Date"] = std::string();
+	this->_headers["Host"] = std::string();
+	this->_headers["Referer"] = std::string();
+	this->_headers["Transfer-Encoding"] = std::string();
+	this->_headers["User-Agent"] = std::string();
+}
+
+
 char		*Request::free_null_line(char *line)
 {
 	if (line)
@@ -188,7 +196,7 @@ char		*Request::free_null_line(char *line)
 	return line;
 }
 
-
+// GETTER
 std::string const	&Request::getMethod() const
 {
 	return this->_method;

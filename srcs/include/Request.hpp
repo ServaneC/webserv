@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 16:24:53 by schene            #+#    #+#             */
-/*   Updated: 2021/06/14 13:28:33 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/15 10:10:03 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ class Request
 		std::map<std::string, std::string>	_headers;
 		std::string							_body;
 
+		void		resetHeaders();
 		int			recvRequest();
 		int			recvBody();
 		int			gnlRequest();

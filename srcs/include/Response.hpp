@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 13:50:28 by schene            #+#    #+#             */
-/*   Updated: 2021/06/14 10:56:23 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/15 15:50:50 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,12 @@ class Response
 	private:
 		execCGI								&_cgi;
 		int									_socket;
-		std::string 						_buf;
+		std::string 						_bufb;
+		char 								*_buf;
+		int									_idx;
+		int									_buf_size;
 		std::string							_response;
+		char								*_response_c;
 		std::map<std::string, std::string>	_headers;
 		std::map<int,int>					_socketsMap;
 

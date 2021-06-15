@@ -16,18 +16,18 @@
 # define INDEX "index.html"
 
 execCGI::execCGI(Server &serv) 
-	: _server(serv), _request(serv.getRequest()), _last_modified(0), _body_char(NULL)
+	: _server(serv), _request(serv.getRequest()), _buf(NULL),
+		 _buf_size(0), _last_modified(0), _argv(NULL)
 {
 	// VM
-	//std::string cgi_path = "/usr/bin/php-cgi";
+	// std::string cgi_path = "/usr/bin/php-cgi";
 	// 42 MAC
 	std::string cgi_path = "/Users/schene/.brew/Cellar/php/8.0.7/bin/php-cgi";
 	// OTHER MAC
 	//std::string cgi_path = "/usr/local/Cellar/php/8.0.7/bin/php-cgi";
 
-
+	this->_buf = NULL;
 	this->_env["SERVER_PROTOCOL"] = "HTTP/1.1";
-	//std::cout << "CGI -> " << this->_request.getBadRequest() << std::endl;
 	if (!this->_request.getBadRequest())
 	{
 		this->_env["REQUEST_METHOD"] = this->_request.getMethod();
@@ -51,12 +51,14 @@ execCGI::execCGI(Server &serv)
 	this->_env["SERVER_PORT"] = this->_server.getPort();
 	this->_env["SERVER_SOFTWARE"] = "webserv/1.0";
 	
-	if (!(this->_argv = (char **)malloc(sizeof(char *) * 3)))
-		return ;
-	if (!(this->_argv[0] = (char *)malloc(sizeof(char) * cgi_path.size() + 1)))
-		return ;
-	std::strcpy(_argv[0], cgi_path.c_str());
-	this->_argv[1] = NULL;
+	try {
+		this->_argv = new char*[3];
+		this->_argv[0] = new char[cgi_path.size() + 1];
+		std::strcpy(_argv[0], cgi_path.c_str());
+		this->_argv[1] = NULL;
+	}
+	catch (std::exception &e) {
+        std::cout << e.what() << std::endl; }
 
 	this->exec_CGI();
 	Response((*this), this->_server.getClientSocket());
@@ -64,16 +66,7 @@ execCGI::execCGI(Server &serv)
 
 execCGI::~execCGI()
 {
-	if (this->_argv[0])
-	{
-		free(this->_argv[0]);
-		if (this->_argv[1])
-			free(this->_argv[1]);
-		free(this->_argv);
-	}
-	this->_argv = NULL;
-	// if (this->_buf)
-	// 	free(this->_buf);
+
 }
 
 void	execCGI::setPathQuery()
@@ -125,10 +118,9 @@ int		execCGI::set_argv()
 
 	std::cout << "=> [" << file_path << ']' <<  std::endl;
 	if (this->_argv[1])
-		free(this->_argv[1]);
+		delete [] this->_argv[1];
 	this->_argv[1] = NULL;
-	if (!(this->_argv[1] = (char *)malloc(sizeof(char) * file_path.size() + 1)))
-		return (-1);
+	this->_argv[1] = new char[file_path.size() + 1];
 	std::strcpy(_argv[1], file_path.c_str());
 	this->_argv[2] = NULL;
 	return 1;
@@ -136,18 +128,18 @@ int		execCGI::set_argv()
 
 void	execCGI::exec_CGI()
 {
-	// this->_env["HTTP_HOST"] = this->_env["SERVER_NAME"];
-	// std::cout << "-> REQUEST_METHOD = |" << this->_env["REQUEST_METHOD"] << '|' << std::endl;
-	// std::cout << "-> REDIRECT_STATUS = |" << this->_env["REDIRECT_STATUS"] << '|' << std::endl;
-	// std::cout << "-> SCRIPT_FILENAME = |" << this->_env["SCRIPT_FILENAME"] << '|' << std::endl;
-	// std::cout << "-> SCRIPT_NAME = |" << this->_env["SCRIPT_NAME"] << '|' << std::endl;
-	// std::cout << "-> PATH_INFO = |" << this->_env["PATH_INFO"] << '|' << std::endl;
-	// std::cout << "-> SERVER_NAME = |" << this->_env["SERVER_NAME"] << '|' << std::endl;
-	// std::cout << "-> SERVER_PROTOCOL = |" << this->_env["SERVER_PROTOCOL"] << '|' << std::endl;
-	// std::cout << "-> REQUEST_URI = |" << this->_env["REQUEST_URI"] << '|' << std::endl;
-	// std::cout << "-> HTTP_HOST = |" << this->_env["HTTP_HOST"] << '|' << std::endl;
-	// std::cout << "-> CONTENT_LENGTH = |" << this->_env["CONTENT_LENGTH"] << '|' << std::endl;
-	// std::cout << "-> QUERY_STRING = |" << this->_env["QUERY_STRING"] << '|' << std::endl;
+	this->_env["HTTP_HOST"] = this->_env["SERVER_NAME"];
+	std::cout << "-> REQUEST_METHOD = |" << this->_env["REQUEST_METHOD"] << '|' << std::endl;
+	std::cout << "-> REDIRECT_STATUS = |" << this->_env["REDIRECT_STATUS"] << '|' << std::endl;
+	std::cout << "-> SCRIPT_FILENAME = |" << this->_env["SCRIPT_FILENAME"] << '|' << std::endl;
+	std::cout << "-> SCRIPT_NAME = |" << this->_env["SCRIPT_NAME"] << '|' << std::endl;
+	std::cout << "-> PATH_INFO = |" << this->_env["PATH_INFO"] << '|' << std::endl;
+	std::cout << "-> SERVER_NAME = |" << this->_env["SERVER_NAME"] << '|' << std::endl;
+	std::cout << "-> SERVER_PROTOCOL = |" << this->_env["SERVER_PROTOCOL"] << '|' << std::endl;
+	std::cout << "-> REQUEST_URI = |" << this->_env["REQUEST_URI"] << '|' << std::endl;
+	std::cout << "-> HTTP_HOST = |" << this->_env["HTTP_HOST"] << '|' << std::endl;
+	std::cout << "-> CONTENT_LENGTH = |" << this->_env["CONTENT_LENGTH"] << '|' << std::endl;
+	std::cout << "-> QUERY_STRING = |" << this->_env["QUERY_STRING"] << '|' << std::endl;
 	
 	//just to pass second test (very ugly, should be handle differently)
 	this->_buf = NULL;
@@ -174,8 +166,6 @@ void	execCGI::exec_CGI()
 	pid_t		pid;
 	int			saveStdin;
 	int			saveStdout;
-	std::string	newBody;
-	//std::string _body;
 
 	this->set_argv();
 
@@ -202,8 +192,6 @@ void	execCGI::exec_CGI()
 	}
 	else if (pid == 0) //in child 
 	{
-		//char * const * nll = NULL;
-
 		dup2(fdIn, STDIN_FILENO);
 		dup2(fdOut, STDOUT_FILENO);
 		execve(this->_argv[0], this->_argv, env_array);
@@ -218,14 +206,13 @@ void	execCGI::exec_CGI()
 		lseek(fdOut, 0, SEEK_SET);
 
 		ret = 1;
-		int c = 0;
 		while (ret > 0)
 		{
 			memset(buffer, 0, CGI_BUFSIZE);
 			ret = read(fdOut, buffer, CGI_BUFSIZE - 1);
 			buffer[ret] = 0;
-			newBody.append(buffer);
-			c++;
+			if (ret > 0)
+				this->append_body(buffer, ret);
 		}
 	}
 
@@ -237,6 +224,15 @@ void	execCGI::exec_CGI()
 	close(fdOut);
 	close(saveStdin);
 	close(saveStdout);
+	if (this->_argv[0])
+		delete [] this->_argv[0];
+	this->_argv[0] = NULL;
+	if (this->_argv[1])
+		delete [] this->_argv[1];
+	if (this->_argv)
+		delete [] this->_argv;
+
+	this->_argv = NULL;
 
 	for (int i = 0; env_array[i]; i++)
 		free(env_array[i]);
@@ -245,16 +241,12 @@ void	execCGI::exec_CGI()
 	if (!pid)
 		exit(0);
 
-	if (!(this->_buf = (char *)malloc(sizeof(char) * (newBody.size() + 1))))
-		exit(EXIT_FAILURE);
-	memset(this->_buf, 0, newBody.size() + 1);
-	memcpy(this->_buf, (char *)newBody.c_str(), newBody.size());
-	this->_buf[newBody.size()] = 0;
+	std::cout << "len = " << this->_buf_size << std::endl;
 }
 
 void				execCGI::free_buf()
 {
-	free(this->_buf);
+	delete [] this->_buf;
 	this->_buf = NULL;
 }
 
@@ -266,11 +258,28 @@ bool	execCGI::check_method()
 			!this->_env["REQUEST_METHOD"].compare("DELETE")));
 }
 
-int		execCGI::append_body(char *buffer)
+void		execCGI::append_body(char *buffer, int size)
 {
-	char *tmp;
-
-	if (!(tmp = ))
+	try {
+		// if (size <= 0)
+		// 	return ;
+		if (this->_buf)
+		{
+			this->_buf = MyRealloc(this->_buf, this->_buf_size, this->_buf_size + size + 1);
+			this->_buf = std::strcat(this->_buf, buffer);
+			// std::memcpy(&this->_buf[this->_buf_size], buffer, size);
+		}
+		else
+		{
+			this->_buf = new char[size + 1];
+			this->_buf = std::strcpy(this->_buf, buffer);
+			// std::memcpy(this->_buf, buffer, size);
+		}
+		this->_buf_size += size;
+		// write(1, buffer, size);
+	}
+	catch (std::exception &e) {
+        std::cout << e.what() << std::endl; }
 }
 
 // GETTERS
@@ -289,7 +298,12 @@ std::string const	&execCGI::getEnvVar(std::string var_name) const
 
 char		 *execCGI::getBuf() const
 {
-	return this->_buf;
+	return (char *)this->_buf;
+}
+
+int			execCGI::getBufSize() const
+{
+	return this->_buf_size;
 }
 
 time_t				execCGI::getLastModified() const

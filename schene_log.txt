@@ -430,8 +430,9 @@ AVANT CA:
 		- avec un 'cat file | more', on voit bien que plein de char ne passe pas dans le retour du cgi
 	🎉 CA MARCHE !!!!!!!!!!!!!!!!! (il fallait enlever le '\r\n' apres le header du cgi)
 -> modifier select pour ne plus avoir d'erreur 
-	-> check si c'est un write_fd au moment de send la request
-	
+	=> Je crois que c'est bon 
+-> tester dans la VM
+=> MERGE !
 ================================== NOTES ==================================
 
 -> reussir une request DELETE

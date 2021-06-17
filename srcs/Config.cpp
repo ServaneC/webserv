@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/30 09:49:40 by schene            #+#    #+#             */
-/*   Updated: 2021/06/17 11:25:00 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/17 12:42:46 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,50 +96,48 @@ void	Config::startServers()
 	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
 	{
 		if ((*it)->getSocket() > 0)
-		{
 			FD_SET((*it)->getSocket(), &this->_current_sockets);
-			std::cout << "SOCKET -> " << (*it)->getSocket() << std::endl;
-		}
 	}
 
     while (1)
     {
+		int select_ret;
 		FD_ZERO(&read_sockets);
 		FD_ZERO(&write_sockets);
 		std::memcpy(&read_sockets, &this->_current_sockets, sizeof(this->_current_sockets));
 		std::memcpy(&write_sockets, &this->_current_sockets, sizeof(this->_current_sockets));
-        if (select(FD_SETSIZE, &read_sockets, &write_sockets, NULL, NULL) < 0)
+
+		select_ret = select(FD_SETSIZE, &read_sockets, &write_sockets, NULL, NULL);
+        if (select_ret < 0)
         {
 			for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
 				close ((*it)->getSocket());
             perror("In select");
-            exit(EXIT_FAILURE);  
+            exit(EXIT_FAILURE); 
         }
-    	for (int i = 0; i < FD_SETSIZE; i++)
-    	{
-            if (FD_ISSET(i, &read_sockets))
-            {
-				for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
+		else if (select_ret > 0)
+		{
+			for (int i = 0; i < FD_SETSIZE; i++)
+			{
+				if (FD_ISSET(i, &read_sockets))
 				{
-					if (i == (*it)->getSocket())
+					for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
 					{
-						ret = (*it)->exec_accept();
-						FD_SET(ret, &this->_current_sockets);
-						// std::cout << "SOCKET -> " << ret << std::endl;
-					}
-					else if (FD_ISSET(i, &write_sockets))
-					{
-						(*it)->exec_server();
-						FD_CLR(i, &this->_current_sockets);
-						// std::cout << "CLEAR > " << i << std::endl;
-					}
-					else
-					{
-
+						if (i == (*it)->getSocket() && (*it)->getClientSocket() < 0)
+						{
+							ret = (*it)->exec_accept();
+							FD_SET(ret, &this->_current_sockets);
+						}
+						if (FD_ISSET(i, &write_sockets) && (*it)->getClientSocket() != -1)
+						{
+							std::cout << "PORT -> [" << (*it)->getPort() << ']' << std::endl;
+							(*it)->exec_server();
+							FD_CLR(i, &this->_current_sockets);
+						}
 					}
 				}
-            }
-        }
+			}
+		}
 	}
 	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
 		close ((*it)->getSocket());

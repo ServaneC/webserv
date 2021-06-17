@@ -6,13 +6,14 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/06/14 12:16:04 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/17 12:39:52 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/Server.hpp"
 
-Server::Server(Config &conf, std::string server_conf) : _rqst(*(new Request)), _main_conf(conf), _server_conf(server_conf)
+Server::Server(Config &conf, std::string server_conf) : 
+    _rqst(*(new Request)), _main_conf(conf), _server_conf(server_conf), _client_socket(-1)
 {
     try
     {
@@ -72,6 +73,7 @@ void	Server::exec_server()
     if (this->_rqst.parseRequest(this->_client_socket) > 0)
         execCGI((*this));
     close(this->_client_socket);
+    this->_client_socket = -1; 
 }
 
 int			Server::getPort() const

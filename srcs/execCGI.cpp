@@ -20,9 +20,9 @@ execCGI::execCGI(Server &serv)
 		 _buf_size(0), _last_modified(0), _argv(NULL)
 {
 	// VM
-	std::string cgi_path = "/usr/bin/php-cgi";
+	// std::string cgi_path = "/usr/bin/php-cgi";
 	// 42 MAC
-	// std::string cgi_path = "/Users/schene/.brew/Cellar/php/8.0.7/bin/php-cgi";
+	std::string cgi_path = "/Users/schene/.brew/Cellar/php/8.0.7/bin/php-cgi";
 	// OTHER MAC
 	// std::string cgi_path = "/usr/local/Cellar/php/8.0.7/bin/php-cgi";
 
@@ -35,6 +35,7 @@ execCGI::execCGI(Server &serv)
 		this->setPathQuery();
 	}
 	this->_env["REDIRECT_STATUS"] = "200"; 
+	this->_env["HTTP_ACCEPT"] = this->_request.getHeaderField("Accept"); 
 	this->_env["STATUS_CODE"] = "200 OK";
 	if (this->_request.getBadRequest())
 		this->_env["STATUS_CODE"] = "400 Bad Request";
@@ -96,18 +97,14 @@ void	execCGI::setPathQuery()
 
 char	**execCGI::env_to_char_array()
 {
-	char	**array;
+	char	**array = new char*[this->_env.size() + 1];
 	int		j = 0;
-
-	if (!(array = (char **)malloc(sizeof(char *) * (this->_env.size() + 1))))
-		exit(EXIT_FAILURE);
 
 	for (std::map<std::string, std::string>::const_iterator it = _env.begin(); it != _env.end(); it++) 
 	{
 		std::string	element = it->first + "=" + it->second;
-		if (!(array[j] = (char *)malloc(sizeof(char) * element.size() + 1)))
-			return NULL;
-		array[j] = strcpy(array[j], element.c_str());
+		array[j] = new char [element.size() + 1];
+		array[j] = std::strcpy(array[j], element.c_str());
 		j++;
 	}
 	array[j] = NULL;
@@ -148,21 +145,6 @@ void	execCGI::exec_CGI()
 	this->_buf = NULL;
 	if (this->_env["STATUS_CODE"].compare("200 OK") != 0)
 		return ;
-	// switch (this->_request.getMethodCode())
-	// {
-	// 	case METHOD_NOT_ALLOWED:
-	// 		this->_env["STATUS_CODE"] = "405 Method Not Allowed";
-	// 		return ;
-	// 	case METHOD_GET:
-	// 		[...]
-	// 		break;
-	// 	case METHOD_POST:
-	// 		[...]
-	// 		break;
-	// 	case METHOD_DELETE:
-	// 		[...]
-	// 		break;
-	// }	
 
 
 	char		**env_array = this->env_to_char_array();
@@ -179,8 +161,6 @@ void	execCGI::exec_CGI()
 
 	FILE	*fIn = tmpfile();
 	FILE	*fOut = tmpfile();
-	FILE 	*fp;
-    fp = fopen ("body", "w");
 	long	fdIn = fileno(fIn);
 	long	fdOut = fileno(fOut);
 	int		ret = 1;
@@ -215,7 +195,6 @@ void	execCGI::exec_CGI()
 		{
 			memset(buffer, 0, CGI_BUFSIZE);
 			ret = read(fdOut, buffer, CGI_BUFSIZE - 1);
-	 		fwrite(buffer, ret, 1, fp);
 			buffer[ret] = 0;
 			if (ret > 0)
 				this->append_body(buffer, ret);
@@ -230,7 +209,6 @@ void	execCGI::exec_CGI()
 	close(fdOut);
 	close(saveStdin);
 	close(saveStdout);
-    fclose(fp);
 	if (this->_argv[0])
 		delete [] this->_argv[0];
 	this->_argv[0] = NULL;
@@ -242,8 +220,8 @@ void	execCGI::exec_CGI()
 	this->_argv = NULL;
 
 	for (int i = 0; env_array[i]; i++)
-		free(env_array[i]);
-	free(env_array);
+		delete [] env_array[i];
+	delete [] env_array;
 
 	if (!pid)
 		exit(0);
@@ -268,8 +246,6 @@ bool	execCGI::check_method()
 void		execCGI::append_body(char *buffer, int size)
 {
 	try {
-		// if (size <= 0)
-		// 	return ;
 		if (this->_buf)
 		{
 			this->_buf = MyRealloc(this->_buf, this->_buf_size, this->_buf_size + size + 1);
@@ -278,12 +254,9 @@ void		execCGI::append_body(char *buffer, int size)
 		else
 		{
 			this->_buf = new unsigned char[size + 1];
-			// this->_buf = std::strcpy(this->_buf, buffer);
 			std::memmove(this->_buf, buffer, size);
-			// std::memcpy(this->_buf, buffer, size);
 		}
 		this->_buf_size += size;
-		// write(1, buffer, size);
 	}
 	catch (std::exception &e) {
         std::cout << e.what() << std::endl; }

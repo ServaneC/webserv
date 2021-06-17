@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 14:42:45 by schene            #+#    #+#             */
-/*   Updated: 2021/06/17 12:41:54 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/17 15:18:39 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,6 @@ void		Response::parse_cgi_buf()
 				break ;
 			next_n++;
 		}
-		// int next_n = std::strcspn(&this->_buf[this->_idx], "\n");
 		std::cout << "span = " << next_n << std::endl;
 		std::string tmp_s = std::string((char *)(&this->_buf[this->_idx]), next_n - 1); //line with the header field (maybe -2)
 		
@@ -172,15 +171,11 @@ void			Response::send_response()
 	std::memmove(to_send, this->_response.c_str(), this->_response.size());
 	if (this->_buf)
 	{
-		FILE *fp;
-        fp = fopen ("buf", "w+");
-        fwrite(this->_buf + this->_idx, this->_buf_size, 1, fp);
-        fclose(fp);
 		std::memmove(to_send + this->_response.size(), this->_buf + this->_idx, this->_buf_size);
 		delete [] this->_buf;
 	}
 	//print on our cout to check
-	std::cout << "------------ RESPONSE HEADER-----------------" << std::endl;
+	std::cout << "------------ RESPONSE -----------------" << std::endl;
 	write(1, to_send, size);
 	std::cout << "---------------------------------------" << std::endl;
 	// Actually sending to socket

@@ -432,19 +432,25 @@ AVANT CA:
 -> modifier select pour ne plus avoir d'erreur 
 	=> Je crois que c'est bon 
 -> tester dans la VM
-=> MERGE !
+=> MERGE ✅
+->continuer a changer les mallocs en new ✅
+✅ Le CSS marche sur les fichier qui sont pas .html (youpi.bla et action.php)
+-> remplacer recvRequest et recvBody en 1 seule fonction = recvData() ✅
+-> j'ai changer la variable _request en _buf (+ logique)
+
 ================================== NOTES ==================================
 
+A faire:
 -> reussir une request DELETE
 -> faire marcher les query string
 	- il faut apparement parser REFERER
--> regler le pb "In select: Bad file descriptor" => il va falloir completement revoir la gestion de select !
 -> throw les bonnes exceptions aux bons endroit
 -> essayer d'appliquer le CSS au php
 - utiliser les routes
 -> gérer l'upload de fichier (il faut passer par POST)
--> gererles leaks en cas d'erreur / d'arret
-!! Leak dans la vm apre l'erreur de select.
+-> gerer les leaks en cas d'erreur / d'arret
+-> gerer les chunk request
+
 
 POST request from safari after HTML form:
 -----------------------------------------
@@ -471,13 +477,9 @@ Accept-Language: en-us
 	-> reussir a avoir le bon retour avec le cgi
 
 To do:
-- [ ] Throw exception (ex: in getHeaderField()
-- [ ] Gérer les chunk request
 - [ ] Recoder l’appel au cgi (pour l’instant c’est un cp de GitHub 😬)
-- [ ] call the cgi with the file requested as first argument 
 - [ ] Error pages
 - [ ] truc fun a faire : remplir les fichiers de test (Youpi banane et cie)
-- [ ] gerer les methodes POST et DELETE !
 - [ ] revoir tout les retour d'erreur dans Response
 
 Piste:

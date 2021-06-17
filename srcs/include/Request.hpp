@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 16:24:53 by schene            #+#    #+#             */
-/*   Updated: 2021/06/15 10:10:03 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/17 15:13:55 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,8 @@ class Request
 	private:
 		int									_socket;
 		bool								_bad_request;
-		std::string							_request;
+		// std::string							_request;
+		std::string							_buf;
 		std::string							_line;
 		std::string							_method;
 		int									_method_code;
@@ -30,8 +31,7 @@ class Request
 		std::string							_body;
 
 		void		resetHeaders();
-		int			recvRequest();
-		int			recvBody();
+		int			recvData(int size, int mode);
 		int			gnlRequest();
 		void		parseRequestLine(std::string line);
 		void		parseHeaderFields(std::string line);

@@ -6,15 +6,17 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 16:24:45 by schene            #+#    #+#             */
-/*   Updated: 2021/06/17 10:23:24 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/17 15:18:56 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/Request.hpp"
 
 #define CHUNK_SIZE 2000
+#define HEADER 1
+#define BODY 2
 
-Request::Request() : _bad_request(false)//init header map
+Request::Request() : _bad_request(false)
 {
 
 }
@@ -30,18 +32,17 @@ int		Request::parseRequest(int socket)
 	this->_socket = socket;
 	this->resetHeaders();
 
-	if (this->recvRequest() < 0)
+	if (this->recvData(CHUNK_SIZE, HEADER) < 0)
 		return -1;
 
-	if (this->_request.empty())
+	if (this->_buf.empty())
 		return (- 1);
 	std::cout << "========= REQUEST =========" << std::endl;
-	std::cout << this->_request;
+	std::cout << this->_buf;
 	std::cout << "========= END OF REQUEST =========" << std::endl;
 	//while because "ignore at least one CRLF before request line"
 	while (gnlRequest() > 0)
 	{
-		//std::cout << this->_line << std::endl;
 		if (!(this->_line[0] == '\r' || this->_line.empty()))
 		{
 			this->parseRequestLine(this->_line);
@@ -50,7 +51,6 @@ int		Request::parseRequest(int socket)
 	}
 	while (gnlRequest() > 0)
 	{
-		//std::cout << this->_line << std::endl;
 	 	if (this->_line.find(':') == std::string::npos) //check if we are still in the headers fields
 	 		break ;
 	 	this->parseHeaderFields(this->_line);
@@ -60,73 +60,57 @@ int		Request::parseRequest(int socket)
 	 	this->_bad_request = true;
 	// if payload-body -> read it
 	this->_body.clear();
-	this->_body.assign(this->_request);
+	this->_body.assign(this->_buf);
 	if (!this->getHeaderField("Content-Length").empty())
 	{
-		std::cout << "BODY [" << this->_body << ']' << std::endl;
 		while (this->_body.empty())
-			this->recvBody();
+			this->recvData(std::atoi(this->_headers["Content-Length"].c_str()), BODY);
 	}
-	this->_request.clear();
-	std::cout << "BODY [" << this->_body << ']' << std::endl;
+	this->_buf.clear();
 	return 1;
 }
 
-int		Request::recvRequest()
+int			Request::recvData(int size, int mode)
 {
 	char *recv_buf;
 	int  recv_ret;
 
-	if (!(recv_buf = (char *)malloc (sizeof(char) * CHUNK_SIZE + 1)))
+	try {
+		recv_buf = new char [size + 1];
+	}
+	catch (std::exception &e) {
+        std::cout << e.what() << std::endl;
 		return (-1);
-	memset(recv_buf, '\0', CHUNK_SIZE);
-	while ((recv_ret = recv(this->_socket, recv_buf, CHUNK_SIZE, 0)) > 0)
+	}
+	memset(recv_buf, '\0', size);
+	while ((recv_ret = recv(this->_socket, recv_buf, size, 0)) > 0)
 	{
 		recv_buf[recv_ret] = '\0';
-		this->_request.append((const char *)recv_buf);
+		if (mode == HEADER)
+			this->_buf.append((const char *)recv_buf);
+		else if (mode == BODY)
+			this->_body.append((const char *)recv_buf);
 		memset(recv_buf, '\0', recv_ret);
-		if (recv_ret < CHUNK_SIZE)
+		if (recv_ret < size || mode == BODY)
 			break ;
 	}
-	free(recv_buf);
-	recv_buf = NULL;
-	return 1;
-}
-
-int		Request::recvBody()
-{
-	char *recv_buf;
-	int  recv_ret;
-	int length = std::atoi(this->_headers["Content-Length"].c_str());
-
-	if (!(recv_buf = (char *)malloc (sizeof(char) * length + 1)))
-		return (-1);
-	memset(recv_buf, '\0', length);
-	if ((recv_ret = recv(this->_socket, recv_buf, length, 0)) > 0)
-	{
-		recv_buf[recv_ret] = '\0';
-		this->_body.append((const char *)recv_buf);
-		memset(recv_buf, '\0', recv_ret);
-	}
-	free(recv_buf);
-	recv_buf = NULL;
+	delete [] recv_buf;
 	return 1;
 }
 
 int Request::gnlRequest()
 {
-	size_t pos = this->_request.find_first_of('\n');
+	size_t pos = this->_buf.find_first_of('\n');
 
 	this->_line.clear();
 	if (pos != std::string::npos)
 	{
-		this->_line = this->_request.substr(0, pos);
-		this->_request.erase(0, pos + 1);
+		this->_line = this->_buf.substr(0, pos);
+		this->_buf.erase(0, pos + 1);
 		return pos;
 	}
 	return (-1);
 }
-
 
 void		Request::parseRequestLine(std::string line)
 {

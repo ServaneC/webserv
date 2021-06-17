@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/30 09:49:40 by schene            #+#    #+#             */
-/*   Updated: 2021/06/17 12:42:46 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/17 14:24:16 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,8 +34,13 @@ int 	Config::readConfFile(char const *path)
 	std::fstream conf_stream(path, std::ios_base::in); //open file for reading
 	char *line = NULL;
 	
-	if (!(line = (char *)malloc(sizeof(char) * BUFF_SIZE)))
-		return -1;
+	try {
+		line = new char [BUFF_SIZE];
+	}
+	catch (std::exception &e) {
+        std::cout << e.what() << std::endl;
+		return (-1);
+	}
 	while (1)
 	{
 		conf_stream.getline(line, BUFF_SIZE);

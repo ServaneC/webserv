@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/30 09:49:40 by schene            #+#    #+#             */
-/*   Updated: 2021/06/15 13:46:15 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/17 11:25:00 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,9 +58,7 @@ int 	Config::readConfFile(char const *path)
 std::string Config::singleServerConfig(size_t index)
 {
 	size_t open_bracket = this->_content.find_first_not_of("serv \t\n\r\v\f", index); // why "\t\n\r\v\f" ?
-	// std::cout << open_bracket << " = " << _content[open_bracket] << std::endl;
 	size_t close_bracket = findClosingBracket(_content, open_bracket);
-	// std::cout << close_bracket << " = " << _content[close_bracket] << std::endl;
 	
 	if (this->_content[open_bracket] == '{' && _content[close_bracket] == '}')
 		return (this->_content.substr(open_bracket, close_bracket - open_bracket + 1));
@@ -112,6 +110,8 @@ void	Config::startServers()
 		std::memcpy(&write_sockets, &this->_current_sockets, sizeof(this->_current_sockets));
         if (select(FD_SETSIZE, &read_sockets, &write_sockets, NULL, NULL) < 0)
         {
+			for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
+				close ((*it)->getSocket());
             perror("In select");
             exit(EXIT_FAILURE);  
         }
@@ -125,17 +125,22 @@ void	Config::startServers()
 					{
 						ret = (*it)->exec_accept();
 						FD_SET(ret, &this->_current_sockets);
-						std::cout << "SOCKET -> " << ret << std::endl;
+						// std::cout << "SOCKET -> " << ret << std::endl;
 					}
-					if (FD_ISSET(i, &write_sockets))
+					else if (FD_ISSET(i, &write_sockets))
 					{
 						(*it)->exec_server();
 						FD_CLR(i, &this->_current_sockets);
 						// std::cout << "CLEAR > " << i << std::endl;
+					}
+					else
+					{
 
 					}
 				}
             }
         }
 	}
+	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
+		close ((*it)->getSocket());
 }

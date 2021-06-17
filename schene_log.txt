@@ -417,6 +417,21 @@ LEILA:
 					-> pb avec strcspn dans parse_cgi_buf dans response -> trouver une autre solution qui utilise que des memprout
 					😡 CA MARCHE TOUJOURS PAS 
 
+17/06/2021
+GOAL OF THE DAY: merge les deux branches sur main !
+AVANT CA:
+-> réussir a afficher une image !!!
+-> si select pouvait ne plus bugger ca serait cool aussi
+> reussir a faire un GET avec une image ? [SUITE 2]
+	-> changer le content-type dans response ✅
+	-> mettre le retour du cgi dan un fichier et voir la dif avec l'image de base !
+		- le retour du php-cgi est bien stocké dans le buf.
+		-> c'st bizarre car ce que renvoi le cgi est beaucoup plus grand que l'image de base ...?
+		- avec un 'cat file | more', on voit bien que plein de char ne passe pas dans le retour du cgi
+	🎉 CA MARCHE !!!!!!!!!!!!!!!!! (il fallait enlever le '\r\n' apres le header du cgi)
+-> modifier select pour ne plus avoir d'erreur 
+	-> check si c'est un write_fd au moment de send la request
+	
 ================================== NOTES ==================================
 
 -> reussir une request DELETE
@@ -428,6 +443,7 @@ LEILA:
 - utiliser les routes
 -> gérer l'upload de fichier (il faut passer par POST)
 -> gererles leaks en cas d'erreur / d'arret
+!! Leak dans la vm apre l'erreur de select.
 
 POST request from safari after HTML form:
 -----------------------------------------

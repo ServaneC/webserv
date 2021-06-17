@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 14:42:45 by schene            #+#    #+#             */
-/*   Updated: 2021/06/16 01:03:49 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/17 10:49:30 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,6 +83,11 @@ void		Response::parse_cgi_buf()
 			std::cout << '|' << name << " = " << this->_headers[name] << '|' << std::endl;
 		}
 	}
+	if ((&this->_buf[this->_idx])[0] == '\r' && (&this->_buf[this->_idx])[1] == '\n')
+	{
+		this->_idx += 2;
+		this->_buf_size -= 2;
+	}
 }
 
 
@@ -141,6 +146,10 @@ void		Response::check_content_type()
 		std::cout << "-> " << tmp << std::endl;
 		if (!tmp.compare("css"))
 			this->_headers["Content-Type"] = "text/css";
+		// else if (!tmp.compare("jpeg") || !tmp.compare("jpg"))
+		// 	this->_headers["Content-Type"] = "image/jpeg";
+		// else if (!tmp.compare("png"))
+		// 	this->_headers["Content-Type"] = "image/png";
 	}
 }
 
@@ -163,6 +172,10 @@ void			Response::send_response()
 	std::memmove(to_send, this->_response.c_str(), this->_response.size());
 	if (this->_buf)
 	{
+		FILE *fp;
+        fp = fopen ("buf", "w+");
+        fwrite(this->_buf + this->_idx, this->_buf_size, 1, fp);
+        fclose(fp);
 		std::memmove(to_send + this->_response.size(), this->_buf + this->_idx, this->_buf_size);
 		delete [] this->_buf;
 	}

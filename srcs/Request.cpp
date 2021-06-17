@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 16:24:45 by schene            #+#    #+#             */
-/*   Updated: 2021/06/15 10:11:55 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/17 10:23:24 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -175,6 +175,7 @@ void		Request::parseHeaderFields(std::string line)
 
 void		Request::resetHeaders()
 {
+	this->_headers["Accept"] = std::string();
 	this->_headers["Accept-Charsets"] = std::string();
 	this->_headers["Accept-Language"] = std::string();
 	this->_headers["Authorization"] = std::string();

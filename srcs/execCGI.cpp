@@ -22,9 +22,9 @@ execCGI::execCGI(Server &serv)
 	// VM
 	// std::string cgi_path = "/usr/bin/php-cgi";
 	// 42 MAC
-	// std::string cgi_path = "/Users/schene/.brew/Cellar/php/8.0.7/bin/php-cgi";
+	std::string cgi_path = "/Users/schene/.brew/Cellar/php/8.0.7/bin/php-cgi";
 	// OTHER MAC
-	std::string cgi_path = "/usr/local/Cellar/php/8.0.7/bin/php-cgi";
+	// std::string cgi_path = "/usr/local/Cellar/php/8.0.7/bin/php-cgi";
 
 	this->_buf = NULL;
 	this->_env["SERVER_PROTOCOL"] = "HTTP/1.1";
@@ -43,6 +43,8 @@ execCGI::execCGI(Server &serv)
 	// this->_env["AUTH_TYPE"] = std::string();
 	this->_env["CONTENT_LENGTH"] = this->_request.getHeaderField("Content-Length"); //not sure
 	this->_env["CONTENT_TYPE"] = this->_request.getHeaderField("Content-Type");
+	// if (!this->_request.getHeaderField("Accept").empty())
+	// 	this->_env["CONTENT_TYPE"] = this->_request.getHeaderField("Accept");
 	this->_env["GATEWAY_INTERFACE"] = "CGI/1.1";
 	// this->_env["REMOTE_ADDR"] = std::string();
 	// this->_env["REMOTE_IDENT"] = std::string();
@@ -139,6 +141,7 @@ void	execCGI::exec_CGI()
 	std::cout << "-> REQUEST_URI = |" << this->_env["REQUEST_URI"] << '|' << std::endl;
 	std::cout << "-> HTTP_HOST = |" << this->_env["HTTP_HOST"] << '|' << std::endl;
 	std::cout << "-> CONTENT_LENGTH = |" << this->_env["CONTENT_LENGTH"] << '|' << std::endl;
+	std::cout << "-> CONTENT_TYPE = |" << this->_env["CONTENT_TYPE"] << '|' << std::endl;
 	std::cout << "-> QUERY_STRING = |" << this->_env["QUERY_STRING"] << '|' << std::endl;
 	
 	//just to pass second test (very ugly, should be handle differently)
@@ -176,6 +179,8 @@ void	execCGI::exec_CGI()
 
 	FILE	*fIn = tmpfile();
 	FILE	*fOut = tmpfile();
+	FILE 	*fp;
+    fp = fopen ("body", "w");
 	long	fdIn = fileno(fIn);
 	long	fdOut = fileno(fOut);
 	int		ret = 1;
@@ -210,6 +215,7 @@ void	execCGI::exec_CGI()
 		{
 			memset(buffer, 0, CGI_BUFSIZE);
 			ret = read(fdOut, buffer, CGI_BUFSIZE - 1);
+	 		fwrite(buffer, ret, 1, fp);
 			buffer[ret] = 0;
 			if (ret > 0)
 				this->append_body(buffer, ret);
@@ -224,6 +230,7 @@ void	execCGI::exec_CGI()
 	close(fdOut);
 	close(saveStdin);
 	close(saveStdout);
+    fclose(fp);
 	if (this->_argv[0])
 		delete [] this->_argv[0];
 	this->_argv[0] = NULL;

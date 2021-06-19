@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/06/15 15:45:49 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/06/20 00:12:20 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,12 @@ std::string parsingName(std::string conf)
 {
     size_t name_index = conf.find("server_name");
     if (name_index == std::string::npos)
-        throw confNoServerNameException();  // a voir, je sais pas si un serveur doit forcement avoir un nom donné en config
+        return (std::string());
+        // throw confNoServerNameException();  // a voir, je sais pas si un serveur doit forcement avoir un nom donné en config
     name_index = conf.find_first_not_of(" \t\n\r\v\f", name_index + 12);
     size_t name_length = conf.find(";", name_index);
     if (name_length == std::string::npos)
-        throw confNoServerNameException();
+        throw confBadServerNameException();
     return (conf.substr(name_index, name_length - name_index));
 }
 
@@ -28,12 +29,16 @@ std::string parsingRoot(std::string conf)
 {
     size_t root_index = conf.find("root");
     if (root_index == std::string::npos)
-        return (std::string());
+        return (getCurrentDirectory());
     root_index = conf.find_first_not_of(" \t\n\r\v\f", root_index + 4);
-    size_t root_length = conf.find(";", root_index);
-    if (root_length == std::string::npos)
+    size_t root_end = conf.find_first_of("; \t\n\r\v\f", root_index);
+    if (root_end == std::string::npos)
         throw confInvalidRootException();
-    return (conf.substr(root_index, root_length - root_index));
+    std::string root = getCurrentDirectory();
+    root.append(conf.substr(root_index, root_end - root_index));
+    // if (root[root.size() - 1] != '/')
+    //     root.append("/");
+    return (root);
 }
 
 unsigned int    convertIPAddress(std::string conf, size_t index)

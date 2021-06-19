@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/08 17:06:46 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/06/08 19:59:01 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/06/19 23:44:35 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,10 +33,10 @@ class confInvalidPortException : public std::exception {
             return ("Configuration file: Invalid port number"); }
 };
 
-class confNoServerNameException : public std::exception {
+class confBadServerNameException : public std::exception {
     public :
         const char* what() const throw() {
-            return ("Configuration file: No server name was specified"); }
+            return ("Configuration file: Invalid server name"); }
 };
 
 class confInvalidRootException : public std::exception {

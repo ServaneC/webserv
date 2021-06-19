@@ -1,6 +1,14 @@
+[20/6]
+    - Chdir avant execve !! Avant chaque requete je chdir pour me retrouver
+a la racine du serveur et execve est lancé depuis le bon path (plus besoin
+du #define PATH). Pour l'instant je chdir dans setPathQuery(), c'est ptet
+pas le lieu le plus pertinent mais j'attend de voir une fois que j'aurais
+rajouté la gestion de root locales (la c'est que root general du serveur)
+--------------------------------------------------------------------------
 [15/6]
     - Parsing de root : je recupere la racine generale du serveur et aussi
-les racines dans les locations mais je 
+les racines dans les locations.
+--------------------------------------------------------------------------
 [11/6]
     - Locations : avec le cerveau moins en bouillie aujourd'hui j'avais des
 idées concernant la marche a suivre donc je suis en train de parser/stocker
@@ -42,6 +50,9 @@ la clé et le scope des instructions comme etant le contenu.
 ##########################################
 ##          NOTES ON WEBSERV            ##
 ##########################################
+
+"Because you won’t call the CGI directly use the full path as PATH_INFO"
+"the cgi should be run in the correct directory for relativ path file access"
 
 --> [XSI] Structure used by kernel to store most addresses.
     struct sockaddr {

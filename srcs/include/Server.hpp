@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 11:20:51 by schene            #+#    #+#             */
-/*   Updated: 2021/06/11 19:01:38 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/06/19 19:20:42 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,7 @@ class Server
 		void			exec_server();
 		int			getPort() const;
 		std::string	getName() const;
+		std::string	getRoot() const;
 		int			getFd() const;
 		int			getSocket() const;
 		int			getClientSocket() const;

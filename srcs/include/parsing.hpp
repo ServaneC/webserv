@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/08 16:33:16 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/06/15 15:48:58 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/06/20 00:11:35 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,5 +38,7 @@ int                 setMethodCode(std::string method_name);
 std::vector<int>    parseAcceptedMethods(std::string location_conf);
 int                 parseMethod(std::string str, size_t *index);
 std::string         parsingRoot(std::string conf);
+std::string         trimLocations(std::string conf);
+std::string         getCurrentDirectory();
 
 #endif

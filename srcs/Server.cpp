@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
+/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/06/13 12:44:05 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/19 22:02:40 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ Server::Server(Config &conf, std::string server_conf) : _rqst(*(new Request)), _
         // this->_name = "localhost";
         std::cout << "- ServerName = " << _name << std::endl;
 
-        this->_root = parsingRoot(server_conf);
+        this->_root = parsingRoot(trimLocations(server_conf));
         std::cout << "- ServerRoot = " << _root << std::endl;
 
         this->_host.sin_family = PF_INET;
@@ -116,6 +116,10 @@ int			Server::getPort() const
 std::string	Server::getName() const
 {
     return this->_name;
+}
+std::string	Server::getRoot() const
+{
+    return this->_root;
 }
 int			Server::getFd() const
 {

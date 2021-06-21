@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/30 09:49:40 by schene            #+#    #+#             */
-/*   Updated: 2021/06/17 14:24:16 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/21 15:02:57 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,6 +91,19 @@ void	Config::createServers(void)
 	}
 }
 
+// void				Config::terminate_serv()
+// {
+// 	std::list<Server*>::iterator it;
+
+// 	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
+// 	{
+// 		if ((*it)->getSocket() > -1)
+// 			close ((*it)->getSocket());
+// 		if ((*it)->getClientSocket() > -1)
+// 			close ((*it)->getClientSocket());
+// 	}
+// }
+
 void	Config::startServers()
 {
 	int ret;
@@ -106,6 +119,7 @@ void	Config::startServers()
 
     while (1)
     {
+		// signal(SIGINT, Config::call_terminate_serv);
 		int select_ret;
 		FD_ZERO(&read_sockets);
 		FD_ZERO(&write_sockets);

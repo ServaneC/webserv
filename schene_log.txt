@@ -439,7 +439,7 @@ AVANT CA:
 -> j'ai changer la variable _request en _buf (+ logique)
 
 18/06/2021
--> J'avais commenecer a voir comment gere les upload de fichier mais j'avais pas 
+-> J'avais commencer a voir comment gere les upload de fichier mais j'avais pas 
 	bcp avance et j'ai oublie de push 😅
 
 21/06/2021
@@ -447,6 +447,22 @@ AVANT CA:
 	- pareil pour la post request du form
 -> j'ai commenter le chdir et ca marche, je vais push comme ca sur main 
 	en attendant de trouver comment tout bien implementer
+-> reussir a bien implementer tout ce que leila a fait
+	- tout marche a peu pres hors les Location dans execCGI qui abort avec :
+		'libc++abi.dylib: terminating with uncaught exception of type std::out_of_range: basic_string'
+		-> le pb viens de 'Server::getRelevantLocations' dans la comparaison '*'
+		-> j'ai rajouté "(target.size() > extension_length)" dans le if
+	location /Yeah {
+	    root                /root_yeah;
+	} => path = /root_yeah/Yeah 
+-> petite incompréhension je crois, je vais changer les files dans YoupiBanane pour que ca corresponde
+	-> actuellement le path est /Yeah/root_yeah
+	=> "the URI will be added to the path specified in the root directive" (src: http://nginx.org/en/docs/beginners_guide.html)
+-> reapparition de l'erreur 'In select: Bad file descriptor' avec plusieurs server 😩
+	-> ca apparait plus apres plusieur lancement ca doit etre lie au fait que la connexion ne se ferme pas avec le ctrl+C
+	-> je vais essayer de catch CTRL_C avec signal mais ca semble compliqué	
+
+
 
 ================================== NOTES ==================================
 

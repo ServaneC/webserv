@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/06/21 11:25:37 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/21 13:52:05 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,18 +20,15 @@ Server::Server(Config &conf, std::string server_conf) :
         std::cout << "---------------------" << std::endl;
 
         parsingIPAddress(server_conf, &this->_ip, &this->_port);
-        // this->_port = 8080;
         std::cout << "- ServerPort = " << _port << std::endl;
 
         this->_name = parsingName(server_conf);
-        // this->_name = "localhost";
         std::cout << "- ServerName = " << _name << std::endl;
 
         this->_root = parsingRoot(trimLocations(server_conf));
         std::cout << "- ServerRoot = " << _root << std::endl;
 
         this->_host.sin_family = PF_INET;
-        // this->_host.sin_addr.s_addr = INADDR_ANY; // -> 0.0.0.0
         this->_host.sin_addr.s_addr = this->_ip;
         std::cout << "- ServerAddress = " << this->_host.sin_addr.s_addr << std::endl;
         this->_host.sin_port = htons(this->_port);
@@ -99,20 +96,18 @@ std::list<Location>    Server::getRelevantLocations(std::string target)
         }
         else if (path[0] == '*')
         {
+            // std::cout << "PATH = |" << path << '|' << std::endl;
             size_t extension_length = path.size() - 1;
             path.erase(path.begin());
-            // std::cout << "ETOILE : on check -> " << std::endl;
-            // std::cout << "|" << path << "|" << std::endl;
-            // std::cout << "|" << target.substr(target.size() - extension_length, extension_length) << "|" << std::endl;
-            if (!target.compare(target.size() - extension_length, extension_length, path))
+            if ((target.size() > extension_length) && !target.compare(target.size() - extension_length, extension_length, path))
                 relevant_locations.push_back(*it);
         }
     }
-    // std::cout << ">> Relevant locations for this request :\n";
-    // for (std::list<Location>::iterator it = relevant_locations.begin(); it != relevant_locations.end(); it++)
-    // {
-    //     std::cout << "\t- [" << it->getPath() << "]\tRoot = " << it->getRoot() << std::endl;
-    // }
+    std::cout << ">> Relevant locations for this request :\n";
+    for (std::list<Location>::iterator it = relevant_locations.begin(); it != relevant_locations.end(); it++)
+    {
+        std::cout << "\t- [" << it->getPath() << "]\tRoot = " << it->getRoot() << std::endl;
+    }
     return (relevant_locations);
 }
 

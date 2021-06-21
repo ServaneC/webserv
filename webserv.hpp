@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 15:34:32 by schene            #+#    #+#             */
-/*   Updated: 2021/06/13 12:43:41 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/21 14:34:51 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@
 # include <netinet/in.h>
 # include <fcntl.h>
 # include <errno.h>
-#include <poll.h>
+// # include <signal.h>
 
 # include <iostream>
 # include <string>
@@ -44,6 +44,7 @@
 # include <cctype>
 # include <cstdlib>
 # include <fstream>
+# include <csignal>
 # include <sstream>
 
 class	Server;

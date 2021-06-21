@@ -17,8 +17,14 @@ working. Congrats belle gosse.</p>
 
 <p> You can check this for fun: <a href="youpi.bla">YOUPI !</a></p>
 
-<img src="/img/pot_casse.jpeg">
-<img src="/img/42.png">
+<form enctype="multipart/form-data" action="upload" method="POST">
+    <input type="hidden" name="MAX_FILE_SIZE" value="1000000" />
+    Choose a file to upload: <input name="uploadedfile" type="file" /><br />
+    <input type="submit" value="Upload File" />
+</form>
+
+<!-- <img src="/img/pot_casse.jpeg">
+<img src="/img/42.png"> -->
 
 <form action="action.php" method="post">
     <p>Votre nom : <input type="text" name="nom" /></p>

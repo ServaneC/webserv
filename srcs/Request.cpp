@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 16:24:45 by schene            #+#    #+#             */
-/*   Updated: 2021/06/17 15:18:56 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/21 16:48:34 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,8 @@ int		Request::parseRequest(int socket)
 		return (- 1);
 	std::cout << "========= REQUEST =========" << std::endl;
 	std::cout << this->_buf;
-	std::cout << "========= END OF REQUEST =========" << std::endl;
+	std::cout << "==================" << std::endl;
+
 	//while because "ignore at least one CRLF before request line"
 	while (gnlRequest() > 0)
 	{
@@ -63,10 +64,13 @@ int		Request::parseRequest(int socket)
 	this->_body.assign(this->_buf);
 	if (!this->getHeaderField("Content-Length").empty())
 	{
-		while (this->_body.empty())
+		// while (this->_body.empty())
+		while ((int)this->_body.size() < std::atoi(this->getHeaderField("Content-Length").c_str()))
 			this->recvData(std::atoi(this->_headers["Content-Length"].c_str()), BODY);
 	}
 	this->_buf.clear();
+	// std::cout << this->_body;
+	std::cout << "========= END OF REQUEST =========" << std::endl;
 	return 1;
 }
 
@@ -151,7 +155,7 @@ void		Request::parseHeaderFields(std::string line)
 			while (isspace(*(value.end() - 1))) // handle OWS between field-value and CRLF
 				value.erase(value.end() - 1);
 			it->second = value;// store header value in map
-			std::cout << it->first << " = " << it->second << std::endl;
+			// std::cout << it->first << " = " << it->second << std::endl;
 		}
 		it++;
 	}

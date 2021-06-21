@@ -28,6 +28,7 @@ execCGI::execCGI(Server &serv)
 	// OTHER MAC
 	// std::string cgi_path = "/usr/local/Cellar/php/8.0.7/bin/php-cgi";
 
+	std::cout << "BODY {" << this->_request.getBody().size() << "}\n[" << this->_request.getBody() << ']';
 	this->_buf = NULL;
 	this->_env["SERVER_PROTOCOL"] = "HTTP/1.1";
 	if (!this->_request.getBadRequest())

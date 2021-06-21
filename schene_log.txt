@@ -458,11 +458,19 @@ AVANT CA:
 -> petite incompréhension je crois, je vais changer les files dans YoupiBanane pour que ca corresponde
 	-> actuellement le path est /Yeah/root_yeah
 	=> "the URI will be added to the path specified in the root directive" (src: http://nginx.org/en/docs/beginners_guide.html)
--> reapparition de l'erreur 'In select: Bad file descriptor' avec plusieurs server 😩
+	-> BON EN FAIT C'EST PAS CLAIR AVEC CE QUE DIT LE SUJET VS NGINX (une personne sur slack se pose la meme question)
+-> réapparition de l'erreur 'In select: Bad file descriptor' avec plusieurs server 😩
 	-> ca apparait plus apres plusieur lancement ca doit etre lie au fait que la connexion ne se ferme pas avec le ctrl+C
 	-> je vais essayer de catch CTRL_C avec signal mais ca semble compliqué	
-
-
+		-> C'est fait mais ca n'as pas regler le pb...
+	-> j'ai changer le deuxieme 'if' dans select en 'else if' et ca semble avoir reglé le pb 
+-> gerer l'upload de fichier
+	-> le fichier est envoye 2 fois en reponse (avec google chrome sur mac et firefox dans la vm, mais pas safari... ?)
+	=> Ca doit juste être un pb d'affichage, le body est bien constitue d'une seule requete 
+	-> j'ai changer le while body enmpty en while size < content-Lenght 
+		(sinon le body n'est pas lu en entier si il arrive en plsr fois)
+	-> il faudra surement transformer le _body (string) en unsigned char * pour gérer l'upload de n'importe quel fichier
+	-> mnt il faut voir comment parser le multipart/form-data pour upload le file.
 
 ================================== NOTES ==================================
 
@@ -476,6 +484,50 @@ A faire:
 -> gérer l'upload de fichier (il faut passer par POST)
 -> gerer les leaks en cas d'erreur / d'arret
 -> gerer les chunk request
+
+POST request from google chrome after an upload of a file
+-------------------------------------------------------------------------------
+POST /upload HTTP/1.1
+Host: localhost:8080
+Connection: keep-alive
+Content-Length: 463
+Cache-Control: max-age=0
+sec-ch-ua: " Not;A Brand";v="99", "Google Chrome";v="91", "Chromium";v="91"
+sec-ch-ua-mobile: ?0
+Upgrade-Insecure-Requests: 1
+Origin: http://localhost:8080
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryUid4GZZPaM6cz0Sq
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Referer: http://localhost:8080/
+Accept-Encoding: gzip, deflate, br
+Accept-Language: en-US,en;q=0.9
+
+------WebKitFormBoundaryUid4GZZPaM6cz0Sq
+Content-Disposition: form-data; name="MAX_FILE_SIZE"
+
+1000000
+------WebKitFormBoundaryUid4GZZPaM6cz0Sq
+Content-Disposition: form-data; name="uploadedfile"; filename="to_upload.html"
+Content-Type: text/html
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>UPLOAD!</title>
+</head>
+    <body>
+        <h1> this is an... </h1>
+        <h2> Ulpoaded file ! </h2>
+    </body>
+</html>
+
+------WebKitFormBoundaryUid4GZZPaM6cz0Sq--
+-------------------------------------------------------------------------------
 
 
 POST request from safari after HTML form:

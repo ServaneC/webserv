@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/06/17 12:39:52 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/21 11:25:37 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,9 @@ Server::Server(Config &conf, std::string server_conf) :
         // this->_name = "localhost";
         std::cout << "- ServerName = " << _name << std::endl;
 
+        this->_root = parsingRoot(trimLocations(server_conf));
+        std::cout << "- ServerRoot = " << _root << std::endl;
+
         this->_host.sin_family = PF_INET;
         // this->_host.sin_addr.s_addr = INADDR_ANY; // -> 0.0.0.0
         this->_host.sin_addr.s_addr = this->_ip;
@@ -34,7 +37,7 @@ Server::Server(Config &conf, std::string server_conf) :
         this->_host.sin_port = htons(this->_port);
         this->_addrlen = sizeof(this->_host);
         this->_socket = socket(PF_INET, SOCK_STREAM, 0);
-        this->_routes = parsingLocations(server_conf);
+        this->_routes = parsingLocations(*this, server_conf);
 
         int enable = 1;
         if (setsockopt(this->_socket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
@@ -76,6 +79,43 @@ void	Server::exec_server()
     this->_client_socket = -1; 
 }
 
+std::list<Location>    Server::getRelevantLocations(std::string target)
+{
+    std::list<Location> relevant_locations;
+
+	for (std::list<Location>::iterator it = _routes.begin(); it != _routes.end(); it++)
+    {
+        // std::string path = this->_root + "/" + it->getPath();
+        std::string path = it->getPath();
+        
+        if (path[0] == '/')
+        {
+            // std::cout << "SLASH : on compare ->\n";
+            // std::cout << "path.size = " << path.size() << std::endl;
+            // int i = target.compare(0, path.size(), path);
+            // std::cout << "ret de compare = " << i << std::endl;
+            if (!target.compare(0, path.size(), path)) //&& path.size() <= target.size() )
+                relevant_locations.push_back(*it);
+        }
+        else if (path[0] == '*')
+        {
+            size_t extension_length = path.size() - 1;
+            path.erase(path.begin());
+            // std::cout << "ETOILE : on check -> " << std::endl;
+            // std::cout << "|" << path << "|" << std::endl;
+            // std::cout << "|" << target.substr(target.size() - extension_length, extension_length) << "|" << std::endl;
+            if (!target.compare(target.size() - extension_length, extension_length, path))
+                relevant_locations.push_back(*it);
+        }
+    }
+    // std::cout << ">> Relevant locations for this request :\n";
+    // for (std::list<Location>::iterator it = relevant_locations.begin(); it != relevant_locations.end(); it++)
+    // {
+    //     std::cout << "\t- [" << it->getPath() << "]\tRoot = " << it->getRoot() << std::endl;
+    // }
+    return (relevant_locations);
+}
+
 int			Server::getPort() const
 {
     return this->_port;
@@ -84,6 +124,10 @@ int			Server::getPort() const
 std::string	Server::getName() const
 {
     return this->_name;
+}
+std::string	Server::getRoot() const
+{
+    return this->_root;
 }
 int			Server::getFd() const
 {

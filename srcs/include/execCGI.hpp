@@ -40,7 +40,7 @@ class execCGI
 
 		void				free_buf();
 		std::string const	&getEnvVar(std::string var_name) const;
-		unsigned char				*getBuf() const;
+		unsigned char		*getBuf() const;
 		int					getBufSize() const;
 		time_t				getLastModified() const;
 };

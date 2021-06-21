@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 11:20:51 by schene            #+#    #+#             */
-/*   Updated: 2021/06/17 11:34:47 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/21 11:26:31 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ class Server
 		struct sockaddr_in					_host;
 		int									_client_socket;
 		int									_addrlen;
+		std::string							_root;
 		// std::map<std::string, std::string>	_routes;
 		std::list<Location>					_routes;
 	
@@ -44,10 +45,12 @@ class Server
 		void		exec_server();
 		int			getPort() const;
 		std::string	getName() const;
+		std::string	getRoot() const;
 		int			getFd() const;
 		int			getSocket() const;
 		int			getClientSocket() const;
 		Request		&getRequest() const;
+		std::list<Location> getRelevantLocations(std::string path_info);
 };
 
 #endif

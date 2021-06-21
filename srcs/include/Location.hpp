@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:43:38 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/06/11 18:56:40 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/06/21 03:20:14 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,18 +19,22 @@ class Location
 {
     private :
 
+        Server              *_server;
         std::string         _path;
         std::string         _location_conf;
+        std::string         _root;
         std::vector<int>    _accepted_methods;
 
         Location();
 
     public :
 
-        Location(std::string path, std::string location_conf);
+        Location(Server *server, std::string path, std::string location_conf);
         ~Location();
-        bool isAcceptedMethod(int code);
-          
+        std::string         getPath() const;
+        std::string         getRoot() const;
+        std::vector<int>    getAcceptedMethods() const;
+        bool                isAcceptedMethod(int code);
 };
 
 #endif

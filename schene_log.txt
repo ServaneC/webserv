@@ -438,6 +438,16 @@ AVANT CA:
 -> remplacer recvRequest et recvBody en 1 seule fonction = recvData() ✅
 -> j'ai changer la variable _request en _buf (+ logique)
 
+18/06/2021
+-> J'avais commenecer a voir comment gere les upload de fichier mais j'avais pas 
+	bcp avance et j'ai oublie de push 😅
+
+21/06/2021
+-> plein de pb avec le merge de la branche de leila, le css et les images ne marche plus...
+	- pareil pour la post request du form
+-> j'ai commenter le chdir et ca marche, je vais push comme ca sur main 
+	en attendant de trouver comment tout bien implementer
+
 ================================== NOTES ==================================
 
 A faire:

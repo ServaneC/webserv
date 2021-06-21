@@ -13,6 +13,8 @@
 #include "include/execCGI.hpp"
 #define CGI_BUFSIZE 2000
 
+// # define PATH "/home/lilou/my_home/SC_webserv/"
+# define PATH "/Users/schene/Desktop/webserv/"
 # define INDEX "index.html"
 
 execCGI::execCGI(Server &serv) 
@@ -77,13 +79,22 @@ void	execCGI::setPathQuery()
 	std::string	target = this->_request.getTarget();
 	if (target[0] == '/')
 		target.erase(0, 1);
+	
+	// if (chdir(_server.getRoot().c_str()) == -1)
+	// {
+	// 	// this->_env["STATUS_CODE"] = "500";  ??
+	// 	return ;
+	// }
 
 	std::cout << "TARGET -> [" << target << "]" << std::endl;
 	this->_env["REQUEST_URI"] = target;
 	this->_env["PATH_TRANSLATED"] = target;
-	this->_env["PATH_INFO"] = target.substr(0, target.find('?'));
+	// this->_env["PATH_INFO"] = getCurrentDirectory() + "/" + target.substr(0, target.find('?'));
+	this->_env["PATH_INFO"] = std::string(PATH) + target.substr(0, target.find('?'));
+	// this->_env["PATH_INFO"] = target.substr(0, target.find('?'));
 	this->_env["SCRIPT_FILENAME"] = target.substr(0, target.find('?'));
 	this->_env["SCRIPT_NAME"] = target.substr(0, target.find('?'));
+	std::cout << "HERE" << std::endl;
 	if (target.empty())
 	{
 		this->_env["PATH_INFO"] = std::string(INDEX);
@@ -146,6 +157,8 @@ void	execCGI::exec_CGI()
 	if (this->_env["STATUS_CODE"].compare("200 OK") != 0)
 		return ;
 
+	// std::string			path_info = this->_env["PATH_INFO"];
+	// std::list<Location>	location_list = this->_server.getRelevantLocations(this->_request.getTarget());
 
 	char		**env_array = this->env_to_char_array();
 	pid_t		pid;

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
+/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:48:09 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/06/13 12:49:46 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/21 03:19:33 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,15 @@ Location::Location() {}
 
 Location::~Location() {}
 
-Location::Location(std::string path, std::string location_conf) : _path(path), _location_conf(location_conf)
+Location::Location(Server *server, std::string path, std::string location_conf) : _server(server), _path(path), _location_conf(location_conf)
 {
     this->_accepted_methods = parseAcceptedMethods(location_conf);
+    // std::cout << "LOCATION -> " << _path << " : ";
+    // for (std::vector<int>::iterator it = _accepted_methods.begin(); it != _accepted_methods.end(); it++)
+    //     std::cout << *it << " ";
+    // std::cout << std::endl;
+    this->_root = parsingLocalRoot(_server->getRoot(), location_conf);
+    std::cout << "Local root for <" << path << " is -> |" << _root << "|" << std::endl;
 }
 
 bool Location::isAcceptedMethod(int code)
@@ -29,4 +35,17 @@ bool Location::isAcceptedMethod(int code)
             return true;
     }
     return false;
+}
+
+std::string         Location::getPath() const 
+{ 
+    return (this->_path);
+}
+std::string         Location::getRoot() const
+{
+    return (this->_root);
+}
+std::vector<int>    Location::getAcceptedMethods() const
+{
+    return (this->_accepted_methods);
 }

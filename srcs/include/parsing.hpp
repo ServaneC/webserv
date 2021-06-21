@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/08 16:33:16 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/06/11 19:21:36 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/06/21 03:13:49 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,8 +33,14 @@ bool                isCommentLine(const char *line);
 std::string         parsingName(std::string conf);
 unsigned int        convertIPAddress(std::string conf, size_t index);
 void                parsingIPAddress(std::string conf, unsigned int *ip, int *port);
-std::list<Location> parsingLocations(std::string conf);
+std::list<Location> parsingLocations(Server &server, std::string conf);
 int                 setMethodCode(std::string method_name);
 std::vector<int>    parseAcceptedMethods(std::string location_conf);
+int                 parseMethod(std::string str, size_t *index);
+std::string         parsingRoot(std::string conf);
+std::string         trimLocations(std::string conf);
+std::string         getCurrentDirectory();
+std::string         parsingLocalRoot(std::string server_root, std::string conf);
+
 
 #endif

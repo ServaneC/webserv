@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parsing.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
+/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/06/13 12:46:22 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/21 03:19:01 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,12 +16,45 @@ std::string parsingName(std::string conf)
 {
     size_t name_index = conf.find("server_name");
     if (name_index == std::string::npos)
-        throw confNoServerNameException();  // a voir, je sais pas si un serveur doit forcement avoir un nom donné en config
-    name_index += 12;
+        return (std::string());
+        // throw confNoServerNameException();  // a voir, je sais pas si un serveur doit forcement avoir un nom donné en config
+    name_index = conf.find_first_not_of(" \t\n\r\v\f", name_index + 12);
     size_t name_length = conf.find(";", name_index);
     if (name_length == std::string::npos)
-        throw confNoServerNameException();
+        throw confBadServerNameException();
     return (conf.substr(name_index, name_length - name_index));
+}
+
+std::string parsingRoot(std::string conf)
+{
+    size_t root_index = conf.find("root");
+    if (root_index == std::string::npos)
+        return (getCurrentDirectory());
+    root_index = conf.find_first_not_of(" \t\n\r\v\f", root_index + 4);
+    size_t root_end = conf.find_first_of("; \t\n\r\v\f", root_index);
+    if (root_end == std::string::npos)
+        throw confInvalidRootException();
+    std::string root = getCurrentDirectory();
+    root.append(conf.substr(root_index, root_end - root_index));
+    // if (root[root.size() - 1] != '/')
+    //     root.append("/");
+    return (root);
+}
+
+std::string parsingLocalRoot(std::string server_root, std::string conf)
+{
+    size_t root_index = conf.find("root");
+    if (root_index == std::string::npos)
+        return (server_root);
+    root_index = conf.find_first_not_of(" \t\n\r\v\f", root_index + 4);
+    size_t root_end = conf.find_first_of("; \t\n\r\v\f", root_index);
+    if (root_end == std::string::npos)
+        throw confInvalidRootException();
+    std::string root(server_root);
+    root.append(conf.substr(root_index, root_end - root_index));
+    // if (root[root.size() - 1] != '/')
+    //     root.append("/");
+    return (root);
 }
 
 unsigned int    convertIPAddress(std::string conf, size_t index)
@@ -52,7 +85,7 @@ void parsingIPAddress(std::string conf, unsigned int *ip, int *port)
         throw confInvalidPortException();
 }
 
-std::list<Location> parsingLocations(std::string conf)
+std::list<Location> parsingLocations(Server &server, std::string conf)
 {
     size_t              last_found = conf.find("location");
     std::list<Location> routes;
@@ -66,7 +99,7 @@ std::list<Location> parsingLocations(std::string conf)
         std::string rules = getScope(conf, path_index + path_length);
         if (!rules.empty())
         {
-            Location *to_push = new Location(path, rules);
+            Location *to_push = new Location(&server, path, rules);
             routes.push_back(*to_push);
             //std::cout << "FOR LOCATION <" << path << ">, RULES ARE : " << rules << std::endl;
         }
@@ -94,7 +127,8 @@ std::vector<int> parseAcceptedMethods(std::string location_conf)
 
     if (index == std::string::npos || end == std::string::npos)
         return (methods);
-    //size_t found = location_conf.find_first_of("GPD", index);
-    //// YOU ARE HERE :)
+    index += 15;
+    while (index != end)
+        methods.push_back(parseMethod(location_conf, &index));
     return (methods);
 }

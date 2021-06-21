@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/08 17:06:46 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/06/14 12:17:28 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/21 11:26:26 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,10 +33,16 @@ class confInvalidPortException : public std::exception {
             return ("Configuration file: Invalid port number"); }
 };
 
-class confNoServerNameException : public std::exception {
+class confBadServerNameException : public std::exception {
     public :
         const char* what() const throw() {
-            return ("Configuration file: No server name was specified"); }
+            return ("Configuration file: Invalid server name"); }
+};
+
+class confInvalidRootException : public std::exception {
+    public :
+        const char* what() const throw() {
+            return ("Configuration file: Invalid root path"); }
 };
 
 

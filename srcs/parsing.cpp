@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/06/20 00:12:20 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/06/21 03:19:01 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,22 @@ std::string parsingRoot(std::string conf)
     return (root);
 }
 
+std::string parsingLocalRoot(std::string server_root, std::string conf)
+{
+    size_t root_index = conf.find("root");
+    if (root_index == std::string::npos)
+        return (server_root);
+    root_index = conf.find_first_not_of(" \t\n\r\v\f", root_index + 4);
+    size_t root_end = conf.find_first_of("; \t\n\r\v\f", root_index);
+    if (root_end == std::string::npos)
+        throw confInvalidRootException();
+    std::string root(server_root);
+    root.append(conf.substr(root_index, root_end - root_index));
+    // if (root[root.size() - 1] != '/')
+    //     root.append("/");
+    return (root);
+}
+
 unsigned int    convertIPAddress(std::string conf, size_t index)
 {
     IPA_t   addr;
@@ -69,7 +85,7 @@ void parsingIPAddress(std::string conf, unsigned int *ip, int *port)
         throw confInvalidPortException();
 }
 
-std::list<Location> parsingLocations(std::string conf)
+std::list<Location> parsingLocations(Server &server, std::string conf)
 {
     size_t              last_found = conf.find("location");
     std::list<Location> routes;
@@ -83,7 +99,7 @@ std::list<Location> parsingLocations(std::string conf)
         std::string rules = getScope(conf, path_index + path_length);
         if (!rules.empty())
         {
-            Location *to_push = new Location(path, rules);
+            Location *to_push = new Location(&server, path, rules);
             routes.push_back(*to_push);
             //std::cout << "FOR LOCATION <" << path << ">, RULES ARE : " << rules << std::endl;
         }

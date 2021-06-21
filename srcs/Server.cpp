@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/06/19 22:02:40 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/06/21 03:14:07 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ Server::Server(Config &conf, std::string server_conf) : _rqst(*(new Request)), _
         this->_host.sin_port = htons(this->_port);
         this->_addrlen = sizeof(this->_host);
         this->_socket = socket(PF_INET, SOCK_STREAM, 0);
-        this->_routes = parsingLocations(server_conf);
+        this->_routes = parsingLocations(*this, server_conf);
 
         int enable = 1;
         if (setsockopt(this->_socket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
@@ -77,34 +77,40 @@ void	Server::exec_server()
     close(this->_client_socket);
 }
 
-std::list<Location>    Server::getRelevantLocations(std::string path_info)
+std::list<Location>    Server::getRelevantLocations(std::string target)
 {
     std::list<Location> relevant_locations;
 
 	for (std::list<Location>::iterator it = _routes.begin(); it != _routes.end(); it++)
     {
+        // std::string path = this->_root + "/" + it->getPath();
         std::string path = it->getPath();
+        
         if (path[0] == '/')
         {
-            std::cout << "SLASH : on compare ->\n";
-            std::cout << "|" << path.substr(0, path.size()) << "|" << std::endl;
-            std::cout << "|" << path_info.substr(0, path.size()) << "|" << std::endl;;
-            if (!path.compare(0, path.size(), path_info))
+            // std::cout << "SLASH : on compare ->\n";
+            // std::cout << "path.size = " << path.size() << std::endl;
+            // int i = target.compare(0, path.size(), path);
+            // std::cout << "ret de compare = " << i << std::endl;
+            if (!target.compare(0, path.size(), path)) //&& path.size() <= target.size() )
                 relevant_locations.push_back(*it);
         }
         else if (path[0] == '*')
         {
             size_t extension_length = path.size() - 1;
-            std::cout << "ETOILE : on check -> " << path[path.size() - extension_length] << std::endl;
-            if (!path.compare(path.size() - extension_length, extension_length, path_info))
+            path.erase(path.begin());
+            // std::cout << "ETOILE : on check -> " << std::endl;
+            // std::cout << "|" << path << "|" << std::endl;
+            // std::cout << "|" << target.substr(target.size() - extension_length, extension_length) << "|" << std::endl;
+            if (!target.compare(target.size() - extension_length, extension_length, path))
                 relevant_locations.push_back(*it);
         }
     }
-    std::cout << ">> Relevant locations for this request :\n";
-    for (std::list<Location>::iterator it = relevant_locations.begin(); it != relevant_locations.end(); it++)
-    {
-        std::cout << "\t- [" << it->getPath() << "]\tRoot = " << it->getRoot() << std::endl;
-    }
+    // std::cout << ">> Relevant locations for this request :\n";
+    // for (std::list<Location>::iterator it = relevant_locations.begin(); it != relevant_locations.end(); it++)
+    // {
+    //     std::cout << "\t- [" << it->getPath() << "]\tRoot = " << it->getRoot() << std::endl;
+    // }
     return (relevant_locations);
 }
 

@@ -28,7 +28,8 @@ execCGI::execCGI(Server &serv)
 	// OTHER MAC
 	// std::string cgi_path = "/usr/local/Cellar/php/8.0.7/bin/php-cgi";
 
-	std::cout << "BODY {" << this->_request.getBody().size() << "}\n[" << this->_request.getBody() << ']';
+	this->_location_list = this->_server.getRelevantLocations(this->_request.getTarget());
+	std::cout << "BODY {" << this->_request.getBody().size() << "}\n[" << this->_request.getBody() << ']' << std::endl;
 	this->_buf = NULL;
 	this->_env["SERVER_PROTOCOL"] = "HTTP/1.1";
 	if (!this->_request.getBadRequest())
@@ -81,18 +82,16 @@ void	execCGI::setPathQuery()
 	if (target[0] == '/')
 		target.erase(0, 1);
 	
-	std::cout << "ROOT = [" << this->_server.getRoot() << ']' << std::endl;
+	// std::cout << "ROOT = [" << this->_server.getRoot() << ']' << std::endl;
 	if (chdir(_server.getRoot().c_str()) == -1)
 	{
 		// this->_env["STATUS_CODE"] = "500";  ??
 		return ;
 	}
-
-	std::cout << "TARGET -> [" << target << "]" << std::endl;
+	
 	this->_env["REQUEST_URI"] = target;
 	this->_env["PATH_TRANSLATED"] = target;
 	this->_env["PATH_INFO"] = getCurrentDirectory() + "/" + target.substr(0, target.find('?'));
-	// this->_env["PATH_INFO"] = std::string(PATH) + target.substr(0, target.find('?'));
 	// this->_env["PATH_INFO"] = target.substr(0, target.find('?'));
 	this->_env["SCRIPT_FILENAME"] = target.substr(0, target.find('?'));
 	this->_env["SCRIPT_NAME"] = target.substr(0, target.find('?'));
@@ -139,6 +138,9 @@ int		execCGI::set_argv()
 
 void	execCGI::exec_CGI()
 {
+	std::cout << "this->_env[STATUS_CODE] -> " << this->_env["STATUS_CODE"] << std::endl;
+	if (this->_env["STATUS_CODE"].compare("200 OK") != 0)
+		return ;
 	this->_env["HTTP_HOST"] = this->_env["SERVER_NAME"];
 	// std::cout << "-> REQUEST_METHOD = |" << this->_env["REQUEST_METHOD"] << '|' << std::endl;
 	// std::cout << "-> REDIRECT_STATUS = |" << this->_env["REDIRECT_STATUS"] << '|' << std::endl;
@@ -159,7 +161,7 @@ void	execCGI::exec_CGI()
 		return ;
 
 	// std::string			path_info = this->_env["PATH_INFO"];
-	std::list<Location>		location_list = this->_server.getRelevantLocations(this->_request.getTarget());
+	// std::list<Location>		location_list = this->_server.getRelevantLocations(this->_request.getTarget());
 
 	char		**env_array = this->env_to_char_array();
 	pid_t		pid;
@@ -239,8 +241,6 @@ void	execCGI::exec_CGI()
 
 	if (!pid)
 		exit(0);
-
-	std::cout << "len = " << this->_buf_size << std::endl;
 }
 
 void				execCGI::free_buf()
@@ -251,10 +251,11 @@ void				execCGI::free_buf()
 
 bool	execCGI::check_method()
 {
-	return (!this->_env["REQUEST_METHOD"].empty() &&
-			(!this->_env["REQUEST_METHOD"].compare("GET") ||
-			!this->_env["REQUEST_METHOD"].compare("POST") ||
-			!this->_env["REQUEST_METHOD"].compare("DELETE")));
+	return (this->_location_list.begin()->isAcceptedMethod(this->_env["REQUEST_METHOD"]));
+	// return (!this->_env["REQUEST_METHOD"].empty() &&
+	// 		(!this->_env["REQUEST_METHOD"].compare("GET") ||
+	// 		!this->_env["REQUEST_METHOD"].compare("POST") ||
+	// 		!this->_env["REQUEST_METHOD"].compare("DELETE")));
 }
 
 void		execCGI::append_body(char *buffer, int size)

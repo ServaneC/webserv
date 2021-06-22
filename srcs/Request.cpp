@@ -6,13 +6,13 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 16:24:45 by schene            #+#    #+#             */
-/*   Updated: 2021/06/21 16:48:34 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/22 15:30:37 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/Request.hpp"
 
-#define CHUNK_SIZE 2000
+#define CHUNK_SIZE 1
 #define HEADER 1
 #define BODY 2
 
@@ -32,8 +32,9 @@ int		Request::parseRequest(int socket)
 	this->_socket = socket;
 	this->resetHeaders();
 
-	if (this->recvData(CHUNK_SIZE, HEADER) < 0)
-		return -1;
+	// if (this->recvData(CHUNK_SIZE, HEADER) < 0)
+	// 	return -1;
+	this->recvHeader();
 
 	if (this->_buf.empty())
 		return (- 1);
@@ -68,10 +69,31 @@ int		Request::parseRequest(int socket)
 		while ((int)this->_body.size() < std::atoi(this->getHeaderField("Content-Length").c_str()))
 			this->recvData(std::atoi(this->_headers["Content-Length"].c_str()), BODY);
 	}
+	else if (!this->getHeaderField("Transfer-Encoding").empty())
+	{
+		// while (1)
+		// {
+			this->recvData(100, BODY);
+			std::cout << '[' << this->_body << ']' << std::endl;
+			// if (this->_body[0] == '0')
+			// 	break ;
+		// }
+	}
 	this->_buf.clear();
 	// std::cout << this->_body;
 	std::cout << "========= END OF REQUEST =========" << std::endl;
 	return 1;
+}
+
+int			Request::recvHeader()
+{
+	while (this->recvData(CHUNK_SIZE, HEADER) > 0)
+	{
+		if (this->_buf.find("\r\n\r\n"))
+			break ;
+		std::cout << '[' << this->_buf << ']' << std::endl;
+	}
+	return (1);
 }
 
 int			Request::recvData(int size, int mode)

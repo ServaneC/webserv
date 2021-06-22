@@ -472,6 +472,19 @@ AVANT CA:
 	-> il faudra surement transformer le _body (string) en unsigned char * pour gérer l'upload de n'importe quel fichier
 	-> mnt il faut voir comment parser le multipart/form-data pour upload le file.
 
+22/06/2021
+-> reussir l'upload de fichier
+	-> je vois pas comment faire, si je commence a tout parser et qu'au final il ne faut pas ca auras ete inutile...
+-> apparement il ne faudrait pas appeler le cgi a chaque fois ?
+-> gerer les chunk request
+	-> je pense qu'il faut completement revoir comment la request est lu, il faudrait:
+		- stocker (au - le body) dans un unsigned char *
+		- lire juste le header, puis le body si y en as un
+-> j'ai modifie isAcceptedMethod pourqu'elle prenne une string au lieu d'un int en argument
+-> gerer les accepted method ✅
+	-> on passe les 3 premiers test du tester !
+
+	
 ================================== NOTES ==================================
 
 A faire:
@@ -479,11 +492,11 @@ A faire:
 -> faire marcher les query string
 	- il faut apparement parser REFERER
 -> throw les bonnes exceptions aux bons endroit
--> essayer d'appliquer le CSS au php
 - utiliser les routes
 -> gérer l'upload de fichier (il faut passer par POST)
 -> gerer les leaks en cas d'erreur / d'arret
--> gerer les chunk request
+-> turn on or off directory listing
+-> default file to answer if the request is a directory
 
 POST request from google chrome after an upload of a file
 -------------------------------------------------------------------------------

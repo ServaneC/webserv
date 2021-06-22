@@ -1,4 +1,40 @@
-PUT /to_delete.php HTTP/1.1
+POST /upload HTTP/1.1
 Host: localhost:8080
-User-Agent: Go-http-client/1.1
-Accept-Encoding: gzip
+Connection: keep-alive
+Content-Length: 463
+Cache-Control: max-age=0
+sec-ch-ua: " Not;A Brand";v="99", "Google Chrome";v="91", "Chromium";v="91"
+sec-ch-ua-mobile: ?0
+Upgrade-Insecure-Requests: 1
+Origin: http://localhost:8080
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary8cBZapBoAJ7hsddl
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Referer: http://localhost:8080/
+Accept-Encoding: gzip, deflate, br
+Accept-Language: en-US,en;q=0.9
+
+------WebKitFormBoundary8cBZapBoAJ7hsddl
+Content-Disposition: form-data; name="MAX_FILE_SIZE"
+
+1000000
+------WebKitFormBoundary8cBZapBoAJ7hsddl
+Content-Disposition: form-data; name="uploadedfile"; filename="to_upload.html"
+Content-Type: text/html
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>UPLOAD!</title>
+</head>
+    <body>
+        <h1> this is an... </h1>
+        <h2> Ulpoaded file ! </h2>
+    </body>
+</html>
+------WebKitFormBoundary8cBZapBoAJ7hsddl--
+

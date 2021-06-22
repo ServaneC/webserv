@@ -26,6 +26,7 @@ class execCGI
 		time_t								_last_modified;
 		std::map<std::string, std::string>	_env;
 		char 								**_argv;
+		std::list<Location>					_location_list;
 
 		void	setPathQuery();
 		char	**env_to_char_array();

@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 16:24:53 by schene            #+#    #+#             */
-/*   Updated: 2021/06/17 15:13:55 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/22 14:50:57 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ class Request
 		std::string							_body;
 
 		void		resetHeaders();
+		int			recvHeader();
 		int			recvData(int size, int mode);
 		int			gnlRequest();
 		void		parseRequestLine(std::string line);

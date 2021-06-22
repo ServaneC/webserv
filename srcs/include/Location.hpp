@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
+/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:43:38 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/06/21 03:20:14 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/06/22 15:25:30 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ class Location
         std::string         getPath() const;
         std::string         getRoot() const;
         std::vector<int>    getAcceptedMethods() const;
-        bool                isAcceptedMethod(int code);
+        bool                isAcceptedMethod(std::string method);
 };
 
 #endif

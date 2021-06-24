@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parsing.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
+/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/06/21 03:19:01 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/06/24 15:33:14 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,13 +110,11 @@ std::list<Location> parsingLocations(Server &server, std::string conf)
 
 int     setMethodCode(std::string method_name)
 {
-    if (method_name == "GET")
-        return (METHOD_GET);
-    if (method_name == "POST")
-        return (METHOD_POST);
-    if (method_name == "DELETE")
-        return (METHOD_DELETE);
-    return (METHOD_NOT_ALLOWED);
+    int code = METHOD_NOT_ALLOWED;
+    code = !method_name.compare("GET") ? METHOD_GET : code;
+    code = !method_name.compare("POST") ? METHOD_POST : code;
+    code = !method_name.compare("DELETE") ? METHOD_DELETE : code;
+    return (code);
 }
 
 std::vector<int> parseAcceptedMethods(std::string location_conf)

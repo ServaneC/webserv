@@ -58,16 +58,35 @@ execCGI::execCGI(Server &serv)
 	this->_env["SERVER_PORT"] = this->_server.getPort();
 	this->_env["SERVER_SOFTWARE"] = "webserv/1.0";
 	
-	try {
-		this->_argv = new char*[3];
-		this->_argv[0] = new char[cgi_path.size() + 1];
-		std::strcpy(_argv[0], cgi_path.c_str());
-		this->_argv[1] = NULL;
-	}
-	catch (std::exception &e) {
-        std::cout << e.what() << std::endl; }
 
-	this->exec_CGI();
+	Autoindex autoidx(this->_request.getTarget(), this->_env["PATH_INFO"]);
+	if (autoidx.isDir() && !autoidx.getIndex())
+	{
+		std::string tmp = autoidx.autoindex_generator();
+		this->_buf_size = tmp.size();
+		this->_buf = new unsigned char[tmp.size()];
+		for (size_t i = 0; i < tmp.size(); i++)
+			this->_buf[i] = tmp[i];
+	}
+	else
+	{
+		if (autoidx.isDir() && autoidx.getIndex())
+		{
+			this->_env["PATH_INFO"] = getCurrentDirectory() + "/" + std::string(INDEX);
+			this->_env["SCRIPT_FILENAME"] = INDEX;
+			this->_env["SCRIPT_NAME"] = INDEX;
+		}	
+		try {
+			this->_argv = new char*[3];
+			this->_argv[0] = new char[cgi_path.size() + 1];
+			std::strcpy(_argv[0], cgi_path.c_str());
+			this->_argv[1] = NULL;
+		}
+		catch (std::exception &e) {
+			std::cout << e.what() << std::endl; }
+
+		this->exec_CGI();
+	}
 	Response((*this), this->_server.getClientSocket());
 }
 
@@ -82,12 +101,8 @@ void	execCGI::setPathQuery()
 	if (target[0] == '/')
 		target.erase(0, 1);
 	
-	// std::cout << "ROOT = [" << this->_server.getRoot() << ']' << std::endl;
 	if (chdir(_server.getRoot().c_str()) == -1)
-	{
-		// this->_env["STATUS_CODE"] = "500";  ??
 		return ;
-	}
 	
 	this->_env["REQUEST_URI"] = target;
 	this->_env["PATH_TRANSLATED"] = target;
@@ -95,12 +110,12 @@ void	execCGI::setPathQuery()
 	// this->_env["PATH_INFO"] = target.substr(0, target.find('?'));
 	this->_env["SCRIPT_FILENAME"] = target.substr(0, target.find('?'));
 	this->_env["SCRIPT_NAME"] = target.substr(0, target.find('?'));
-	if (target.empty())
-	{
-		this->_env["PATH_INFO"] = std::string(INDEX);
-		this->_env["SCRIPT_FILENAME"] = INDEX;
-		this->_env["SCRIPT_NAME"] = INDEX;
-	}
+	// if (target.empty())
+	// {
+	// 	this->_env["PATH_INFO"] = getCurrentDirectory() + "/" + std::string(INDEX);
+	// 	this->_env["SCRIPT_FILENAME"] = INDEX;
+	// 	this->_env["SCRIPT_NAME"] = INDEX;
+	// }
 	if (target.find('?') != std::string::npos)
 		this->_env["QUERY_STRING"] = target.substr(target.find('?'), target.size()); //maybe wrong if no '?'
 }
@@ -252,10 +267,6 @@ void				execCGI::free_buf()
 bool	execCGI::check_method()
 {
 	return (this->_location_list.begin()->isAcceptedMethod(this->_env["REQUEST_METHOD"]));
-	// return (!this->_env["REQUEST_METHOD"].empty() &&
-	// 		(!this->_env["REQUEST_METHOD"].compare("GET") ||
-	// 		!this->_env["REQUEST_METHOD"].compare("POST") ||
-	// 		!this->_env["REQUEST_METHOD"].compare("DELETE")));
 }
 
 void		execCGI::append_body(char *buffer, int size)

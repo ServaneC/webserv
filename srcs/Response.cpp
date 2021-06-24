@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 14:42:45 by schene            #+#    #+#             */
-/*   Updated: 2021/06/22 15:51:26 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/24 15:27:10 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,10 +53,9 @@ Response::~Response()
 
 void		Response::parse_cgi_buf()
 {
-	// std::cout << '|' << this->_buf << '|' << std::endl;
-	if (!this->_buf || this->_buf[0] == '<')
+	if (!this->_buf)
 		return ;
-	
+
 	while (memchr(this->_buf + this->_idx, ':', this->_buf_size - 1)) // check if there is still header-fields
 	{
 		if ((&this->_buf[this->_idx])[0] == '\r') // end of the header 
@@ -143,13 +142,10 @@ void		Response::check_content_type()
 	if (tmp.find('.') != std::string::npos)
 	{
 		tmp.erase(0, tmp.find_last_of('.') + 1);
-		// std::cout << "-> " << tmp << std::endl;
 		if (!tmp.compare("css"))
 			this->_headers["Content-Type"] = "text/css";
-		// else if (!tmp.compare("jpeg") || !tmp.compare("jpg"))
-		// 	this->_headers["Content-Type"] = "image/jpeg";
-		// else if (!tmp.compare("png"))
-		// 	this->_headers["Content-Type"] = "image/png";
+		else if (!tmp.compare("jpeg") || !tmp.compare("jpg") || !tmp.compare("png"))
+			this->_headers["Content-Type"] = "image/" + tmp;
 	}
 }
 

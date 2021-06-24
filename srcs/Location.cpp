@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:48:09 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/06/22 15:39:35 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/24 15:33:56 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,10 +29,7 @@ Location::Location(Server *server, std::string path, std::string location_conf) 
 
 bool Location::isAcceptedMethod(std::string method)
 {
-    int code = 0;
-    code = !method.compare("GET") ? METHOD_GET : code;
-    code = !method.compare("POST") ? METHOD_POST : code;
-    code = !method.compare("DELETE") ? METHOD_DELETE : code;
+    int code = setMethodCode(method);
     for (std::vector<int>::iterator it = this->_accepted_methods.begin(); it != this->_accepted_methods.end(); it++)
     {
          if (*it == code)

@@ -482,9 +482,20 @@ AVANT CA:
 		- lire juste le header, puis le body si y en as un
 -> j'ai modifie isAcceptedMethod pourqu'elle prenne une string au lieu d'un int en argument
 -> gerer les accepted method ✅
-	-> on passe les 3 premiers test du tester !
+	-> on passe les 3 premiers test du tester (en enlevant POST dans la location '/')!
 
-	
+24/06/2021
+-> turn on or off directory listing (autoindex)
+	- When a request end with '/' (= is a directory) and there is no index file + the autoindex is on => a directory listing is returned
+	-> faire un simple directory listing (sans dates/ tailles) (opendir, readdir et closedir)
+	-> Ca marche !
+	-> l'affiché que si il n'y as pas de file index ✅
+!! LEAK dans la vm apres ctrl-c (ca vient de parsingLocations apparement)
+-> mini modif dans isAcceptedMethod() qui fait mnt appel a setMethodCode()
+	+ j'ai remplacé les if par du ternaire dans setMethodCode()
+
+
+
 ================================== NOTES ==================================
 
 A faire:
@@ -495,8 +506,13 @@ A faire:
 - utiliser les routes
 -> gérer l'upload de fichier (il faut passer par POST)
 -> gerer les leaks en cas d'erreur / d'arret
--> turn on or off directory listing
+-> error pages
 -> default file to answer if the request is a directory
+-> faire des fonctions pour chaque methode (si pas de cgi)
+-> mieux gerer le Content-Type (utiliser stat ?)
+-> il faudrait parser autoindex dans le conf file + afficher l'autoindex en fonction
+	(actuelemt on considere qu'il est tout le temps on)
+-> chercher pour le file index preciser dans le conf file (actuellement on prend juste index.html)
 
 POST request from google chrome after an upload of a file
 -------------------------------------------------------------------------------

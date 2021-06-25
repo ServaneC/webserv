@@ -6,17 +6,13 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 16:24:45 by schene            #+#    #+#             */
-/*   Updated: 2021/06/22 15:30:37 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/25 15:34:01 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/Request.hpp"
 
-#define CHUNK_SIZE 1
-#define HEADER 1
-#define BODY 2
-
-Request::Request() : _bad_request(false)
+Request::Request() : _bad_request(false), _body(NULL)
 {
 
 }
@@ -29,98 +25,150 @@ Request::~Request()
 
 int		Request::parseRequest(int socket)
 {
+	this->reset_body();
 	this->_socket = socket;
 	this->resetHeaders();
 
-	// if (this->recvData(CHUNK_SIZE, HEADER) < 0)
-	// 	return -1;
 	this->recvHeader();
-
 	if (this->_buf.empty())
 		return (- 1);
 	std::cout << "========= REQUEST =========" << std::endl;
 	std::cout << this->_buf;
-	std::cout << "==================" << std::endl;
+	std::cout << "===========================" << std::endl;
 
-	//while because "ignore at least one CRLF before request line"
+	if (gnlRequest() > 0)
+		this->parseRequestLine(this->_line);
 	while (gnlRequest() > 0)
 	{
-		if (!(this->_line[0] == '\r' || this->_line.empty()))
-		{
-			this->parseRequestLine(this->_line);
-			break ;
-		}
-	}
-	while (gnlRequest() > 0)
-	{
-	 	if (this->_line.find(':') == std::string::npos) //check if we are still in the headers fields
+	 	if (this->_line[0] == '\r') //check if we are still in the headers fields
 	 		break ;
 	 	this->parseHeaderFields(this->_line);
 	}
-	// //check if CRLF or LF (no CRLF or LF = error) CRLF -> line = "\r" LF = line = empty
-	if (!(this->_line.empty() || (this->_line[0] == '\r' && !this->_line[1])))
-	 	this->_bad_request = true;
-	// if payload-body -> read it
-	this->_body.clear();
-	this->_body.assign(this->_buf);
-	if (!this->getHeaderField("Content-Length").empty())
-	{
-		// while (this->_body.empty())
-		while ((int)this->_body.size() < std::atoi(this->getHeaderField("Content-Length").c_str()))
-			this->recvData(std::atoi(this->_headers["Content-Length"].c_str()), BODY);
-	}
-	else if (!this->getHeaderField("Transfer-Encoding").empty())
-	{
-		// while (1)
-		// {
-			this->recvData(100, BODY);
-			std::cout << '[' << this->_body << ']' << std::endl;
-			// if (this->_body[0] == '0')
-			// 	break ;
-		// }
-	}
 	this->_buf.clear();
-	// std::cout << this->_body;
+	// if payload-body -> read it
+	if (!this->getHeaderField("Content-Length").empty()) //request w/ a 'normal' body
+		this->recvBody(std::atoi(this->_headers["Content-Length"].c_str()));
+	else if (!this->getHeaderField("Transfer-Encoding").compare("chunked")) //chunk request
+		recvChunk();
+	write(1, this->_body, this->_body_size);
 	std::cout << "========= END OF REQUEST =========" << std::endl;
 	return 1;
 }
 
-int			Request::recvHeader()
+int			Request::recvHeader() // recv byte per byte to stop at the end of the header fields
 {
-	while (this->recvData(CHUNK_SIZE, HEADER) > 0)
-	{
-		if (this->_buf.find("\r\n\r\n"))
-			break ;
-		std::cout << '[' << this->_buf << ']' << std::endl;
-	}
-	return (1);
+	while (this->_buf.find("\r\n\r\n") == std::string::npos &&
+			this->_buf.find("\n\n") == std::string::npos)
+		this->_buf.push_back(this->recv_one());
+	return 1;
 }
 
-int			Request::recvData(int size, int mode)
+int			Request::recvBody(int size)
 {
-	char *recv_buf;
+	unsigned char *recv_buf;
 	int  recv_ret;
 
 	try {
-		recv_buf = new char [size + 1];
+		recv_buf = new unsigned char [size + 1];
 	}
 	catch (std::exception &e) {
         std::cout << e.what() << std::endl;
 		return (-1);
 	}
 	memset(recv_buf, '\0', size);
-	while ((recv_ret = recv(this->_socket, recv_buf, size, 0)) > 0)
+	while (1)
 	{
-		recv_buf[recv_ret] = '\0';
-		if (mode == HEADER)
-			this->_buf.append((const char *)recv_buf);
-		else if (mode == BODY)
-			this->_body.append((const char *)recv_buf);
-		memset(recv_buf, '\0', recv_ret);
-		if (recv_ret < size || mode == BODY)
-			break ;
+		recv_ret = recv(this->_socket, recv_buf, size, 0);
+		if (recv_ret < 0)
+			return (-1);
+		if (recv_ret > 0)
+		{
+			recv_buf[recv_ret] = '\0';
+			this->append_body(recv_buf, recv_ret);
+			memset(recv_buf, '\0', recv_ret);
+			if (recv_ret == size)
+				break ;
+		}
 	}
 	delete [] recv_buf;
+	return 1;
+}
+
+int			Request::recvChunk()
+{
+	std::string		size_buf;
+	int				size;
+	unsigned char	buf[1];
+
+	while (1)
+	{
+		size_buf.clear();
+		while (size_buf.find("\r\n") == std::string::npos)
+			size_buf.push_back(recv_one());
+		if (size_buf.size() > 2)
+			size_buf.erase(size_buf.size() - 2, 2); // erase the CRLF
+		std::cout << "size buf = [" << size_buf << ']' << std::endl;
+		size = hexa_to_int(size_buf);
+		std::cout << "size = " << size << std::endl;
+		//end of the chunk body
+		if (size == 0)
+		{
+			recv_one();
+			recv_one();
+			recv_one();
+			recv_one();
+			return 1;
+		}
+		// recv the chunk data + append to body
+		for (int i = 0; i < size; i++)
+		{
+			buf[0] = recv_one();
+			this->append_body(buf, 1);
+			buf[0] = 0;
+		}
+		// recv the CRLF
+		recv_one();
+		recv_one();
+	}
+	return 1;
+}
+
+unsigned char	Request::recv_one()
+{
+	unsigned char	c;
+	int				recv_ret;
+
+	while (1)
+	{
+		c = 0;
+		recv_ret = recv(this->_socket, &c, 1, 0);
+		if (recv_ret < 0)
+			return (-1);
+		if (recv_ret > 0)
+			break ;
+	}
+	return (c);
+}
+
+
+int			Request::append_body(unsigned char *buffer, int size)
+{
+	try {
+		if (this->_body)
+		{
+			this->_body = MyRealloc(this->_body, this->_body_size, this->_body_size + size + 1);
+			std::memmove(this->_body + this->_body_size, buffer, size);
+		}
+		else
+		{
+			this->_body = new unsigned char[size + 1];
+			std::memmove(this->_body, buffer, size);
+		}
+		this->_body_size += size;
+	}
+	catch (std::exception &e) {
+        std::cout << e.what() << std::endl;
+		return (-1); }
 	return 1;
 }
 
@@ -176,7 +224,7 @@ void		Request::parseHeaderFields(std::string line)
 				value.erase(0, 1);
 			while (isspace(*(value.end() - 1))) // handle OWS between field-value and CRLF
 				value.erase(value.end() - 1);
-			it->second = value;// store header value in map
+			it->second = value; // store header value in map
 			// std::cout << it->first << " = " << it->second << std::endl;
 		}
 		it++;
@@ -198,14 +246,14 @@ void		Request::resetHeaders()
 	this->_headers["User-Agent"] = std::string();
 }
 
-
-char		*Request::free_null_line(char *line)
+void		Request::reset_body()
 {
-	if (line)
-		free(line);
-	line = NULL;
-	return line;
+	if (this->_body)
+		delete [] this->_body;
+	this->_body_size = 0;
+	this->_body = NULL;
 }
+
 
 // GETTER
 std::string const	&Request::getMethod() const
@@ -237,10 +285,16 @@ std::string const	&Request::getHeaderField(std::string field_name) const
 	return empty;
 }
 
-std::string const	&Request::getBody() const
+unsigned char 		*Request::getBody() const
 {
 	return this->_body;
 }
+
+int			 		Request::getBodySize() const
+{
+	return this->_body_size;
+}
+
 
 bool				Request::getBadRequest() const
 {

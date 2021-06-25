@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 14:42:45 by schene            #+#    #+#             */
-/*   Updated: 2021/06/24 15:27:10 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/25 12:34:04 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,9 +67,9 @@ void		Response::parse_cgi_buf()
 				break ;
 			next_n++;
 		}
-		std::string tmp_s = std::string((char *)(&this->_buf[this->_idx]), next_n - 1); //line with the header field (maybe -2)
+		std::string tmp_s = std::string((char *)(&this->_buf[this->_idx]), next_n - 1); //line with the header field
 		
-		// erase the line from buf
+		// "erase" the line from buf
 		this->_idx += next_n + 1;
 		this->_buf_size -= next_n + 1;
 

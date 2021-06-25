@@ -2,7 +2,7 @@
 <html>
  <head>
   <title>Test PHP</title>
-  <link rel="stylesheet" type="text/css" href="/static/style1.css">
+  <!-- <link rel="stylesheet" type="text/css" href="/static/style1.css"> -->
  </head>
  <body>
  <?php echo '<p>Bonjour le monde</p>'; ?>

@@ -494,25 +494,41 @@ AVANT CA:
 -> mini modif dans isAcceptedMethod() qui fait mnt appel a setMethodCode()
 	+ j'ai remplacé les if par du ternaire dans setMethodCode()
 
-
+25/06/2021
+-> gerer les chunk request
+	-> commencer par lire la requete (au moins le body) dans un unsigned char * (au lieu de std::string)
+		- revoir la fonction recvData -> faire deux fontion (une pour recevoir les hedaer, une autre pour le body)
+		-> Tout les headers sont lu dans une string (on s'aarrete bien a la fin des headers fields, 
+			avant c'etait pas le cas, on lisait tout ce qu'on recevait et après on parsait)
+		-> lire le body dans un unsigned char * (juste pour une request avec Content-Length pour le moment) ✅
+		-> lire les chunk requests
+			-> parser les chunk jusqu'a la chunk de fin (0\r\n) 
+				-> c'est fait mais les data ne passe pas cest bizarre
+			-> read jusqu'au \r\n de fin 
+				!! (il peut y avoir des header fields après le body ! -> https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Trailer )
 
 ================================== NOTES ==================================
 
-A faire:
--> reussir une request DELETE
+Pour tester les chunk request:
+	curl -H "Transfer-Encoding: chunked" -d "nom=Servane&age=20" http://localhost:8080/action.php
+
+TO DO:
+-> gerer les chunk request
+-> toute la gestion des exceptions / retour d'erreur / free quand on quitte (ou en cas d'erreur) est a revoir
 -> faire marcher les query string
 	- il faut apparement parser REFERER
--> throw les bonnes exceptions aux bons endroit
-- utiliser les routes
--> gérer l'upload de fichier (il faut passer par POST)
--> gerer les leaks en cas d'erreur / d'arret
+-> utiliser les routes
 -> error pages
 -> default file to answer if the request is a directory
--> faire des fonctions pour chaque methode (si pas de cgi)
 -> mieux gerer le Content-Type (utiliser stat ?)
--> il faudrait parser autoindex dans le conf file + afficher l'autoindex en fonction
-	(actuelemt on considere qu'il est tout le temps on)
--> chercher pour le file index preciser dans le conf file (actuellement on prend juste index.html)
+- MÉTHODES:
+	-> faire des fonctions pour chaque methode (si pas de cgi)
+	-> reussir une request DELETE
+	-> gérer l'upload de fichier (il faut passer par POST)
+- (auto)INDEX:
+	-> il faudrait parser autoindex dans le conf file + afficher l'autoindex en fonction
+		(actuelemt on considere qu'il est tout le temps on)
+	-> chercher pour le file index preciser dans le conf file (actuellement on prend juste index.html)
 
 POST request from google chrome after an upload of a file
 -------------------------------------------------------------------------------

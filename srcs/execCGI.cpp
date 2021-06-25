@@ -29,7 +29,7 @@ execCGI::execCGI(Server &serv)
 	// std::string cgi_path = "/usr/local/Cellar/php/8.0.7/bin/php-cgi";
 
 	this->_location_list = this->_server.getRelevantLocations(this->_request.getTarget());
-	std::cout << "BODY {" << this->_request.getBody().size() << "}\n[" << this->_request.getBody() << ']' << std::endl;
+	// std::cout << "BODY {" << this->_request.getBody().size() << "}\n[" << this->_request.getBody() << ']' << std::endl;
 	this->_buf = NULL;
 	this->_env["SERVER_PROTOCOL"] = "HTTP/1.1";
 	if (!this->_request.getBadRequest())
@@ -110,12 +110,6 @@ void	execCGI::setPathQuery()
 	// this->_env["PATH_INFO"] = target.substr(0, target.find('?'));
 	this->_env["SCRIPT_FILENAME"] = target.substr(0, target.find('?'));
 	this->_env["SCRIPT_NAME"] = target.substr(0, target.find('?'));
-	// if (target.empty())
-	// {
-	// 	this->_env["PATH_INFO"] = getCurrentDirectory() + "/" + std::string(INDEX);
-	// 	this->_env["SCRIPT_FILENAME"] = INDEX;
-	// 	this->_env["SCRIPT_NAME"] = INDEX;
-	// }
 	if (target.find('?') != std::string::npos)
 		this->_env["QUERY_STRING"] = target.substr(target.find('?'), target.size()); //maybe wrong if no '?'
 }
@@ -185,7 +179,10 @@ void	execCGI::exec_CGI()
 
 	this->set_argv();
 
-
+	std::cout << "BODY SIZE =" << this->_request.getBodySize() << std::endl;
+	std::cout << '[';
+	write(1, this->_request.getBody(), this->_request.getBodySize());
+	std::cout << ']' << std::endl;
 	// SAVING STDIN AND STDOUT IN ORDER TO TURN THEM BACK TO NORMAL LATER
 	saveStdin = dup(STDIN_FILENO);
 	saveStdout = dup(STDOUT_FILENO);
@@ -196,7 +193,8 @@ void	execCGI::exec_CGI()
 	long	fdOut = fileno(fOut);
 	int		ret = 1;
 
-	write(fdIn, this->_request.getBody().c_str(), this->_request.getBody().size());
+	write(fdIn, this->_request.getBody(), this->_request.getBodySize());
+	this->_request.reset_body();
 	lseek(fdIn, 0, SEEK_SET);
 
 	pid = fork();
@@ -216,7 +214,7 @@ void	execCGI::exec_CGI()
 	}
 	else //in parent
 	{
-		char	buffer[CGI_BUFSIZE] = {0};
+		unsigned char	buffer[CGI_BUFSIZE] = {0};
 
 		waitpid(-1, NULL, 0);
 		lseek(fdOut, 0, SEEK_SET);
@@ -269,7 +267,7 @@ bool	execCGI::check_method()
 	return (this->_location_list.begin()->isAcceptedMethod(this->_env["REQUEST_METHOD"]));
 }
 
-void		execCGI::append_body(char *buffer, int size)
+void		execCGI::append_body(unsigned char *buffer, int size)
 {
 	try {
 		if (this->_buf)

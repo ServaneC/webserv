@@ -33,7 +33,7 @@ class execCGI
 		void	exec_CGI();
 		int		set_argv();
 		bool	check_method();
-		void	append_body(char *buffer, int size);
+		void	append_body(unsigned char *buffer, int size);
 
 	public:
 		execCGI(Server &serv);

@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/30 09:49:40 by schene            #+#    #+#             */
-/*   Updated: 2021/06/21 17:02:03 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/28 16:46:12 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -157,7 +157,7 @@ void	Config::startServers()
 						{
 							ret = (*it)->exec_accept();
 							FD_SET(ret, &this->_current_sockets);
-							break ;
+							// break ;
 						}
 						else if (FD_ISSET(i, &write_sockets) && (*it)->getClientSocket() != -1)
 						{

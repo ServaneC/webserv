@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:43:38 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/06/22 15:25:30 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/28 14:25:15 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ class Location
         Server              *_server;
         std::string         _path;
         std::string         _location_conf;
+        std::string         _root_path;
         std::string         _root;
         std::vector<int>    _accepted_methods;
 
@@ -33,6 +34,7 @@ class Location
         ~Location();
         std::string         getPath() const;
         std::string         getRoot() const;
+        std::string         getRootPath() const;
         std::vector<int>    getAcceptedMethods() const;
         bool                isAcceptedMethod(std::string method);
 };

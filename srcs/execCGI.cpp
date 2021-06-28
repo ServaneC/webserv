@@ -29,6 +29,8 @@ execCGI::execCGI(Server &serv)
 	// std::string cgi_path = "/usr/local/Cellar/php/8.0.7/bin/php-cgi";
 
 	this->_location_list = this->_server.getRelevantLocations(this->_request.getTarget());
+	if (this->_location_list.size() > 1)
+		this->_location_list.erase(this->_location_list.begin());
 	// std::cout << "BODY {" << this->_request.getBody().size() << "}\n[" << this->_request.getBody() << ']' << std::endl;
 	this->_buf = NULL;
 	this->_env["SERVER_PROTOCOL"] = "HTTP/1.1";
@@ -59,6 +61,7 @@ execCGI::execCGI(Server &serv)
 	this->_env["SERVER_SOFTWARE"] = "webserv/1.0";
 	
 
+	std::cout << "-> PATH_INFO = |" << this->_env["PATH_INFO"] << '|' << std::endl;
 	Autoindex autoidx(this->_request.getTarget(), this->_env["PATH_INFO"]);
 	if (autoidx.isDir() && !autoidx.getIndex())
 	{
@@ -72,7 +75,7 @@ execCGI::execCGI(Server &serv)
 	{
 		if (autoidx.isDir() && autoidx.getIndex())
 		{
-			this->_env["PATH_INFO"] = getCurrentDirectory() + "/" + std::string(INDEX);
+			this->_env["PATH_INFO"] = this->_env["PATH_INFO"] + '/' + std::string(INDEX);
 			this->_env["SCRIPT_FILENAME"] = INDEX;
 			this->_env["SCRIPT_NAME"] = INDEX;
 		}	
@@ -98,20 +101,27 @@ execCGI::~execCGI()
 void	execCGI::setPathQuery()
 {
 	std::string	target = this->_request.getTarget();
+	std::string root;
+	root = (*this->_location_list.begin()).getRootPath();
+	if ((*this->_location_list.begin()).getPath()[0] == '/')
+		target.erase(0, (*this->_location_list.begin()).getPath().size());
 	if (target[0] == '/')
 		target.erase(0, 1);
 	
 	if (chdir(_server.getRoot().c_str()) == -1)
 		return ;
-	
+
+	this->_env["PATH_INFO"] = root + "/" + target.substr(0, target.find('?'));
+	target.insert(0, (*this->_location_list.begin()).getRoot() + '/');
+	if (target[0] == '/')
+		target.erase(0, 1);
+	std::cout << "TARGET [" << target << ']' << std::endl;
 	this->_env["REQUEST_URI"] = target;
 	this->_env["PATH_TRANSLATED"] = target;
-	this->_env["PATH_INFO"] = getCurrentDirectory() + "/" + target.substr(0, target.find('?'));
-	// this->_env["PATH_INFO"] = target.substr(0, target.find('?'));
 	this->_env["SCRIPT_FILENAME"] = target.substr(0, target.find('?'));
 	this->_env["SCRIPT_NAME"] = target.substr(0, target.find('?'));
 	if (target.find('?') != std::string::npos)
-		this->_env["QUERY_STRING"] = target.substr(target.find('?'), target.size()); //maybe wrong if no '?'
+		this->_env["QUERY_STRING"] = target.substr(target.find('?') + 1, target.size()); //maybe wrong if no '?'
 }
 
 
@@ -151,18 +161,18 @@ void	execCGI::exec_CGI()
 	if (this->_env["STATUS_CODE"].compare("200 OK") != 0)
 		return ;
 	this->_env["HTTP_HOST"] = this->_env["SERVER_NAME"];
-	// std::cout << "-> REQUEST_METHOD = |" << this->_env["REQUEST_METHOD"] << '|' << std::endl;
-	// std::cout << "-> REDIRECT_STATUS = |" << this->_env["REDIRECT_STATUS"] << '|' << std::endl;
-	// std::cout << "-> SCRIPT_FILENAME = |" << this->_env["SCRIPT_FILENAME"] << '|' << std::endl;
-	// std::cout << "-> SCRIPT_NAME = |" << this->_env["SCRIPT_NAME"] << '|' << std::endl;
-	// std::cout << "-> PATH_INFO = |" << this->_env["PATH_INFO"] << '|' << std::endl;
-	// std::cout << "-> SERVER_NAME = |" << this->_env["SERVER_NAME"] << '|' << std::endl;
-	// std::cout << "-> SERVER_PROTOCOL = |" << this->_env["SERVER_PROTOCOL"] << '|' << std::endl;
-	// std::cout << "-> REQUEST_URI = |" << this->_env["REQUEST_URI"] << '|' << std::endl;
-	// std::cout << "-> HTTP_HOST = |" << this->_env["HTTP_HOST"] << '|' << std::endl;
-	// std::cout << "-> CONTENT_LENGTH = |" << this->_env["CONTENT_LENGTH"] << '|' << std::endl;
-	// std::cout << "-> CONTENT_TYPE = |" << this->_env["CONTENT_TYPE"] << '|' << std::endl;
-	// std::cout << "-> QUERY_STRING = |" << this->_env["QUERY_STRING"] << '|' << std::endl;
+	std::cout << "-> REQUEST_METHOD = |" << this->_env["REQUEST_METHOD"] << '|' << std::endl;
+	std::cout << "-> REDIRECT_STATUS = |" << this->_env["REDIRECT_STATUS"] << '|' << std::endl;
+	std::cout << "-> SCRIPT_FILENAME = |" << this->_env["SCRIPT_FILENAME"] << '|' << std::endl;
+	std::cout << "-> SCRIPT_NAME = |" << this->_env["SCRIPT_NAME"] << '|' << std::endl;
+	std::cout << "-> PATH_INFO = |" << this->_env["PATH_INFO"] << '|' << std::endl;
+	std::cout << "-> SERVER_NAME = |" << this->_env["SERVER_NAME"] << '|' << std::endl;
+	std::cout << "-> SERVER_PROTOCOL = |" << this->_env["SERVER_PROTOCOL"] << '|' << std::endl;
+	std::cout << "-> REQUEST_URI = |" << this->_env["REQUEST_URI"] << '|' << std::endl;
+	std::cout << "-> HTTP_HOST = |" << this->_env["HTTP_HOST"] << '|' << std::endl;
+	std::cout << "-> CONTENT_LENGTH = |" << this->_env["CONTENT_LENGTH"] << '|' << std::endl;
+	std::cout << "-> CONTENT_TYPE = |" << this->_env["CONTENT_TYPE"] << '|' << std::endl;
+	std::cout << "-> QUERY_STRING = |" << this->_env["QUERY_STRING"] << '|' << std::endl;
 	
 	//just to pass second test (very ugly, should be handle differently)
 	this->_buf = NULL;
@@ -180,9 +190,8 @@ void	execCGI::exec_CGI()
 	this->set_argv();
 
 	std::cout << "BODY SIZE =" << this->_request.getBodySize() << std::endl;
-	std::cout << '[';
 	write(1, this->_request.getBody(), this->_request.getBodySize());
-	std::cout << ']' << std::endl;
+	write(1, "\n", 1);
 	// SAVING STDIN AND STDOUT IN ORDER TO TURN THEM BACK TO NORMAL LATER
 	saveStdin = dup(STDIN_FILENO);
 	saveStdout = dup(STDOUT_FILENO);
@@ -194,7 +203,7 @@ void	execCGI::exec_CGI()
 	int		ret = 1;
 
 	write(fdIn, this->_request.getBody(), this->_request.getBodySize());
-	this->_request.reset_body();
+	// this->_request.reset_body();
 	lseek(fdIn, 0, SEEK_SET);
 
 	pid = fork();
@@ -233,11 +242,12 @@ void	execCGI::exec_CGI()
 	dup2(saveStdin, STDIN_FILENO);
 	dup2(saveStdout, STDOUT_FILENO);
 	fclose(fIn);
-	fclose(fOut); //not sure that's allowed
+	fclose(fOut);
 	close(fdIn);
 	close(fdOut);
 	close(saveStdin);
 	close(saveStdout);
+	this->_request.reset_body();
 	if (this->_argv[0])
 		delete [] this->_argv[0];
 	this->_argv[0] = NULL;
@@ -264,6 +274,7 @@ void				execCGI::free_buf()
 
 bool	execCGI::check_method()
 {
+	std::cout << "ROOT = " << (*this->_location_list.begin()).getRootPath() << std::endl;
 	return (this->_location_list.begin()->isAcceptedMethod(this->_env["REQUEST_METHOD"]));
 }
 

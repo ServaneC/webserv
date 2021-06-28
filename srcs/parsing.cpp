@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/06/24 15:33:14 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/28 14:34:15 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,8 +52,6 @@ std::string parsingLocalRoot(std::string server_root, std::string conf)
         throw confInvalidRootException();
     std::string root(server_root);
     root.append(conf.substr(root_index, root_end - root_index));
-    // if (root[root.size() - 1] != '/')
-    //     root.append("/");
     return (root);
 }
 

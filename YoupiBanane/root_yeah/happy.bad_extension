@@ -2,6 +2,10 @@
 
 
 <html>
+<head>
+    <title>HAPPY!</title>
+    <link rel="stylesheet" type="text/css" href="/static/style1.css">
+</head>
     <body>
     	<h1> - Are you happy ? </h1>
         <h2> - Yes I am :D </h2>

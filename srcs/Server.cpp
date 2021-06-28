@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/06/21 15:20:54 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/28 14:19:15 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,7 +106,7 @@ std::list<Location>    Server::getRelevantLocations(std::string target)
     std::cout << ">> Relevant locations for this request :\n";
     for (std::list<Location>::iterator it = relevant_locations.begin(); it != relevant_locations.end(); it++)
     {
-        std::cout << "\t- [" << it->getPath() << "]\tRoot = " << it->getRoot() << std::endl;
+        std::cout << "\t- [" << it->getPath() << "]\tRoot = " << it->getRootPath() << std::endl;
     }
     return (relevant_locations);
 }

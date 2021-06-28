@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 16:24:45 by schene            #+#    #+#             */
-/*   Updated: 2021/06/25 15:34:01 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/28 11:44:23 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,9 +57,13 @@ int		Request::parseRequest(int socket)
 
 int			Request::recvHeader() // recv byte per byte to stop at the end of the header fields
 {
+
 	while (this->_buf.find("\r\n\r\n") == std::string::npos &&
 			this->_buf.find("\n\n") == std::string::npos)
+	{
 		this->_buf.push_back(this->recv_one());
+	}
+		
 	return 1;
 }
 
@@ -98,16 +102,16 @@ int			Request::recvChunk()
 {
 	std::string		size_buf;
 	int				size;
-	unsigned char	buf[1];
+	unsigned char	buf;
 
 	while (1)
 	{
+		size = 0;
 		size_buf.clear();
 		while (size_buf.find("\r\n") == std::string::npos)
 			size_buf.push_back(recv_one());
 		if (size_buf.size() > 2)
 			size_buf.erase(size_buf.size() - 2, 2); // erase the CRLF
-		std::cout << "size buf = [" << size_buf << ']' << std::endl;
 		size = hexa_to_int(size_buf);
 		std::cout << "size = " << size << std::endl;
 		//end of the chunk body
@@ -122,15 +126,15 @@ int			Request::recvChunk()
 		// recv the chunk data + append to body
 		for (int i = 0; i < size; i++)
 		{
-			buf[0] = recv_one();
-			this->append_body(buf, 1);
-			buf[0] = 0;
+			buf = recv_one();
+			this->append_body(&buf, 1);
+			buf = 0;
 		}
 		// recv the CRLF
 		recv_one();
 		recv_one();
 	}
-	return 1;
+	return -1;
 }
 
 unsigned char	Request::recv_one()

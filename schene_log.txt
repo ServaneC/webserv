@@ -507,16 +507,44 @@ AVANT CA:
 			-> read jusqu'au \r\n de fin 
 				!! (il peut y avoir des header fields après le body ! -> https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Trailer )
 
+28/06/2021
+-> re une erreur "In select: Bad file descriptor" quand on veut accdeder a plusieurs adresse IP 🙄 
+	-> le pb vient peut etre de recv Header qui essaye de lire en boucle.
+	-> bon j'ai rien fait et l'erreur a disparu 🤷🏻‍♀️
+-> finir la gestion des chunks request 😩
+	-> tout est bien lu et stocké mais ca ne passe pas dans execCGI et jsp pq...
+	-> bon j'ai essayé plein de truc mais je ne comprend pas POURQUOI LA DATA NE PASSE PAS !!!!
+	-> peut etre tester dans la vm et voir si ca passe dessus => ca marche pas non plus 🤦🏻‍♀️
+	-> j'abandonne pour le moment, ca fait presque 2h que je me prend la tête !
+-> faire marcher les query string ✅
+	-> Bonne nouvelle ! ca a l'air de marcher !!!
+	-> je vais faire plus de test pour m'assurer que ca marche bien
+	-> Ont peut faire une requete GET avec query string dans le index.html via un form 
+-> utiliser les routes
+	-> revoir setPathQuery pour que la Location soit prise en commpte
+	 -  marche si pas de fichier preciser = autoindex (http://localhost:8080/Yeah/)
+	 -> modifier Location pour qu'elle stocke aussi juste la root correspondant au plus du path root en entier
+	🎉 Ca marche pour la redirection Yeah -> root_yeah
+	-> j'ai enlever le dernier '/' dans l'autoindex (y en a pas dans nginx)
+	-> On peut mnt avoir l'index d'un directory meme si y a pas le dernier '/' dans l'url,
+		(PB: ont peut pas acceder au fichier après a cause de ce manque de '/' donc a voir si on garde comme ça)
+		-> bon mnt ont peut y acceder mais l'url est chelou comme il concatenne sans le '/' (http://localhost:8080/Yeahhappy.bad_extension)
+		🎉 C'est bon, ont peut acceder a l'index avec oui sans le '/' a la fin et tout est bien accessible
+	-> il faudrait se debarrasser de location list et n'avoir qu'une location !
+		(peut être regrouper les infos de la location + l'extension de fichier)
+	-> On passe une dizaine de test du tester
+
+!! Il y a des bug, parfois le terminal est impossible a quitter et on doit le kill 
+-> Il faut merge demain !
 ================================== NOTES ==================================
 
 Pour tester les chunk request:
 	curl -H "Transfer-Encoding: chunked" -d "nom=Servane&age=20" http://localhost:8080/action.php
 
 TO DO:
+-> avoir le sujet de correction !
 -> gerer les chunk request
 -> toute la gestion des exceptions / retour d'erreur / free quand on quitte (ou en cas d'erreur) est a revoir
--> faire marcher les query string
-	- il faut apparement parser REFERER
 -> utiliser les routes
 -> error pages
 -> default file to answer if the request is a directory
@@ -527,7 +555,7 @@ TO DO:
 	-> gérer l'upload de fichier (il faut passer par POST)
 - (auto)INDEX:
 	-> il faudrait parser autoindex dans le conf file + afficher l'autoindex en fonction
-		(actuelemt on considere qu'il est tout le temps on)
+		(actuelement on considere qu'il est tout le temps on)
 	-> chercher pour le file index preciser dans le conf file (actuellement on prend juste index.html)
 
 POST request from google chrome after an upload of a file
@@ -735,3 +763,5 @@ GET /directory/oulalala HTTP/1.1
 Host: localhost:8080
 User-Agent: Go-http-client/1.1
 Accept-Encoding: gzip
+
+

@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 16:24:45 by schene            #+#    #+#             */
-/*   Updated: 2021/06/28 11:44:23 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/29 11:23:20 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,10 +58,16 @@ int		Request::parseRequest(int socket)
 int			Request::recvHeader() // recv byte per byte to stop at the end of the header fields
 {
 
+	unsigned char c = 0;
 	while (this->_buf.find("\r\n\r\n") == std::string::npos &&
 			this->_buf.find("\n\n") == std::string::npos)
 	{
-		this->_buf.push_back(this->recv_one());
+		c = this->recv_one();
+		// std::cout << '[' << c << '|' << int(c) << ']';
+		if (int(c) != 255)
+			this->_buf.push_back(c);
+		else
+			return (-1);
 	}
 		
 	return 1;
@@ -113,7 +119,7 @@ int			Request::recvChunk()
 		if (size_buf.size() > 2)
 			size_buf.erase(size_buf.size() - 2, 2); // erase the CRLF
 		size = hexa_to_int(size_buf);
-		std::cout << "size = " << size << std::endl;
+		// std::cout << "size = " << size << std::endl;
 		//end of the chunk body
 		if (size == 0)
 		{

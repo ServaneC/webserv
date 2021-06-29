@@ -22,16 +22,15 @@ execCGI::execCGI(Server &serv)
 		 _buf_size(0), _last_modified(0), _argv(NULL)
 {
 	// VM
-	// std::string cgi_path = "/usr/bin/php-cgi";
+	std::string cgi_path = "/usr/bin/php-cgi";
 	// 42 MAC
-	std::string cgi_path = "/Users/schene/.brew/Cellar/php/8.0.7/bin/php-cgi";
+	// std::string cgi_path = "/Users/schene/.brew/Cellar/php/8.0.7/bin/php-cgi";
 	// OTHER MAC
 	// std::string cgi_path = "/usr/local/Cellar/php/8.0.7/bin/php-cgi";
 
 	this->_location_list = this->_server.getRelevantLocations(this->_request.getTarget());
 	if (this->_location_list.size() > 1)
 		this->_location_list.erase(this->_location_list.begin());
-	// std::cout << "BODY {" << this->_request.getBody().size() << "}\n[" << this->_request.getBody() << ']' << std::endl;
 	this->_buf = NULL;
 	this->_env["SERVER_PROTOCOL"] = "HTTP/1.1";
 	if (!this->_request.getBadRequest())
@@ -61,7 +60,8 @@ execCGI::execCGI(Server &serv)
 	this->_env["SERVER_SOFTWARE"] = "webserv/1.0";
 	
 
-	std::cout << "-> PATH_INFO = |" << this->_env["PATH_INFO"] << '|' << std::endl;
+	std::cout << "Accept -> " << this->_request.getHeaderField("Accept") << std::endl;
+	// std::cout << "-> PATH_INFO = |" << this->_env["PATH_INFO"] << '|' << std::endl;
 	Autoindex autoidx(this->_request.getTarget(), this->_env["PATH_INFO"]);
 	if (autoidx.isDir() && !autoidx.getIndex())
 	{
@@ -157,22 +157,22 @@ int		execCGI::set_argv()
 
 void	execCGI::exec_CGI()
 {
-	std::cout << "this->_env[STATUS_CODE] -> " << this->_env["STATUS_CODE"] << std::endl;
+	// std::cout << "this->_env[STATUS_CODE] -> " << this->_env["STATUS_CODE"] << std::endl;
 	if (this->_env["STATUS_CODE"].compare("200 OK") != 0)
 		return ;
 	this->_env["HTTP_HOST"] = this->_env["SERVER_NAME"];
-	std::cout << "-> REQUEST_METHOD = |" << this->_env["REQUEST_METHOD"] << '|' << std::endl;
-	std::cout << "-> REDIRECT_STATUS = |" << this->_env["REDIRECT_STATUS"] << '|' << std::endl;
-	std::cout << "-> SCRIPT_FILENAME = |" << this->_env["SCRIPT_FILENAME"] << '|' << std::endl;
-	std::cout << "-> SCRIPT_NAME = |" << this->_env["SCRIPT_NAME"] << '|' << std::endl;
-	std::cout << "-> PATH_INFO = |" << this->_env["PATH_INFO"] << '|' << std::endl;
-	std::cout << "-> SERVER_NAME = |" << this->_env["SERVER_NAME"] << '|' << std::endl;
-	std::cout << "-> SERVER_PROTOCOL = |" << this->_env["SERVER_PROTOCOL"] << '|' << std::endl;
-	std::cout << "-> REQUEST_URI = |" << this->_env["REQUEST_URI"] << '|' << std::endl;
-	std::cout << "-> HTTP_HOST = |" << this->_env["HTTP_HOST"] << '|' << std::endl;
-	std::cout << "-> CONTENT_LENGTH = |" << this->_env["CONTENT_LENGTH"] << '|' << std::endl;
-	std::cout << "-> CONTENT_TYPE = |" << this->_env["CONTENT_TYPE"] << '|' << std::endl;
-	std::cout << "-> QUERY_STRING = |" << this->_env["QUERY_STRING"] << '|' << std::endl;
+	// std::cout << "-> REQUEST_METHOD = |" << this->_env["REQUEST_METHOD"] << '|' << std::endl;
+	// std::cout << "-> REDIRECT_STATUS = |" << this->_env["REDIRECT_STATUS"] << '|' << std::endl;
+	// std::cout << "-> SCRIPT_FILENAME = |" << this->_env["SCRIPT_FILENAME"] << '|' << std::endl;
+	// std::cout << "-> SCRIPT_NAME = |" << this->_env["SCRIPT_NAME"] << '|' << std::endl;
+	// std::cout << "-> PATH_INFO = |" << this->_env["PATH_INFO"] << '|' << std::endl;
+	// std::cout << "-> SERVER_NAME = |" << this->_env["SERVER_NAME"] << '|' << std::endl;
+	// std::cout << "-> SERVER_PROTOCOL = |" << this->_env["SERVER_PROTOCOL"] << '|' << std::endl;
+	// std::cout << "-> REQUEST_URI = |" << this->_env["REQUEST_URI"] << '|' << std::endl;
+	// std::cout << "-> HTTP_HOST = |" << this->_env["HTTP_HOST"] << '|' << std::endl;
+	// std::cout << "-> CONTENT_LENGTH = |" << this->_env["CONTENT_LENGTH"] << '|' << std::endl;
+	// std::cout << "-> CONTENT_TYPE = |" << this->_env["CONTENT_TYPE"] << '|' << std::endl;
+	// std::cout << "-> QUERY_STRING = |" << this->_env["QUERY_STRING"] << '|' << std::endl;
 	
 	//just to pass second test (very ugly, should be handle differently)
 	this->_buf = NULL;
@@ -189,9 +189,8 @@ void	execCGI::exec_CGI()
 
 	this->set_argv();
 
-	std::cout << "BODY SIZE =" << this->_request.getBodySize() << std::endl;
-	write(1, this->_request.getBody(), this->_request.getBodySize());
-	write(1, "\n", 1);
+	// std::cout << "BODY SIZE =" << this->_request.getBodySize() << std::endl;
+	// write(1, this->_request.getBody(), this->_request.getBodySize());
 	// SAVING STDIN AND STDOUT IN ORDER TO TURN THEM BACK TO NORMAL LATER
 	saveStdin = dup(STDIN_FILENO);
 	saveStdout = dup(STDOUT_FILENO);
@@ -203,7 +202,6 @@ void	execCGI::exec_CGI()
 	int		ret = 1;
 
 	write(fdIn, this->_request.getBody(), this->_request.getBodySize());
-	// this->_request.reset_body();
 	lseek(fdIn, 0, SEEK_SET);
 
 	pid = fork();
@@ -274,7 +272,7 @@ void				execCGI::free_buf()
 
 bool	execCGI::check_method()
 {
-	std::cout << "ROOT = " << (*this->_location_list.begin()).getRootPath() << std::endl;
+	// std::cout << "ROOT = " << (*this->_location_list.begin()).getRootPath() << std::endl;
 	return (this->_location_list.begin()->isAcceptedMethod(this->_env["REQUEST_METHOD"]));
 }
 
@@ -310,6 +308,12 @@ std::string const	&execCGI::getEnvVar(std::string var_name) const
 	}
 	return empty;
 }
+
+std::string const	&execCGI::getRequestHeader(std::string field_name) const
+{
+	return this->_request.getHeaderField(field_name);
+}
+
 
 unsigned  char		 *execCGI::getBuf() const
 {

@@ -533,9 +533,49 @@ AVANT CA:
 	-> il faudrait se debarrasser de location list et n'avoir qu'une location !
 		(peut être regrouper les infos de la location + l'extension de fichier)
 	-> On passe une dizaine de test du tester
+!! Il y a des bug, parfois le terminal est impossible a quitter et on doit le kill
 
-!! Il y a des bug, parfois le terminal est impossible a quitter et on doit le kill 
--> Il faut merge demain !
+29/06/2021
+-> resoudre le pb de select (pbblmt revoir recvHeader)
+	-> j'ai commeneter la gestion du ctrl_c, ca a apparement regler les blocages ou on doit kill le terminal
+	-> y a toujours le programme de blocage sur un port alors qu'on se connecte a un autre
+	-> bon alors j'ai repris la gestion du select comme sur la branche main et ca a l'air de mieux marcher
+		(je pense qu'il va encore avoir des erreurs mais bcp moins)
+	-> bon enfait y en a quasi toujours autant 🤦🏻‍♀️
+	-> j'ai l'impression que ca va de recvHeader mais on pourrais peut etre gerer plus tot
+	-> bon la jai aucune erreurs mais je suis sûr qu'a un moment elles vont toutes revenir d'un coup
+	-> le if que j'ai ajuté dans recvHeader semble regler les pb
+-> les test passent toujours sur le tester
+-> essayer de gerer les chunk request avec l'envoi d'eof apres le body !
+	-> Ca marche toujours pas !!! -> je re abbandonne
+-> mieux gerer le Content-Type (voir avec le header Accept)
+	-> je vois pas vraiment comment faire actuelement ca marche, 
+		mais si c'est un fichier dont on gere pas l'extension ca serait la merde
+-> bon je vais merge sur main , ca fait lgt
+
+========================= LEILA =========================
+
+Je reviens Lundi 5 Juillet mais hesite pas a m'appeler/ m'envoyer des message si t'as des question !
+
+-> si tu pouvait parser dans le conf le autoindex (on/off) -> default off 
+	(je pense que un bool dans Location initialisé en false serait parfait pour gerer)
+-> et aussi le champs 'index' qui est deja dans le conf file mais actuellement pas parser (sauf erreur de ma part)
+	=> default index.html (donc si y a pas de champs index tu stocke inde.html en valeur)
+	!! il peut y avait plusieur index possible (donc a stocker dans une liste)
+une fois que ca sera fait, si c'est une request sur un directory on pourra :
+	- renvoyer le bon fichier index (ou index.html si pas precise)
+	- si pas d'index présent, et autoindex on -> renvoyer le directory listing
+	- si pas d'index et autoindex off (renvoyer un 404 ou autre)
+-> Voir si tu peux renvoyer une seule Location au lieu d'une liste dans getRelevantLocations
+	- si c'est un fichier avec extension + une location precise 
+		(voir ou est la priorite dans les metchodes et stocker toutes les infos dans ue Location)
+	-> exemple: /Yeah
+		-> au lieu de renvoyer '/' et '/Yeah' en relevant Location, tu renvois juste '/Yeah'
+		(pour le moment j'ai gerer ca en enlevant dans execCGI la premiere Location dans la liste
+			mais ca seait mieux de gerer direct dans getRelevantLocations en ne renvoyant qu'une seule Location)
+
+
+
 ================================== NOTES ==================================
 
 Pour tester les chunk request:
@@ -543,11 +583,11 @@ Pour tester les chunk request:
 
 TO DO:
 -> avoir le sujet de correction !
--> gerer les chunk request
+-> gerer les chunk request -> pb avec l'envoi du body (the CGI will expect EOF as end of the body)
 -> toute la gestion des exceptions / retour d'erreur / free quand on quitte (ou en cas d'erreur) est a revoir
 -> utiliser les routes
 -> error pages
--> default file to answer if the request is a directory
+-> default file to answer if the request is a directory -> index
 -> mieux gerer le Content-Type (utiliser stat ?)
 - MÉTHODES:
 	-> faire des fonctions pour chaque methode (si pas de cgi)

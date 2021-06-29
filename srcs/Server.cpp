@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/06/28 14:19:15 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/29 09:58:55 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,13 +67,15 @@ int 	Server::exec_accept()
         return (this->_client_socket);
 }
 
-void	Server::exec_server()
+int 	Server::exec_server()
 {
     fcntl(this->_client_socket, F_SETFL, O_NONBLOCK);
-    if (this->_rqst.parseRequest(this->_client_socket) > 0)
-        execCGI((*this));
+    if (this->_rqst.parseRequest(this->_client_socket) < 0)
+        return (-1);
+    execCGI((*this));
     close(this->_client_socket);
     this->_client_socket = -1; 
+    return 1;
 }
 
 std::list<Location>    Server::getRelevantLocations(std::string target)
@@ -82,21 +84,15 @@ std::list<Location>    Server::getRelevantLocations(std::string target)
 
 	for (std::list<Location>::iterator it = _routes.begin(); it != _routes.end(); it++)
     {
-        // std::string path = this->_root + "/" + it->getPath();
         std::string path = it->getPath();
         
         if (path[0] == '/')
         {
-            // std::cout << "SLASH : on compare ->\n";
-            // std::cout << "path.size = " << path.size() << std::endl;
-            // int i = target.compare(0, path.size(), path);
-            // std::cout << "ret de compare = " << i << std::endl;
             if (!target.compare(0, path.size(), path)) //&& path.size() <= target.size() )
                 relevant_locations.push_back(*it);
         }
         else if (path[0] == '*')
         {
-            // std::cout << "PATH = |" << path << '|' << std::endl;
             size_t extension_length = path.size() - 1;
             path.erase(path.begin());
             if ((target.size() > extension_length) && !target.compare(target.size() - extension_length, extension_length, path))

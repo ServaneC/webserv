@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 16:24:53 by schene            #+#    #+#             */
-/*   Updated: 2021/06/25 14:42:23 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/29 10:35:52 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ class Request
 		void			resetHeaders();
 		int				recvHeader();
 		int				recvBody(int size);
+		int				recv_data();
 		int				recvChunk();
 		unsigned char	recv_one();
 		int				gnlRequest();

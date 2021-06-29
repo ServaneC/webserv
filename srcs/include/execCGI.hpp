@@ -41,6 +41,7 @@ class execCGI
 
 		void				free_buf();
 		std::string const	&getEnvVar(std::string var_name) const;
+		std::string const	&getRequestHeader(std::string field_name) const;
 		unsigned char		*getBuf() const;
 		int					getBufSize() const;
 		time_t				getLastModified() const;

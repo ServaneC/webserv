@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/08 16:33:16 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/06/21 03:13:49 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/05 21:31:51 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,11 @@ std::string         parsingRoot(std::string conf);
 std::string         trimLocations(std::string conf);
 std::string         getCurrentDirectory();
 std::string         parsingLocalRoot(std::string server_root, std::string conf);
+std::string setPathInfo(Server &server, Request &request, std::string target);
+Location *getRelevantExtension(std::list<Location> &_routes, std::string target);
+Location *getRelevantLocation(std::list<Location> &_routes, std::string target);
+std::list<std::string> parsingIndexes(std::string conf);
+bool parsingAutoIndex(Server &server, std::string conf);
 
 
 #endif

@@ -22,9 +22,9 @@ execCGI::execCGI(Server &serv)
 		 _buf_size(0), _last_modified(0), _argv(NULL)
 {
 	// VM
-	// std::string cgi_path = "/usr/bin/php-cgi";
+	std::string cgi_path = "/usr/bin/php-cgi";
 	// 42 MAC
-	std::string cgi_path = "/Users/schene/.brew/Cellar/php/8.0.7/bin/php-cgi";
+	// std::string cgi_path = "/Users/schene/.brew/Cellar/php/8.0.7/bin/php-cgi";
 	// OTHER MAC
 	// std::string cgi_path = "/usr/local/Cellar/php/8.0.7/bin/php-cgi";
 
@@ -41,10 +41,11 @@ execCGI::execCGI(Server &serv)
 	this->_env["STATUS_CODE"] = "200 OK";
 	if (this->_request.getBadRequest())
 		this->_env["STATUS_CODE"] = "400 Bad Request";
-	if (!this->check_method())
-		this->_env["STATUS_CODE"] = "405 Method Not Allowed";
+	// if (!this->check_method())  // commenté car deja géré dans setPathInfo()
+		// this->_env["STATUS_CODE"] = "405 Method Not Allowed";
 	// this->_env["AUTH_TYPE"] = std::string();
-	this->_env["CONTENT_LENGTH"] = this->_request.getHeaderField("Content-Length"); //not sure
+	if (!this->_request.getHeaderField("Content-Length").empty())
+		this->_env["CONTENT_LENGTH"] = this->_request.getHeaderField("Content-Length"); //not sure
 	this->_env["CONTENT_TYPE"] = this->_request.getHeaderField("Content-Type");
 	// if (!this->_request.getHeaderField("Accept").empty())
 	// 	this->_env["CONTENT_TYPE"] = this->_request.getHeaderField("Accept");
@@ -77,21 +78,21 @@ execCGI::~execCGI()
 void	execCGI::setPathQuery()
 {
 	std::string	target = this->_request.getTarget();
-	if (target[0] == '/')
-		target.erase(0, 1);
-	
-	// if (chdir(_server.getRoot().c_str()) == -1)
-	// {
-	// 	// this->_env["STATUS_CODE"] = "500";  ??
-	// 	return ;
-	// }
-
+	// if (target[0] == '/')
+	// 	target.erase(0, 1);
 	std::cout << "TARGET -> [" << target << "]" << std::endl;
 	this->_env["REQUEST_URI"] = target;
-	this->_env["PATH_TRANSLATED"] = target;
-	// this->_env["PATH_INFO"] = getCurrentDirectory() + "/" + target.substr(0, target.find('?'));
-	this->_env["PATH_INFO"] = std::string(PATH) + target.substr(0, target.find('?'));
-	// this->_env["PATH_INFO"] = target.substr(0, target.find('?'));
+
+	try {
+		this->_env["PATH_INFO"] = setPathInfo(_server, _request, target);
+	}
+	catch (methodNotAllowedException &e) {
+        this->_env["STATUS_CODE"] = e.what();
+	}
+	// this->_env["PATH_INFO"] = getCurrentDirectory() + "/" + target.substr(0, target.find_first_of("?=;"));
+	// this->_env["PATH_INFO"] = std::string(PATH) + target.substr(0, target.find('?'));
+	this->_env["PATH_TRANSLATED"] = this->_env["PATH_INFO"];
+	// this->_env["PATH_TRANSLATED"] = target;
 	this->_env["SCRIPT_FILENAME"] = target.substr(0, target.find('?'));
 	this->_env["SCRIPT_NAME"] = target.substr(0, target.find('?'));
 	std::cout << "HERE" << std::endl;
@@ -156,9 +157,6 @@ void	execCGI::exec_CGI()
 	this->_buf = NULL;
 	if (this->_env["STATUS_CODE"].compare("200 OK") != 0)
 		return ;
-
-	// std::string			path_info = this->_env["PATH_INFO"];
-	// std::list<Location>	location_list = this->_server.getRelevantLocations(this->_request.getTarget());
 
 	char		**env_array = this->env_to_char_array();
 	pid_t		pid;
@@ -248,13 +246,13 @@ void				execCGI::free_buf()
 	this->_buf = NULL;
 }
 
-bool	execCGI::check_method()
-{
-	return (!this->_env["REQUEST_METHOD"].empty() &&
-			(!this->_env["REQUEST_METHOD"].compare("GET") ||
-			!this->_env["REQUEST_METHOD"].compare("POST") ||
-			!this->_env["REQUEST_METHOD"].compare("DELETE")));
-}
+// bool	execCGI::check_method()
+// {
+// 	return (!this->_env["REQUEST_METHOD"].empty() &&
+// 			(!this->_env["REQUEST_METHOD"].compare("GET") ||
+// 			!this->_env["REQUEST_METHOD"].compare("POST") ||
+// 			!this->_env["REQUEST_METHOD"].compare("DELETE")));
+// }
 
 void		execCGI::append_body(char *buffer, int size)
 {

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   exceptions.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
+/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/08 17:06:46 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/06/21 11:26:26 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/05 14:18:27 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,5 +45,10 @@ class confInvalidRootException : public std::exception {
             return ("Configuration file: Invalid root path"); }
 };
 
+class methodNotAllowedException : public std::exception {
+    public :
+        const char* what() const throw() {
+            return ("405 Method Not Allowed"); }
+};
 
 #endif

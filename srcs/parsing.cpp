@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/06/21 03:19:01 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/05 23:18:16 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,6 +108,43 @@ std::list<Location> parsingLocations(Server &server, std::string conf)
     return (routes);
 }
 
+std::list<std::string> parsingIndexes(std::string conf)
+{
+    std::list<std::string>  indexes;
+    size_t                  index_i = conf.find("index");
+
+    while (conf.find("autoindex") == index_i - 4)
+        index_i = conf.find("index", index_i + 1);
+    if (index_i == std::string::npos)
+    {
+        indexes.push_front("index.html");
+        return (indexes);
+    }
+    index_i += 6;
+    while (index_i < conf.find(";", index_i) && index_i < std::string::npos)
+    {
+        size_t path_index = conf.find_first_not_of(" \t\n\r\v\f", index_i);
+        size_t path_length = conf.find_first_of(" \t\n\r\v\f;", path_index) - path_index;
+        indexes.push_back(conf.substr(path_index, path_length));
+        // std::cout << "Added index <" << conf.substr(path_index, path_length) << ">" << std::endl;
+        index_i = path_index + path_length;
+    }
+    return (indexes);
+}
+
+bool parsingAutoIndex(Server &server, std::string conf)
+{
+    size_t  index = conf.find("autoindex");
+
+    if (index == std::string::npos)
+        return (server.getAutoIndex());
+    index += 10;
+    index = conf.find_first_not_of(" \t\n\r\v\f", index);
+    if (!conf.compare(index, 2, "on"))
+        return (true);
+    return (false);
+}
+
 int     setMethodCode(std::string method_name)
 {
     if (method_name == "GET")
@@ -131,4 +168,64 @@ std::vector<int> parseAcceptedMethods(std::string location_conf)
     while (index != end)
         methods.push_back(parseMethod(location_conf, &index));
     return (methods);
+}
+
+const Location *getRelevantLocation(const std::list<Location> &_routes, std::string target)
+{
+    const Location *mostRelevant = NULL;
+
+    for (std::list<Location>::const_iterator it = _routes.begin(); it != _routes.end(); it++)
+    {
+        std::string path = it->getPath();
+        // if (path[0] == '/')
+        // {
+            // std::cout << "SLASH : on compare ->\n";
+            // int i = target.compare(0, path.size(), path);
+            // std::cout << "ret de compare = " << i << std::endl;
+        if (!target.compare(0, path.size(), path) && (!mostRelevant || mostRelevant->getPath().size() < path.size()))
+            mostRelevant = &(*it);
+        std::cout << "path.size = " << path.size() << std::endl;
+        // }
+    }
+    return (mostRelevant);
+}
+const Location *getRelevantExtension(const std::list<Location> &_routes, std::string target)
+{
+    for (std::list<Location>::const_iterator it = _routes.begin(); it != _routes.end(); it++)
+    {
+        std::string path = it->getPath();
+        // if (path[0] == '*')
+        // {
+            // path.erase(path.begin());
+            // std::cout << "ETOILE : on check -> " << std::endl;
+            // std::cout << "|" << target.substr(target.size() - extension_length, extension_length) << "|" << std::endl;
+        std::cout << "path.size = " << path.size() << std::endl;
+        std::cout << "target.size = " << target.size() << std::endl;
+        // if (target.size() > path.size() && !path.compare(target.size() - path.size(), path.size(), target))
+        if (target.size() > path.size() && !target.compare(target.size() - path.size(), path.size(), path))
+            return (&(*it));
+        // }
+    }
+    return (NULL);
+}
+
+std::string setPathInfo(Server &server, Request &request, std::string target)
+{
+    const Location *loc = getRelevantLocation(server.getRoutes(), target);
+	const Location *ext = getRelevantExtension(server.getRoutes(), target);
+	std::string path = server.getRoot();
+	if (loc)
+		path = loc->getRoot();
+
+    if ((loc && !loc->isAcceptedMethod(request.getMethodCode()))
+        || (ext && !ext->isAcceptedMethod(request.getMethodCode())))
+        throw methodNotAllowedException();
+	// if (chdir(path.c_str()) == -1)
+	// {
+	// 	// this->_env["STATUS_CODE"] = "500";  ??
+	// 	return ;
+	// }
+    path += target.substr(0, target.find_first_of("?=;"));
+    // std::cout << "PATH = <<" << path << ">>" << std::endl;
+    return (path);
 }

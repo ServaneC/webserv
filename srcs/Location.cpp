@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:48:09 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/06 09:57:03 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/06 13:45:29 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,11 +50,6 @@ std::string         Location::getPath() const
     return (this->_path);
 }
 
-std::string         Location::getRootPath() const
-{
-    return (this->_root_path);
-}
-
 std::string         Location::getRoot() const
 {
     return (this->_root);
@@ -63,4 +58,14 @@ std::string         Location::getRoot() const
 std::vector<int>    Location::getAcceptedMethods() const
 {
     return (this->_accepted_methods);
+}
+
+ bool                       Location::getAutoIndex() const
+ {
+     return this->_autoindex;
+ }
+
+std::list<std::string>      Location::getIndexes() const
+{
+    return this->_indexes;
 }

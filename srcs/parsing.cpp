@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/06 09:57:08 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/06 13:46:07 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -180,11 +180,12 @@ const Location *getRelevantLocation(const std::list<Location> &_routes, std::str
             // std::cout << "ret de compare = " << i << std::endl;
         if (!target.compare(0, path.size(), path) && (!mostRelevant || mostRelevant->getPath().size() < path.size()))
             mostRelevant = &(*it);
-        std::cout << "path.size = " << path.size() << std::endl;
+        // std::cout << "path.size = " << path.size() << std::endl;
         // }
     }
     return (mostRelevant);
 }
+
 const Location *getRelevantExtension(const std::list<Location> &_routes, std::string target)
 {
     for (std::list<Location>::const_iterator it = _routes.begin(); it != _routes.end(); it++)
@@ -195,8 +196,8 @@ const Location *getRelevantExtension(const std::list<Location> &_routes, std::st
             // path.erase(path.begin());
             // std::cout << "ETOILE : on check -> " << std::endl;
             // std::cout << "|" << target.substr(target.size() - extension_length, extension_length) << "|" << std::endl;
-        std::cout << "path.size = " << path.size() << std::endl;
-        std::cout << "target.size = " << target.size() << std::endl;
+        // std::cout << "path.size = " << path.size() << std::endl;
+        // std::cout << "target.size = " << target.size() << std::endl;
         // if (target.size() > path.size() && !path.compare(target.size() - path.size(), path.size(), target))
         if (target.size() > path.size() && !target.compare(target.size() - path.size(), path.size(), path))
             return (&(*it));
@@ -210,9 +211,14 @@ std::string setPathInfo(Server &server, Request &request, std::string target)
     const Location *loc = getRelevantLocation(server.getRoutes(), target);
 	const Location *ext = getRelevantExtension(server.getRoutes(), target);
 	std::string path = server.getRoot();
+    std::cout << "loc -> "<< loc << std::endl;
 	if (loc)
-		path = loc->getRoot();
-
+    {
+        path = loc->getRoot();
+        if (loc->getPath().size() > 1)
+        target.erase(1, loc->getPath().size() - 1);
+        // std::cout << "-> " <<  << std::endl;
+    }
     if ((loc && !loc->isAcceptedMethod(request.getMethodCode()))
         || (ext && !ext->isAcceptedMethod(request.getMethodCode())))
         throw methodNotAllowedException();
@@ -221,7 +227,9 @@ std::string setPathInfo(Server &server, Request &request, std::string target)
 	// 	// this->_env["STATUS_CODE"] = "500";  ??
 	// 	return ;
 	// }
-    path += target.substr(0, target.find_first_of("?=;"));
-    // std::cout << "PATH = <<" << path << ">>" << std::endl;
+    std::cout << "PATH = <<" << path << ">>" << std::endl;
+    if (target.compare("/") != 0)
+        path += target.substr(0, target.find_first_of("?=;"));
+    std::cout << "PATH = <<" << path << ">>" << std::endl;
     return (path);
 }

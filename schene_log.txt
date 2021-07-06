@@ -553,29 +553,55 @@ AVANT CA:
 		mais si c'est un fichier dont on gere pas l'extension ca serait la merde
 -> bon je vais merge sur main , ca fait lgt
 
-========================= LEILA =========================
+	#LEILA:
+	#Je reviens Lundi 5 Juillet mais hesite pas a m'appeler/ m'envoyer des message si t'as des question !
+	#-> si tu pouvait parser dans le conf le autoindex (on/off) -> default off 
+	#	(je pense que un bool dans Location initialisé en false serait parfait pour gerer)
+	#-> et aussi le champs 'index' qui est deja dans le conf file mais actuellement pas parser (sauf erreur de ma part)
+	#	=> default index.html (donc si y a pas de champs index tu stocke inde.html en valeur)
+	#	!! il peut y avait plusieur index possible (donc a stocker dans une liste)
+	#une fois que ca sera fait, si c'est une request sur un directory on pourra :
+	#	- renvoyer le bon fichier index (ou index.html si pas precise)
+	#	- si pas d'index présent, et autoindex on -> renvoyer le directory listing
+	#	- si pas d'index et autoindex off (renvoyer un 404 ou autre)
+	#-> Voir si tu peux renvoyer une seule Location au lieu d'une liste dans getRelevantLocations
+	#	- si c'est un fichier avec extension + une location precise 
+	#		(voir ou est la priorite dans les metchodes et stocker toutes les infos dans ue Location)
+	#	-> exemple: /Yeah
+	#		-> au lieu de renvoyer '/' et '/Yeah' en relevant Location, tu renvois juste '/Yeah'
+	#		(pour le moment j'ai gerer ca en enlevant dans execCGI la premiere Location dans la liste
+	#			mais ca seait mieux de gerer direct dans getRelevantLocations en ne renvoyant qu'une seule Location)
 
-Je reviens Lundi 5 Juillet mais hesite pas a m'appeler/ m'envoyer des message si t'as des question !
+06/07/2021
+-> J'ai merge tout les changements de leila meme si c'est pas fonctionnel, ca renvois que des 404 not found
+	- trouver ou est le pb puis tout re-merge
+	-> J'ai commenté setPathInfo()
+	+ j'ai remodifié l'index.html je l.'avais changer avant de push la derniere fois jsp pq c'etait pas passé
+-> les methodes autorisés ne sont plus chekés ?! 
+	-> C'est parce que ca doit etre geré dans setpathinfo et ca marche pas du tout pour le moment 
+		j'arrives juste a avoir l'index.html mais apres il y a que des 404 pour les images et le css
+	-> Je comprend pas pq ca ne marche pas c'est le bon path dans path info !
+		[/Users/schene/Desktop/webserv/YoupiBanane/img/42.png] -> ne marche pas
+		[/Users/schene/Desktop/webserv/YoupiBananeimg/42.png] -> marche ????
+	->Ca marche, j'enleve le '/' dans target apres setPathInfo
+		-> sinon y avait le '/' du debut dans SCRIPT_FILENAME et cie et 
+			c'est a a cause de ca que ca marchait pas 
+	-> par contre la gestion des allowed methode ne marche pas (on peut toute les faires meme si pas autorisé)
+		-> l'exception est bien envoye mais son catch ne fait rien
+		-> c'etait parce que 'this->_env["STATUS_CODE"] = "200 OK";'
+			 etait definis apres la fonction setPathQuery
+-> J'ai mis le PATH_INFO en tant que variable pour tout les SCRIPT_FILENAME et cie dans le cgi et ca marche sans pb
+-> autoindex:
+	- ca se liste bien mais y a des 404 not found quand on clique sur les liens
+	-> C'est bon ca marche on peut cliquer sur tout les liens, en revanche 
+		la gestion des routes que j'avais fait semble ne plus marcher
+		/Yeah renvois sur /root_yeah/Yeah et /directory sur /root_yeah/directory
+		au lieu de juste /root_yeah
+		-> c'est bon j'ai rejouter dans setPathInfo le fait de erase le path de l'url 
+	-> faudra aussi linker au bool autoindex implementé par leila et gerer comme il faut
+		+ renvoyer le bon index au lieu de index.html par defaut
 
--> si tu pouvait parser dans le conf le autoindex (on/off) -> default off 
-	(je pense que un bool dans Location initialisé en false serait parfait pour gerer)
--> et aussi le champs 'index' qui est deja dans le conf file mais actuellement pas parser (sauf erreur de ma part)
-	=> default index.html (donc si y a pas de champs index tu stocke inde.html en valeur)
-	!! il peut y avait plusieur index possible (donc a stocker dans une liste)
-une fois que ca sera fait, si c'est une request sur un directory on pourra :
-	- renvoyer le bon fichier index (ou index.html si pas precise)
-	- si pas d'index présent, et autoindex on -> renvoyer le directory listing
-	- si pas d'index et autoindex off (renvoyer un 404 ou autre)
--> Voir si tu peux renvoyer une seule Location au lieu d'une liste dans getRelevantLocations
-	- si c'est un fichier avec extension + une location precise 
-		(voir ou est la priorite dans les metchodes et stocker toutes les infos dans ue Location)
-	-> exemple: /Yeah
-		-> au lieu de renvoyer '/' et '/Yeah' en relevant Location, tu renvois juste '/Yeah'
-		(pour le moment j'ai gerer ca en enlevant dans execCGI la premiere Location dans la liste
-			mais ca seait mieux de gerer direct dans getRelevantLocations en ne renvoyant qu'une seule Location)
-
-
-
+=> PUSH + MERGE main quand c'est fait 
 ================================== NOTES ==================================
 
 Pour tester les chunk request:

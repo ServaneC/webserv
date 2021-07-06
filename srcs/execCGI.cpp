@@ -22,13 +22,13 @@ execCGI::execCGI(Server &serv)
 		 _buf_size(0), _last_modified(0), _argv(NULL)
 {
 	// VM
-	std::string cgi_path = "/usr/bin/php-cgi";
+	// std::string cgi_path = "/usr/bin/php-cgi";
 	// 42 MAC
-	// std::string cgi_path = "/Users/schene/.brew/Cellar/php/8.0.7/bin/php-cgi";
+	std::string cgi_path = "/Users/schene/.brew/Cellar/php/8.0.7/bin/php-cgi";
 	// OTHER MAC
 	// std::string cgi_path = "/usr/local/Cellar/php/8.0.7/bin/php-cgi";
 
-	this->_location_list = this->_server.getRelevantLocations(this->_request.getTarget());
+	this->_env["STATUS_CODE"] = "200 OK";
 	if (this->_location_list.size() > 1)
 		this->_location_list.erase(this->_location_list.begin());
 	this->_buf = NULL;
@@ -41,11 +41,10 @@ execCGI::execCGI(Server &serv)
 	}
 	this->_env["REDIRECT_STATUS"] = "200"; 
 	this->_env["HTTP_ACCEPT"] = this->_request.getHeaderField("Accept"); 
-	this->_env["STATUS_CODE"] = "200 OK";
 	if (this->_request.getBadRequest())
 		this->_env["STATUS_CODE"] = "400 Bad Request";
 	// if (!this->check_method())  // commenté car deja géré dans setPathInfo()
-		// this->_env["STATUS_CODE"] = "405 Method Not Allowed";
+	// 	this->_env["STATUS_CODE"] = "405 Method Not Allowed";
 	// this->_env["AUTH_TYPE"] = std::string();
 	if (!this->_request.getHeaderField("Content-Length").empty())
 		this->_env["CONTENT_LENGTH"] = this->_request.getHeaderField("Content-Length"); //not sure
@@ -60,9 +59,6 @@ execCGI::execCGI(Server &serv)
 	this->_env["SERVER_PORT"] = this->_server.getPort();
 	this->_env["SERVER_SOFTWARE"] = "webserv/1.0";
 	
-
-	std::cout << "Accept -> " << this->_request.getHeaderField("Accept") << std::endl;
-	// std::cout << "-> PATH_INFO = |" << this->_env["PATH_INFO"] << '|' << std::endl;
 	Autoindex autoidx(this->_request.getTarget(), this->_env["PATH_INFO"]);
 	if (autoidx.isDir() && !autoidx.getIndex())
 	{
@@ -102,25 +98,21 @@ execCGI::~execCGI()
 void	execCGI::setPathQuery()
 {
 	std::string	target = this->_request.getTarget();
-	// if (target[0] == '/')
-	// 	target.erase(0, 1);
 	std::cout << "TARGET -> [" << target << "]" << std::endl;
-	this->_env["REQUEST_URI"] = target;
-
+	if (target.find('?') != std::string::npos)
+		this->_env["QUERY_STRING"] = target.substr(target.find('?') + 1, target.size()); //maybe wrong if no '?'
 	try {
 		this->_env["PATH_INFO"] = setPathInfo(_server, _request, target);
 	}
 	catch (methodNotAllowedException &e) {
         this->_env["STATUS_CODE"] = e.what();
 	}
+	target = this->_env["PATH_INFO"];
+	this->_env["REQUEST_URI"] = target;
 	// this->_env["PATH_INFO"] = getCurrentDirectory() + "/" + target.substr(0, target.find_first_of("?=;"));
-	// this->_env["PATH_INFO"] = std::string(PATH) + target.substr(0, target.find('?'));
-	this->_env["PATH_TRANSLATED"] = this->_env["PATH_INFO"];
-	// this->_env["PATH_TRANSLATED"] = target;
+	this->_env["PATH_TRANSLATED"] = target;
 	this->_env["SCRIPT_FILENAME"] = target.substr(0, target.find('?'));
 	this->_env["SCRIPT_NAME"] = target.substr(0, target.find('?'));
-	if (target.find('?') != std::string::npos)
-		this->_env["QUERY_STRING"] = target.substr(target.find('?') + 1, target.size()); //maybe wrong if no '?'
 }
 
 
@@ -159,19 +151,20 @@ void	execCGI::exec_CGI()
 	// std::cout << "this->_env[STATUS_CODE] -> " << this->_env["STATUS_CODE"] << std::endl;
 	if (this->_env["STATUS_CODE"].compare("200 OK") != 0)
 		return ;
+	
 	this->_env["HTTP_HOST"] = this->_env["SERVER_NAME"];
-	// std::cout << "-> REQUEST_METHOD = |" << this->_env["REQUEST_METHOD"] << '|' << std::endl;
-	// std::cout << "-> REDIRECT_STATUS = |" << this->_env["REDIRECT_STATUS"] << '|' << std::endl;
-	// std::cout << "-> SCRIPT_FILENAME = |" << this->_env["SCRIPT_FILENAME"] << '|' << std::endl;
-	// std::cout << "-> SCRIPT_NAME = |" << this->_env["SCRIPT_NAME"] << '|' << std::endl;
-	// std::cout << "-> PATH_INFO = |" << this->_env["PATH_INFO"] << '|' << std::endl;
-	// std::cout << "-> SERVER_NAME = |" << this->_env["SERVER_NAME"] << '|' << std::endl;
-	// std::cout << "-> SERVER_PROTOCOL = |" << this->_env["SERVER_PROTOCOL"] << '|' << std::endl;
-	// std::cout << "-> REQUEST_URI = |" << this->_env["REQUEST_URI"] << '|' << std::endl;
-	// std::cout << "-> HTTP_HOST = |" << this->_env["HTTP_HOST"] << '|' << std::endl;
-	// std::cout << "-> CONTENT_LENGTH = |" << this->_env["CONTENT_LENGTH"] << '|' << std::endl;
-	// std::cout << "-> CONTENT_TYPE = |" << this->_env["CONTENT_TYPE"] << '|' << std::endl;
-	// std::cout << "-> QUERY_STRING = |" << this->_env["QUERY_STRING"] << '|' << std::endl;
+	std::cout << "-> REQUEST_METHOD = |" << this->_env["REQUEST_METHOD"] << '|' << std::endl;
+	std::cout << "-> REDIRECT_STATUS = |" << this->_env["REDIRECT_STATUS"] << '|' << std::endl;
+	std::cout << "-> SCRIPT_FILENAME = |" << this->_env["SCRIPT_FILENAME"] << '|' << std::endl;
+	std::cout << "-> SCRIPT_NAME = |" << this->_env["SCRIPT_NAME"] << '|' << std::endl;
+	std::cout << "-> PATH_INFO = |" << this->_env["PATH_INFO"] << '|' << std::endl;
+	std::cout << "-> SERVER_NAME = |" << this->_env["SERVER_NAME"] << '|' << std::endl;
+	std::cout << "-> SERVER_PROTOCOL = |" << this->_env["SERVER_PROTOCOL"] << '|' << std::endl;
+	std::cout << "-> REQUEST_URI = |" << this->_env["REQUEST_URI"] << '|' << std::endl;
+	std::cout << "-> HTTP_HOST = |" << this->_env["HTTP_HOST"] << '|' << std::endl;
+	std::cout << "-> CONTENT_LENGTH = |" << this->_env["CONTENT_LENGTH"] << '|' << std::endl;
+	std::cout << "-> CONTENT_TYPE = |" << this->_env["CONTENT_TYPE"] << '|' << std::endl;
+	std::cout << "-> QUERY_STRING = |" << this->_env["QUERY_STRING"] << '|' << std::endl;
 	
 	//just to pass second test (very ugly, should be handle differently)
 	this->_buf = NULL;

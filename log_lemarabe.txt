@@ -7,7 +7,7 @@ Si c'est une request sur un directory :
 	- renvoyer le bon fichier index
 	- si pas d'index présent, et autoindex on -> renvoyer le directory listing
 	- si pas d'index et autoindex off (renvoyer un 404 ou autre)
-
+Remplacer getIndexes().front par une fonction qui essaie un a un les indexes dasn l'ordre
 
 
 $$$$$$  $$$$   $$  $$  $$$$   $$  $$    $$$    $$
@@ -181,3 +181,9 @@ FORMAT FOR HTTP REQUESTS
 Replace memset by std::fill ? 
 Maybe don't initialize header fields and just accept any that is given. 
 
+
+Si erreur du type :
+    [webserv] ld: can't write to output file: webserv, errno=28 for architecture x86_64
+    clang: error: linker command failed with exit code 1 (use -v to see invocation)
+    make[2]: *** [webserv] Error 1
+>> chmod 777 Makefile

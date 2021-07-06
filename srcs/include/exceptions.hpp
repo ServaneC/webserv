@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/08 17:06:46 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/06 02:53:41 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/06 20:00:20 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ class methodNotAllowedException : public std::exception {
 class targetNotFoundException : public std::exception {
     public :
         const char* what() const throw() {
-            return ("404 Not Found"); }
+            return ("404 Not Found (c'est pas le cgi qui le dit, c'est lexception dns le parsing !!"); }
 };
 
 class chdirFailException : public std::exception {

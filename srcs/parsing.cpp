@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/06 18:18:10 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/06 21:54:58 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -203,71 +203,66 @@ const Location *getRelevantExtension(const std::list<Location> &_routes, std::st
     return (NULL);
 }
 
-std::string translatePath(Server &server, Request &request, std::map<std::string, std::string> &cgi_env, std::string path_info)
-{
-    const Location *loc = getRelevantLocation(server.getRoutes(), path_info);
-	const Location *ext = getRelevantExtension(server.getRoutes(), path_info);
-	std::string path_trans = server.getRoot();
-    struct stat statbuf;
+std::string translatePath(Server &server, Request &request, const std::string &target, std::string &object)
+{  
+    const Location  *loc = getRelevantLocation(server.getRoutes(), target);
+	const Location  *ext = getRelevantExtension(server.getRoutes(), target);
+    std::string     path_info(target);
+    struct stat     statbuf;
 
-    if (loc)
-        path_trans = loc->getRoot();
     if ((loc && !loc->isAcceptedMethod(request.getMethodCode()))
         || (ext && !ext->isAcceptedMethod(request.getMethodCode())))
-        throw methodNotAllowedException();
-    // if (chdir(path_trans.c_str()) == -1)
-    //     throw chdirFailException();
-    if (stat(path_info.c_str(), &statbuf) == -1)  // target not found
-        throw targetNotFoundException();
-    path_trans += path_info;
-    if (path_info.empty() || S_ISDIR(statbuf.st_mode) == true)   // check si c'est un directory
+        throw methodNotAllowedException();      
+    if (loc)
+        path_info.replace(0, loc->getPath().size() - 1, loc->getRoot());
+    else
     {
-        std::string index("index.html"); 
-        if (loc)
-            index = loc->getIndexes().front();
-        if (stat((path_trans + index).c_str(), &statbuf) == -1)  // index not found
-        {
-            // if (loc && loc->getAutoIndex() == true || server.getAutoIndex() == true)
-                // afficher auto index
-            // else
-                // 404 ou no input file ?
-            cgi_env["SCRIPT_NAME"] = "";
-            return (path_trans);
-        }
-        path_trans += index;
-		cgi_env["SCRIPT_FILENAME"] = index;
-		cgi_env["SCRIPT_NAME"] = index;
-	}
-    // std::cout << "PATH = <<" << path_info << ">>" << std::endl;
-    return (path_trans);
-}
- 
+        path_info.replace(0, 1, server.getRoot());
+        path_info.push_back('/');
+    }
 
-//     const Location *loc = getRelevantLocation(server.getRoutes(), target);
-// 	const Location *ext = getRelevantExtension(server.getRoutes(), target);
-// 	std::string path = server.getRoot();
-//     std::cout << "loc -> "<< loc << std::endl;
-// 	if (loc)
-//     {
-//         path = loc->getRoot();
-//         if (loc->getPath().size() > 1)
-//         target.erase(1, loc->getPath().size() - 1);
-//         // std::cout << "-> " <<  << std::endl;
-//     }
-//     if ((loc && !loc->isAcceptedMethod(request.getMethodCode()))
-//         || (ext && !ext->isAcceptedMethod(request.getMethodCode())))
-//         throw methodNotAllowedException();
-// 	// if (chdir(path.c_str()) == -1)
-// 	// {
-// 	// 	// this->_env["STATUS_CODE"] = "500";  ??
-// 	// 	return ;
-// 	// }
-//     std::cout << "PATH = <<" << path << ">>" << std::endl;
-//     if (target.compare("/") != 0)
-//         path += target.substr(0, target.find_first_of("?=;"));
-//     std::cout << "PATH = <<" << path << ">>" << std::endl;
-//     return (path);
-// }
+    std::cout << "PATH_INFO 2.0 -> [" << path_info << "]" << std::endl;
+    // std::cout << "TARGET 2.0 -> [" << target.substr(target.size() - object.size(), object.size()) << "]" << std::endl;
+
+    if (chdir((path_info.erase(path_info.size() - object.size(), object.size())).c_str()) == -1)
+        throw chdirFailException();
+    system("pwd; ls");
+    if (object.empty())
+    {
+        if (loc)
+            object = loc->getIndexes().front();
+        else
+            object = server.getIndexes().front();
+    }
+    if (stat(object.c_str(), &statbuf) == -1)  // target not found : either replacement needed or 404
+        throw targetNotFoundException();
+    path_info += object;
+    
+    std::cout << "PATH_INFO 2.1 -> [" << path_info << "]" << std::endl;
+
+    
+
+    // if (target.empty() || S_ISDIR(statbuf.st_mode) == true)   // check si c'est un directory
+    // {
+    //     std::string index("index.html"); 
+    //     if (loc)
+    //         index = loc->getIndexes().front();
+    //     if (stat((path + index).c_str(), &statbuf) == -1)  // index not found
+    //     {
+    //         // if (loc && loc->getAutoIndex() == true || server.getAutoIndex() == true)
+    //             // afficher auto index
+    //         // else
+    //             // 404 ou no input file ?
+    //         cgi_env["SCRIPT_NAME"] = "";
+    //         return (path);
+    //     }
+    //     path += index;
+	// 	cgi_env["SCRIPT_FILENAME"] = index;
+	// 	cgi_env["SCRIPT_NAME"] = index;
+	// }
+    // std::cout << "PATH = <<" << target << ">>" << std::endl;
+    return (path_info);
+}
 
 
 // bool isDirectory(const std::string &target)   bof en fait

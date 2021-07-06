@@ -13,8 +13,6 @@
 #include "include/execCGI.hpp"
 #define CGI_BUFSIZE 2000
 
-// # define PATH "/home/lilou/my_home/SC_webserv/"
-# define PATH "/Users/schene/Desktop/webserv/"
 # define INDEX "index.html"
 
 execCGI::execCGI(Server &serv) 
@@ -98,27 +96,29 @@ execCGI::~execCGI()
 void	execCGI::setPathQuery()
 {
 	std::string	target = this->_request.getTarget();
+	std::string object = target.substr(0, target.find('?'));
+
+	if (target.find('?') != std::string::npos)
+		this->_env["QUERY_STRING"] = target.substr(target.find('?') + 1, target.size()); //maybe wrong if no '?'
+	if (object[0] == '/')
+		object.erase(0, 1);
 	std::cout << "TARGET -> [" << target << "]" << std::endl;
-	this->_env["REQUEST_URI"] = target;
-	this->_env["PATH_INFO"] = target.substr(0, target.find('?'));
+	std::cout << "OBJECT -> [" << object << "]" << std::endl;
+	std::cout << "QUERY_STRING -> [" << this->_env["QUERY_STRING"] << "]" << std::endl;
 
 	try {
-		this->_env["PATH_TRANSLATED"] = translatePath(_server, _request, _env, this->_env["PATH_INFO"]);
+		this->_env["PATH_INFO"] = translatePath(_server, _request, target, object);
+		// find_target(_server, _request, this->_env["PATH_INFO"]);
 	}
 	catch (std::exception &e) {
         this->_env["STATUS_CODE"] = e.what();
 	}
-	target = this->_env["PATH_INFO"];
-	this->_env["REQUEST_URI"] = target;
-	// this->_env["PATH_INFO"] = getCurrentDirectory() + "/" + target.substr(0, target.find_first_of("?=;"));
-	// this->_env["PATH_INFO"] = std::string(PATH) + target.substr(0, target.find('?'));
-	// this->_env["PATH_TRANSLATED"] = this->_env["PATH_INFO"];
-	// this->_env["PATH_TRANSLATED"] = target;
-	this->_env["SCRIPT_FILENAME"] = target.substr(0, target.find('?'));
-	this->_env["SCRIPT_NAME"] = target.substr(0, target.find('?'));
+	std::cout << "OBJECT -> [" << object << "]" << std::endl;
+	this->_env["PATH_TRANSLATED"] = this->_env["PATH_INFO"];
+	this->_env["REQUEST_URI"] = this->_env["PATH_INFO"];
+	this->_env["SCRIPT_FILENAME"] = object;
+	this->_env["SCRIPT_NAME"] = object;
 	std::cout << "HERE" << std::endl;
-	if (target.find('?') != std::string::npos)
-		this->_env["QUERY_STRING"] = target.substr(target.find('?'), target.size()); //maybe wrong if no '?'
 }
 
 

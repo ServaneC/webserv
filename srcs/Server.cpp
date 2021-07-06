@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/07/05 22:52:33 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/06 01:05:50 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ Server::Server(Config &conf, std::string server_conf) :
         this->_root = parsingRoot(trimLocations(server_conf));
         std::cout << "- ServerRoot = " << _root << std::endl;
 
-        this->_indexes = parsingIndexes(trimLocations(server_conf));
+        this->_indexes = parsingIndexes(NULL, trimLocations(server_conf));
         std::cout << "- Indexes = ";
         for (std::list<std::string>::iterator it = _indexes.begin(); it != _indexes.end(); it++)
             std::cout << *it << " ";

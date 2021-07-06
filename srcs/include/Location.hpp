@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:43:38 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/05 21:55:18 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/06 00:51:18 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,8 @@ class Location
         std::string         getRoot() const;
         std::vector<int>    getAcceptedMethods() const;
         bool                isAcceptedMethod(int code) const;
+        const std::list<std::string>    &getIndexes() const;
+		bool					        getAutoIndex() const;
 };
 
 #endif

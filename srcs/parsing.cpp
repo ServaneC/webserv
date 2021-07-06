@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/05 23:18:16 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/06 03:17:07 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,7 +108,7 @@ std::list<Location> parsingLocations(Server &server, std::string conf)
     return (routes);
 }
 
-std::list<std::string> parsingIndexes(std::string conf)
+std::list<std::string> parsingIndexes(const std::list<std::string> *root_indexes, std::string conf)
 {
     std::list<std::string>  indexes;
     size_t                  index_i = conf.find("index");
@@ -117,6 +117,8 @@ std::list<std::string> parsingIndexes(std::string conf)
         index_i = conf.find("index", index_i + 1);
     if (index_i == std::string::npos)
     {
+        if (root_indexes)
+            return (std::list<std::string>(*root_indexes));
         indexes.push_front("index.html");
         return (indexes);
     }
@@ -180,11 +182,9 @@ const Location *getRelevantLocation(const std::list<Location> &_routes, std::str
         // if (path[0] == '/')
         // {
             // std::cout << "SLASH : on compare ->\n";
-            // int i = target.compare(0, path.size(), path);
-            // std::cout << "ret de compare = " << i << std::endl;
+        // std::cout << "path.size = " << path.size() << std::endl;
         if (!target.compare(0, path.size(), path) && (!mostRelevant || mostRelevant->getPath().size() < path.size()))
             mostRelevant = &(*it);
-        std::cout << "path.size = " << path.size() << std::endl;
         // }
     }
     return (mostRelevant);
@@ -196,12 +196,9 @@ const Location *getRelevantExtension(const std::list<Location> &_routes, std::st
         std::string path = it->getPath();
         // if (path[0] == '*')
         // {
-            // path.erase(path.begin());
             // std::cout << "ETOILE : on check -> " << std::endl;
-            // std::cout << "|" << target.substr(target.size() - extension_length, extension_length) << "|" << std::endl;
-        std::cout << "path.size = " << path.size() << std::endl;
-        std::cout << "target.size = " << target.size() << std::endl;
-        // if (target.size() > path.size() && !path.compare(target.size() - path.size(), path.size(), target))
+        // std::cout << "path.size = " << path.size() << std::endl;
+        // std::cout << "target.size = " << target.size() << std::endl;
         if (target.size() > path.size() && !target.compare(target.size() - path.size(), path.size(), path))
             return (&(*it));
         // }
@@ -209,23 +206,49 @@ const Location *getRelevantExtension(const std::list<Location> &_routes, std::st
     return (NULL);
 }
 
-std::string setPathInfo(Server &server, Request &request, std::string target)
+std::string translatePath(Server &server, Request &request, std::map<std::string, std::string> &cgi_env, std::string path_info)
 {
-    const Location *loc = getRelevantLocation(server.getRoutes(), target);
-	const Location *ext = getRelevantExtension(server.getRoutes(), target);
-	std::string path = server.getRoot();
-	if (loc)
-		path = loc->getRoot();
+    const Location *loc = getRelevantLocation(server.getRoutes(), path_info);
+	const Location *ext = getRelevantExtension(server.getRoutes(), path_info);
+	std::string path_trans = server.getRoot();
+    struct stat statbuf;
 
+    if (loc)
+        path_trans = loc->getRoot();
     if ((loc && !loc->isAcceptedMethod(request.getMethodCode()))
         || (ext && !ext->isAcceptedMethod(request.getMethodCode())))
         throw methodNotAllowedException();
-	// if (chdir(path.c_str()) == -1)
-	// {
-	// 	// this->_env["STATUS_CODE"] = "500";  ??
-	// 	return ;
-	// }
-    path += target.substr(0, target.find_first_of("?=;"));
-    // std::cout << "PATH = <<" << path << ">>" << std::endl;
-    return (path);
+    // if (chdir(path_trans.c_str()) == -1)
+    //     throw chdirFailException();
+    if (stat(path_info.c_str(), &statbuf) == -1)  // target not found
+        throw targetNotFoundException();
+    path_trans += path_info;
+    if (path_info.empty() || S_ISDIR(statbuf.st_mode) == true)   // check si c'est un directory
+    {
+        std::string index("index.html"); 
+        if (loc)
+            index = loc->getIndexes().front();
+        if (stat((path_trans + index).c_str(), &statbuf) == -1)  // index not found
+        {
+            // if (loc && loc->getAutoIndex() == true || server.getAutoIndex() == true)
+                // afficher auto index
+            // else
+                // 404 ou no input file ?
+            cgi_env["SCRIPT_NAME"] = "";
+            return (path_trans);
+        }
+        path_trans += index;
+		cgi_env["SCRIPT_FILENAME"] = index;
+		cgi_env["SCRIPT_NAME"] = index;
+	}
+    // std::cout << "PATH = <<" << path_info << ">>" << std::endl;
+    return (path_trans);
 }
+ 
+// bool isDirectory(const std::string &target)   bof en fait
+// {
+//     size_t last_slash = target.find_last_of('/');
+//     if (last_slash == target.size() - 1)
+//         return (true);
+//     return (false);
+// }

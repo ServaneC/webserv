@@ -82,26 +82,21 @@ void	execCGI::setPathQuery()
 	// 	target.erase(0, 1);
 	std::cout << "TARGET -> [" << target << "]" << std::endl;
 	this->_env["REQUEST_URI"] = target;
+	this->_env["PATH_INFO"] = target.substr(0, target.find('?'));
 
 	try {
-		this->_env["PATH_INFO"] = setPathInfo(_server, _request, target);
+		this->_env["PATH_TRANSLATED"] = translatePath(_server, _request, _env, this->_env["PATH_INFO"]);
 	}
-	catch (methodNotAllowedException &e) {
+	catch (std::exception &e) {
         this->_env["STATUS_CODE"] = e.what();
 	}
 	// this->_env["PATH_INFO"] = getCurrentDirectory() + "/" + target.substr(0, target.find_first_of("?=;"));
 	// this->_env["PATH_INFO"] = std::string(PATH) + target.substr(0, target.find('?'));
-	this->_env["PATH_TRANSLATED"] = this->_env["PATH_INFO"];
+	// this->_env["PATH_TRANSLATED"] = this->_env["PATH_INFO"];
 	// this->_env["PATH_TRANSLATED"] = target;
 	this->_env["SCRIPT_FILENAME"] = target.substr(0, target.find('?'));
 	this->_env["SCRIPT_NAME"] = target.substr(0, target.find('?'));
 	std::cout << "HERE" << std::endl;
-	if (target.empty())
-	{
-		this->_env["PATH_INFO"] = std::string(INDEX);
-		this->_env["SCRIPT_FILENAME"] = INDEX;
-		this->_env["SCRIPT_NAME"] = INDEX;
-	}
 	if (target.find('?') != std::string::npos)
 		this->_env["QUERY_STRING"] = target.substr(target.find('?'), target.size()); //maybe wrong if no '?'
 }

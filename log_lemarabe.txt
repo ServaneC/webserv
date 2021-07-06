@@ -9,6 +9,7 @@ Si c'est une request sur un directory :
 	- si pas d'index et autoindex off (renvoyer un 404 ou autre)
 
 
+
 $$$$$$  $$$$   $$  $$  $$$$   $$  $$    $$$    $$
   $$   $$  $$  $$  $$  $$ $$  $$$ $$   $$ $$   $$
 $ $$   $$  $$  $$  $$  $$$    $$ $$$  $$$$$$$  $$

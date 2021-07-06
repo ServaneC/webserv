@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/07/06 01:05:50 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/06 18:14:41 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,11 +21,9 @@ Server::Server(Config &conf, std::string server_conf) :
         std::cout << "---------------------" << std::endl;
 
         parsingIPAddress(server_conf, &this->_ip, &this->_port);
-        // this->_port = 8080;
         std::cout << "- ServerPort = " << _port << std::endl;
 
         this->_name = parsingName(server_conf);
-        // this->_name = "localhost";
         std::cout << "- ServerName = " << _name << std::endl;
 
         this->_root = parsingRoot(trimLocations(server_conf));
@@ -41,7 +39,6 @@ Server::Server(Config &conf, std::string server_conf) :
         std::cout << "- Autoindex -> " << _autoindex << std::endl;
 
         this->_host.sin_family = PF_INET;
-        // this->_host.sin_addr.s_addr = INADDR_ANY; // -> 0.0.0.0
         this->_host.sin_addr.s_addr = this->_ip;
         std::cout << "- ServerAddress = " << this->_host.sin_addr.s_addr << std::endl;
         this->_host.sin_port = htons(this->_port);
@@ -88,13 +85,15 @@ int 	Server::exec_accept()
         return (this->_client_socket);
 }
 
-void	Server::exec_server()
+int 	Server::exec_server()
 {
     fcntl(this->_client_socket, F_SETFL, O_NONBLOCK);
-    if (this->_rqst.parseRequest(this->_client_socket) > 0)
-        execCGI((*this));
+    if (this->_rqst.parseRequest(this->_client_socket) < 0)
+        return (-1);
+    execCGI((*this));
     close(this->_client_socket);
     this->_client_socket = -1; 
+    return 1;
 }
 
 int			Server::getPort() const

@@ -6,15 +6,17 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/30 09:49:40 by schene            #+#    #+#             */
-/*   Updated: 2021/06/17 14:24:16 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/29 11:21:49 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/Config.hpp"
 
 # define BUFF_SIZE 1000
+static int     g_ctrl_c;
 
-Config::Config() {}
+
+Config::Config() { g_ctrl_c = 0;}
 
 Config::Config(std::string conf_file) : _servers()
 {
@@ -53,9 +55,9 @@ int 	Config::readConfFile(char const *path)
 		if (conf_stream.eof())
 			break ;
 	}
-	std::cout << "===== CONF =====" << std::endl;
-	std::cout << this->_content << std::endl;
-	std::cout << "================" << std::endl;
+	// std::cout << "===== CONF =====" << std::endl;
+	// std::cout << this->_content << std::endl;
+	// std::cout << "================" << std::endl;
 	conf_stream.close();
 	return 1;
 }
@@ -91,6 +93,26 @@ void	Config::createServers(void)
 	}
 }
 
+void				Config::terminate_serv()
+{
+	std::list<Server*>::iterator it;
+
+	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
+	{
+		if ((*it)->getClientSocket() > -1)
+			close ((*it)->getClientSocket());
+		if ((*it)->getSocket() > -1)
+			close ((*it)->getSocket());
+	}
+	exit(EXIT_SUCCESS);
+}
+
+// static void		ctrl_c(int i)
+// {
+// 	(void)i;
+// 	g_ctrl_c = 1;
+// }
+
 void	Config::startServers()
 {
 	int ret;
@@ -106,6 +128,7 @@ void	Config::startServers()
 
     while (1)
     {
+		// std::signal(SIGINT, ctrl_c);
 		int select_ret;
 		FD_ZERO(&read_sockets);
 		FD_ZERO(&write_sockets);
@@ -113,6 +136,8 @@ void	Config::startServers()
 		std::memcpy(&write_sockets, &this->_current_sockets, sizeof(this->_current_sockets));
 
 		select_ret = select(FD_SETSIZE, &read_sockets, &write_sockets, NULL, NULL);
+		// if (g_ctrl_c)
+		// 	this->terminate_serv();
         if (select_ret < 0)
         {
 			for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
@@ -136,6 +161,7 @@ void	Config::startServers()
 						if (FD_ISSET(i, &write_sockets) && (*it)->getClientSocket() != -1)
 						{
 							std::cout << "PORT -> [" << (*it)->getPort() << ']' << std::endl;
+							// std::cout << "SOCKET -> [" << i << ']' << std::endl;
 							(*it)->exec_server();
 							FD_CLR(i, &this->_current_sockets);
 						}

@@ -439,7 +439,7 @@ AVANT CA:
 -> j'ai changer la variable _request en _buf (+ logique)
 
 18/06/2021
--> J'avais commenecer a voir comment gere les upload de fichier mais j'avais pas 
+-> J'avais commencer a voir comment gere les upload de fichier mais j'avais pas 
 	bcp avance et j'ai oublie de push 😅
 
 21/06/2021
@@ -447,19 +447,226 @@ AVANT CA:
 	- pareil pour la post request du form
 -> j'ai commenter le chdir et ca marche, je vais push comme ca sur main 
 	en attendant de trouver comment tout bien implementer
+-> reussir a bien implementer tout ce que leila a fait
+	- tout marche a peu pres hors les Location dans execCGI qui abort avec :
+		'libc++abi.dylib: terminating with uncaught exception of type std::out_of_range: basic_string'
+		-> le pb viens de 'Server::getRelevantLocations' dans la comparaison '*'
+		-> j'ai rajouté "(target.size() > extension_length)" dans le if
+	location /Yeah {
+	    root                /root_yeah;
+	} => path = /root_yeah/Yeah 
+-> petite incompréhension je crois, je vais changer les files dans YoupiBanane pour que ca corresponde
+	-> actuellement le path est /Yeah/root_yeah
+	=> "the URI will be added to the path specified in the root directive" (src: http://nginx.org/en/docs/beginners_guide.html)
+	-> BON EN FAIT C'EST PAS CLAIR AVEC CE QUE DIT LE SUJET VS NGINX (une personne sur slack se pose la meme question)
+-> réapparition de l'erreur 'In select: Bad file descriptor' avec plusieurs server 😩
+	-> ca apparait plus apres plusieur lancement ca doit etre lie au fait que la connexion ne se ferme pas avec le ctrl+C
+	-> je vais essayer de catch CTRL_C avec signal mais ca semble compliqué	
+		-> C'est fait mais ca n'as pas regler le pb...
+	-> j'ai changer le deuxieme 'if' dans select en 'else if' et ca semble avoir reglé le pb 
+-> gerer l'upload de fichier
+	-> le fichier est envoye 2 fois en reponse (avec google chrome sur mac et firefox dans la vm, mais pas safari... ?)
+	=> Ca doit juste être un pb d'affichage, le body est bien constitue d'une seule requete 
+	-> j'ai changer le while body enmpty en while size < content-Lenght 
+		(sinon le body n'est pas lu en entier si il arrive en plsr fois)
+	-> il faudra surement transformer le _body (string) en unsigned char * pour gérer l'upload de n'importe quel fichier
+	-> mnt il faut voir comment parser le multipart/form-data pour upload le file.
 
+22/06/2021
+-> reussir l'upload de fichier
+	-> je vois pas comment faire, si je commence a tout parser et qu'au final il ne faut pas ca auras ete inutile...
+-> apparement il ne faudrait pas appeler le cgi a chaque fois ?
+-> gerer les chunk request
+	-> je pense qu'il faut completement revoir comment la request est lu, il faudrait:
+		- stocker (au - le body) dans un unsigned char *
+		- lire juste le header, puis le body si y en as un
+-> j'ai modifie isAcceptedMethod pourqu'elle prenne une string au lieu d'un int en argument
+-> gerer les accepted method ✅
+	-> on passe les 3 premiers test du tester (en enlevant POST dans la location '/')!
+
+24/06/2021
+-> turn on or off directory listing (autoindex)
+	- When a request end with '/' (= is a directory) and there is no index file + the autoindex is on => a directory listing is returned
+	-> faire un simple directory listing (sans dates/ tailles) (opendir, readdir et closedir)
+	-> Ca marche !
+	-> l'affiché que si il n'y as pas de file index ✅
+!! LEAK dans la vm apres ctrl-c (ca vient de parsingLocations apparement)
+-> mini modif dans isAcceptedMethod() qui fait mnt appel a setMethodCode()
+	+ j'ai remplacé les if par du ternaire dans setMethodCode()
+
+25/06/2021
+-> gerer les chunk request
+	-> commencer par lire la requete (au moins le body) dans un unsigned char * (au lieu de std::string)
+		- revoir la fonction recvData -> faire deux fontion (une pour recevoir les hedaer, une autre pour le body)
+		-> Tout les headers sont lu dans une string (on s'aarrete bien a la fin des headers fields, 
+			avant c'etait pas le cas, on lisait tout ce qu'on recevait et après on parsait)
+		-> lire le body dans un unsigned char * (juste pour une request avec Content-Length pour le moment) ✅
+		-> lire les chunk requests
+			-> parser les chunk jusqu'a la chunk de fin (0\r\n) 
+				-> c'est fait mais les data ne passe pas cest bizarre
+			-> read jusqu'au \r\n de fin 
+				!! (il peut y avoir des header fields après le body ! -> https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Trailer )
+
+28/06/2021
+-> re une erreur "In select: Bad file descriptor" quand on veut accdeder a plusieurs adresse IP 🙄 
+	-> le pb vient peut etre de recv Header qui essaye de lire en boucle.
+	-> bon j'ai rien fait et l'erreur a disparu 🤷🏻‍♀️
+-> finir la gestion des chunks request 😩
+	-> tout est bien lu et stocké mais ca ne passe pas dans execCGI et jsp pq...
+	-> bon j'ai essayé plein de truc mais je ne comprend pas POURQUOI LA DATA NE PASSE PAS !!!!
+	-> peut etre tester dans la vm et voir si ca passe dessus => ca marche pas non plus 🤦🏻‍♀️
+	-> j'abandonne pour le moment, ca fait presque 2h que je me prend la tête !
+-> faire marcher les query string ✅
+	-> Bonne nouvelle ! ca a l'air de marcher !!!
+	-> je vais faire plus de test pour m'assurer que ca marche bien
+	-> Ont peut faire une requete GET avec query string dans le index.html via un form 
+-> utiliser les routes
+	-> revoir setPathQuery pour que la Location soit prise en commpte
+	 -  marche si pas de fichier preciser = autoindex (http://localhost:8080/Yeah/)
+	 -> modifier Location pour qu'elle stocke aussi juste la root correspondant au plus du path root en entier
+	🎉 Ca marche pour la redirection Yeah -> root_yeah
+	-> j'ai enlever le dernier '/' dans l'autoindex (y en a pas dans nginx)
+	-> On peut mnt avoir l'index d'un directory meme si y a pas le dernier '/' dans l'url,
+		(PB: ont peut pas acceder au fichier après a cause de ce manque de '/' donc a voir si on garde comme ça)
+		-> bon mnt ont peut y acceder mais l'url est chelou comme il concatenne sans le '/' (http://localhost:8080/Yeahhappy.bad_extension)
+		🎉 C'est bon, ont peut acceder a l'index avec oui sans le '/' a la fin et tout est bien accessible
+	-> il faudrait se debarrasser de location list et n'avoir qu'une location !
+		(peut être regrouper les infos de la location + l'extension de fichier)
+	-> On passe une dizaine de test du tester
+!! Il y a des bug, parfois le terminal est impossible a quitter et on doit le kill
+
+29/06/2021
+-> resoudre le pb de select (pbblmt revoir recvHeader)
+	-> j'ai commeneter la gestion du ctrl_c, ca a apparement regler les blocages ou on doit kill le terminal
+	-> y a toujours le programme de blocage sur un port alors qu'on se connecte a un autre
+	-> bon alors j'ai repris la gestion du select comme sur la branche main et ca a l'air de mieux marcher
+		(je pense qu'il va encore avoir des erreurs mais bcp moins)
+	-> bon enfait y en a quasi toujours autant 🤦🏻‍♀️
+	-> j'ai l'impression que ca va de recvHeader mais on pourrais peut etre gerer plus tot
+	-> bon la jai aucune erreurs mais je suis sûr qu'a un moment elles vont toutes revenir d'un coup
+	-> le if que j'ai ajuté dans recvHeader semble regler les pb
+-> les test passent toujours sur le tester
+-> essayer de gerer les chunk request avec l'envoi d'eof apres le body !
+	-> Ca marche toujours pas !!! -> je re abbandonne
+-> mieux gerer le Content-Type (voir avec le header Accept)
+	-> je vois pas vraiment comment faire actuelement ca marche, 
+		mais si c'est un fichier dont on gere pas l'extension ca serait la merde
+-> bon je vais merge sur main , ca fait lgt
+
+	#LEILA:
+	#Je reviens Lundi 5 Juillet mais hesite pas a m'appeler/ m'envoyer des message si t'as des question !
+	#-> si tu pouvait parser dans le conf le autoindex (on/off) -> default off 
+	#	(je pense que un bool dans Location initialisé en false serait parfait pour gerer)
+	#-> et aussi le champs 'index' qui est deja dans le conf file mais actuellement pas parser (sauf erreur de ma part)
+	#	=> default index.html (donc si y a pas de champs index tu stocke inde.html en valeur)
+	#	!! il peut y avait plusieur index possible (donc a stocker dans une liste)
+	#une fois que ca sera fait, si c'est une request sur un directory on pourra :
+	#	- renvoyer le bon fichier index (ou index.html si pas precise)
+	#	- si pas d'index présent, et autoindex on -> renvoyer le directory listing
+	#	- si pas d'index et autoindex off (renvoyer un 404 ou autre)
+	#-> Voir si tu peux renvoyer une seule Location au lieu d'une liste dans getRelevantLocations
+	#	- si c'est un fichier avec extension + une location precise 
+	#		(voir ou est la priorite dans les metchodes et stocker toutes les infos dans ue Location)
+	#	-> exemple: /Yeah
+	#		-> au lieu de renvoyer '/' et '/Yeah' en relevant Location, tu renvois juste '/Yeah'
+	#		(pour le moment j'ai gerer ca en enlevant dans execCGI la premiere Location dans la liste
+	#			mais ca seait mieux de gerer direct dans getRelevantLocations en ne renvoyant qu'une seule Location)
+
+06/07/2021
+-> J'ai merge tout les changements de leila meme si c'est pas fonctionnel, ca renvois que des 404 not found
+	- trouver ou est le pb puis tout re-merge
+	-> J'ai commenté setPathInfo()
+	+ j'ai remodifié l'index.html je l.'avais changer avant de push la derniere fois jsp pq c'etait pas passé
+-> les methodes autorisés ne sont plus chekés ?! 
+	-> C'est parce que ca doit etre geré dans setpathinfo et ca marche pas du tout pour le moment 
+		j'arrives juste a avoir l'index.html mais apres il y a que des 404 pour les images et le css
+	-> Je comprend pas pq ca ne marche pas c'est le bon path dans path info !
+		[/Users/schene/Desktop/webserv/YoupiBanane/img/42.png] -> ne marche pas
+		[/Users/schene/Desktop/webserv/YoupiBananeimg/42.png] -> marche ????
+	->Ca marche, j'enleve le '/' dans target apres setPathInfo
+		-> sinon y avait le '/' du debut dans SCRIPT_FILENAME et cie et 
+			c'est a a cause de ca que ca marchait pas 
+	-> par contre la gestion des allowed methode ne marche pas (on peut toute les faires meme si pas autorisé)
+		-> l'exception est bien envoye mais son catch ne fait rien
+		-> c'etait parce que 'this->_env["STATUS_CODE"] = "200 OK";'
+			 etait definis apres la fonction setPathQuery
+-> J'ai mis le PATH_INFO en tant que variable pour tout les SCRIPT_FILENAME et cie dans le cgi et ca marche sans pb
+-> autoindex:
+	- ca se liste bien mais y a des 404 not found quand on clique sur les liens
+	-> C'est bon ca marche on peut cliquer sur tout les liens, en revanche 
+		la gestion des routes que j'avais fait semble ne plus marcher
+		/Yeah renvois sur /root_yeah/Yeah et /directory sur /root_yeah/directory
+		au lieu de juste /root_yeah
+		-> c'est bon j'ai rejouter dans setPathInfo le fait de erase le path de l'url 
+	-> faudra aussi linker au bool autoindex implementé par leila et gerer comme il faut
+		+ renvoyer le bon index au lieu de index.html par defaut
+
+=> PUSH + MERGE main quand c'est fait 
 ================================== NOTES ==================================
 
-A faire:
--> reussir une request DELETE
--> faire marcher les query string
-	- il faut apparement parser REFERER
--> throw les bonnes exceptions aux bons endroit
--> essayer d'appliquer le CSS au php
-- utiliser les routes
--> gérer l'upload de fichier (il faut passer par POST)
--> gerer les leaks en cas d'erreur / d'arret
--> gerer les chunk request
+Pour tester les chunk request:
+	curl -H "Transfer-Encoding: chunked" -d "nom=Servane&age=20" http://localhost:8080/action.php
+
+TO DO:
+-> avoir le sujet de correction !
+-> gerer les chunk request -> pb avec l'envoi du body (the CGI will expect EOF as end of the body)
+-> toute la gestion des exceptions / retour d'erreur / free quand on quitte (ou en cas d'erreur) est a revoir
+-> utiliser les routes
+-> error pages
+-> default file to answer if the request is a directory -> index
+-> mieux gerer le Content-Type (utiliser stat ?)
+- MÉTHODES:
+	-> faire des fonctions pour chaque methode (si pas de cgi)
+	-> reussir une request DELETE
+	-> gérer l'upload de fichier (il faut passer par POST)
+- (auto)INDEX:
+	-> il faudrait parser autoindex dans le conf file + afficher l'autoindex en fonction
+		(actuelement on considere qu'il est tout le temps on)
+	-> chercher pour le file index preciser dans le conf file (actuellement on prend juste index.html)
+
+POST request from google chrome after an upload of a file
+-------------------------------------------------------------------------------
+POST /upload HTTP/1.1
+Host: localhost:8080
+Connection: keep-alive
+Content-Length: 463
+Cache-Control: max-age=0
+sec-ch-ua: " Not;A Brand";v="99", "Google Chrome";v="91", "Chromium";v="91"
+sec-ch-ua-mobile: ?0
+Upgrade-Insecure-Requests: 1
+Origin: http://localhost:8080
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryUid4GZZPaM6cz0Sq
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Referer: http://localhost:8080/
+Accept-Encoding: gzip, deflate, br
+Accept-Language: en-US,en;q=0.9
+
+------WebKitFormBoundaryUid4GZZPaM6cz0Sq
+Content-Disposition: form-data; name="MAX_FILE_SIZE"
+
+1000000
+------WebKitFormBoundaryUid4GZZPaM6cz0Sq
+Content-Disposition: form-data; name="uploadedfile"; filename="to_upload.html"
+Content-Type: text/html
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>UPLOAD!</title>
+</head>
+    <body>
+        <h1> this is an... </h1>
+        <h2> Ulpoaded file ! </h2>
+    </body>
+</html>
+
+------WebKitFormBoundaryUid4GZZPaM6cz0Sq--
+-------------------------------------------------------------------------------
 
 
 POST request from safari after HTML form:
@@ -622,3 +829,5 @@ GET /directory/oulalala HTTP/1.1
 Host: localhost:8080
 User-Agent: Go-http-client/1.1
 Accept-Encoding: gzip
+
+

@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 15:34:32 by schene            #+#    #+#             */
-/*   Updated: 2021/06/13 12:43:41 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/28 15:35:48 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,6 @@
 #ifndef WEBSERV_HPP
 # define WEBSERV_HPP
 
-// # include <arpa/inet.h>
-// # include <stdlib.h>
 # include <sys/wait.h>
 # include <stdio.h>
 # include <sys/types.h> 
@@ -30,7 +28,7 @@
 # include <netinet/in.h>
 # include <fcntl.h>
 # include <errno.h>
-#include <poll.h>
+# include <dirent.h>
 
 # include <iostream>
 # include <string>
@@ -44,6 +42,7 @@
 # include <cctype>
 # include <cstdlib>
 # include <fstream>
+# include <csignal>
 # include <sstream>
 
 class	Server;
@@ -62,5 +61,6 @@ class   Location;
 # include "srcs/include/parsing.hpp"
 # include "srcs/include/exceptions.hpp"
 # include "srcs/include/Utils.hpp"
+# include "srcs/include/Autoindex.hpp"
 
 #endif

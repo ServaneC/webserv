@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/13 12:10:03 by schene            #+#    #+#             */
-/*   Updated: 2021/06/15 13:58:38 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/25 14:28:49 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,12 +19,12 @@ std::string     ft_itoa_cpp(int n)
 	return (convert.str());
 }
 
-int             ft_strlen(char *str)
+int             hexa_to_int(std::string hexa)
 {
-    int i = 0;
-
-    while (str[i])
-        i++;
-    return(i);
+    // unsigned int x;
+    int x;
+    std::stringstream ss;
+    ss << std::hex << hexa;
+    ss >> x;
+    return x;
 }
-

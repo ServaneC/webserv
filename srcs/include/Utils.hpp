@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/13 12:10:32 by schene            #+#    #+#             */
-/*   Updated: 2021/06/15 14:56:19 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/25 14:29:00 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 # include "../../webserv.hpp"
 
 std::string     ft_itoa_cpp(int n);
-int             ft_strlen(char *str);
+int             hexa_to_int(std::string hexa);
 
 template <typename T>
 T *MyRealloc( T*& src, int oldSize, int newSize ) 

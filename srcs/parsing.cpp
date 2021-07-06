@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/06 03:17:07 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/06 18:18:10 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,8 +52,6 @@ std::string parsingLocalRoot(std::string server_root, std::string conf)
         throw confInvalidRootException();
     std::string root(server_root);
     root.append(conf.substr(root_index, root_end - root_index));
-    // if (root[root.size() - 1] != '/')
-    //     root.append("/");
     return (root);
 }
 
@@ -149,13 +147,11 @@ bool parsingAutoIndex(Server &server, std::string conf)
 
 int     setMethodCode(std::string method_name)
 {
-    if (method_name == "GET")
-        return (METHOD_GET);
-    if (method_name == "POST")
-        return (METHOD_POST);
-    if (method_name == "DELETE")
-        return (METHOD_DELETE);
-    return (METHOD_NOT_ALLOWED);
+    int code = METHOD_NOT_ALLOWED;
+    code = !method_name.compare("GET") ? METHOD_GET : code;
+    code = !method_name.compare("POST") ? METHOD_POST : code;
+    code = !method_name.compare("DELETE") ? METHOD_DELETE : code;
+    return (code);
 }
 
 std::vector<int> parseAcceptedMethods(std::string location_conf)
@@ -189,6 +185,7 @@ const Location *getRelevantLocation(const std::list<Location> &_routes, std::str
     }
     return (mostRelevant);
 }
+
 const Location *getRelevantExtension(const std::list<Location> &_routes, std::string target)
 {
     for (std::list<Location>::const_iterator it = _routes.begin(); it != _routes.end(); it++)
@@ -245,6 +242,34 @@ std::string translatePath(Server &server, Request &request, std::map<std::string
     return (path_trans);
 }
  
+
+//     const Location *loc = getRelevantLocation(server.getRoutes(), target);
+// 	const Location *ext = getRelevantExtension(server.getRoutes(), target);
+// 	std::string path = server.getRoot();
+//     std::cout << "loc -> "<< loc << std::endl;
+// 	if (loc)
+//     {
+//         path = loc->getRoot();
+//         if (loc->getPath().size() > 1)
+//         target.erase(1, loc->getPath().size() - 1);
+//         // std::cout << "-> " <<  << std::endl;
+//     }
+//     if ((loc && !loc->isAcceptedMethod(request.getMethodCode()))
+//         || (ext && !ext->isAcceptedMethod(request.getMethodCode())))
+//         throw methodNotAllowedException();
+// 	// if (chdir(path.c_str()) == -1)
+// 	// {
+// 	// 	// this->_env["STATUS_CODE"] = "500";  ??
+// 	// 	return ;
+// 	// }
+//     std::cout << "PATH = <<" << path << ">>" << std::endl;
+//     if (target.compare("/") != 0)
+//         path += target.substr(0, target.find_first_of("?=;"));
+//     std::cout << "PATH = <<" << path << ">>" << std::endl;
+//     return (path);
+// }
+
+
 // bool isDirectory(const std::string &target)   bof en fait
 // {
 //     size_t last_slash = target.find_last_of('/');
@@ -252,3 +277,4 @@ std::string translatePath(Server &server, Request &request, std::map<std::string
 //         return (true);
 //     return (false);
 // }
+

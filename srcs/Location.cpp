@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:48:09 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/06 02:32:08 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/06 18:16:12 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ bool Location::isAcceptedMethod(int code) const
 {
     for (std::vector<int>::const_iterator it = this->_accepted_methods.begin(); it != this->_accepted_methods.end(); it++)
     {
-        if (*it == code)
+         if (*it == code)
             return true;
     }
     return false;

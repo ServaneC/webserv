@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/30 09:47:15 by schene            #+#    #+#             */
-/*   Updated: 2021/06/15 12:42:00 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/21 15:28:23 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ class Config
 
 		std::string 		singleServerConfig(size_t index);
 		void				startServers();
+		void				terminate_serv();
 
 	public:
 		Config(std::string conf_file);

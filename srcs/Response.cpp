@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 14:42:45 by schene            #+#    #+#             */
-/*   Updated: 2021/06/17 15:18:39 by schene           ###   ########.fr       */
+/*   Updated: 2021/06/29 11:48:49 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,8 @@ Response::Response(execCGI &my_CGI, int socket) :
 	_cgi(my_CGI), _socket(socket), _idx(0)
 {
 	this->_idx = 0;
+	this->_buf_size = 0;
+	this->_buf = NULL;
 	if (this->_cgi.getBuf())
 	{
 		this->_buf = NULL;
@@ -51,9 +53,9 @@ Response::~Response()
 
 void		Response::parse_cgi_buf()
 {
-	if (!this->_buf || this->_buf[0] == '<')
+	if (!this->_buf)
 		return ;
-	
+
 	while (memchr(this->_buf + this->_idx, ':', this->_buf_size - 1)) // check if there is still header-fields
 	{
 		if ((&this->_buf[this->_idx])[0] == '\r') // end of the header 
@@ -65,12 +67,10 @@ void		Response::parse_cgi_buf()
 				break ;
 			next_n++;
 		}
-		std::cout << "span = " << next_n << std::endl;
-		std::string tmp_s = std::string((char *)(&this->_buf[this->_idx]), next_n - 1); //line with the header field (maybe -2)
+		std::string tmp_s = std::string((char *)(&this->_buf[this->_idx]), next_n - 1); //line with the header field
 		
-		// erase the line from buf
+		// "erase" the line from buf
 		this->_idx += next_n + 1;
-		std::cout << "idx = " << this->_idx << std::endl;
 		this->_buf_size -= next_n + 1;
 
 		std::string name = tmp_s.substr(0, tmp_s.find(':')); // separate the field-name
@@ -79,7 +79,7 @@ void		Response::parse_cgi_buf()
 			if (name.compare("Content-type") == 0)
 				name = "Content-Type";
 			this->_headers[name] = tmp_s.substr(tmp_s.find(':') + 2, tmp_s.size()); // put the name and value in the _header map
-			std::cout << '|' << name << " = " << this->_headers[name] << '|' << std::endl;
+			// std::cout << '|' << name << " = " << this->_headers[name] << '|' << std::endl;
 		}
 	}
 	if ((&this->_buf[this->_idx])[0] == '\r' && (&this->_buf[this->_idx])[1] == '\n')
@@ -142,13 +142,10 @@ void		Response::check_content_type()
 	if (tmp.find('.') != std::string::npos)
 	{
 		tmp.erase(0, tmp.find_last_of('.') + 1);
-		std::cout << "-> " << tmp << std::endl;
 		if (!tmp.compare("css"))
 			this->_headers["Content-Type"] = "text/css";
-		// else if (!tmp.compare("jpeg") || !tmp.compare("jpg"))
-		// 	this->_headers["Content-Type"] = "image/jpeg";
-		// else if (!tmp.compare("png"))
-		// 	this->_headers["Content-Type"] = "image/png";
+		else if (!tmp.compare("jpeg") || !tmp.compare("jpg") || !tmp.compare("png"))
+			this->_headers["Content-Type"] = "image/" + tmp;
 	}
 }
 

@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:43:38 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/06/28 14:25:15 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/06 09:53:32 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,12 +19,13 @@ class Location
 {
     private :
 
-        Server              *_server;
-        std::string         _path;
-        std::string         _location_conf;
-        std::string         _root_path;
-        std::string         _root;
-        std::vector<int>    _accepted_methods;
+        Server                  *_server;
+        std::string             _path;
+        std::string             _location_conf;
+        std::string             _root;
+        std::vector<int>        _accepted_methods;
+        std::list<std::string>  _indexes;
+        bool                    _autoindex;
 
         Location();
 
@@ -36,7 +37,7 @@ class Location
         std::string         getRoot() const;
         std::string         getRootPath() const;
         std::vector<int>    getAcceptedMethods() const;
-        bool                isAcceptedMethod(std::string method);
+        bool                isAcceptedMethod(int code) const;
 };
 
 #endif

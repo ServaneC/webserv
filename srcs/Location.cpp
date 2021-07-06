@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:48:09 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/06/28 14:46:49 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/06 09:57:03 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,19 +16,28 @@ Location::Location() {}
 
 Location::~Location() {}
 
-Location::Location(Server *server, std::string path, std::string location_conf) : _server(server), _path(path), _location_conf(location_conf)
+Location::Location(Server *server, std::string path, std::string location_conf) : 
+    _server(server), _path(path), _location_conf(location_conf), _autoindex(false)
 {
     this->_accepted_methods = parseAcceptedMethods(location_conf);
-    this->_root_path = parsingLocalRoot(_server->getRoot(), location_conf);
-    this->_root = this->_root_path.substr(_server->getRoot().size());
-    std::cout << "Local root for <" << path << " is -> |" << _root_path << "|" << std::endl;
-    std::cout << "ROOT |" << _root << "|" << std::endl;
+    // std::cout << "LOCATION -> " << _path << " : ";
+    // for (std::vector<int>::iterator it = _accepted_methods.begin(); it != _accepted_methods.end(); it++)
+    //     std::cout << *it << " ";
+    // std::cout << std::endl;
+    this->_root = parsingLocalRoot(_server->getRoot(), location_conf);
+    // std::cout << "Local root for <" << path << " is -> |" << _root << "|" << std::endl;
+    this->_indexes = parsingIndexes(location_conf);
+    // std::cout << "Local indexes = ";
+    //     for (std::list<std::string>::iterator it = _indexes.begin(); it != _indexes.end(); it++)
+    //         std::cout << *it << " ";
+    //     std::cout << std::endl;
+    this->_autoindex = parsingAutoIndex(*_server, location_conf);
+    // std::cout << "Local autoindex -> " << _autoindex << std::endl;
 }
 
-bool Location::isAcceptedMethod(std::string method)
+bool Location::isAcceptedMethod(int code) const
 {
-    int code = setMethodCode(method);
-    for (std::vector<int>::iterator it = this->_accepted_methods.begin(); it != this->_accepted_methods.end(); it++)
+    for (std::vector<int>::const_iterator it = this->_accepted_methods.begin(); it != this->_accepted_methods.end(); it++)
     {
          if (*it == code)
             return true;

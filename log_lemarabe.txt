@@ -1,3 +1,50 @@
+$$$$$$$$  $$$$        $$$$     $$$$
+   $$    $$  $$       $$  $$  $$  $$
+   $$    $$  $$  $$$  $$  $$  $$  $$
+   $$     $$$$        $$$$     $$$$  $$ $$ $$
+
+Si c'est une request sur un directory :
+	- renvoyer le bon fichier index
+	- si pas d'index présent, et autoindex on -> renvoyer le directory listing
+	- si pas d'index et autoindex off (renvoyer un 404 ou autre)
+
+
+$$$$$$  $$$$   $$  $$  $$$$   $$  $$    $$$    $$
+  $$   $$  $$  $$  $$  $$ $$  $$$ $$   $$ $$   $$
+$ $$   $$  $$  $$  $$  $$$    $$ $$$  $$$$$$$  $$
+$$$     $$$$    $$$$   $$ $$  $$  $$ $$     $$ $$$$$$
+
+[05/6]
+1) parsing autoindex -> default off
+    - un bool dans Server
+	- un bool dans Location
+2) parsing index -> default "index.html"
+    - une list<string> dans Server
+    - une list<string> dans Location
+--> Je me demande si je continue a stocker dans Server les infos qui sont
+"libres" dans le bloc server{} (pas dans un bloc location{} en gros) ou si
+je crée une location "/" par defaut qui contient ces infos generales
+    - Si je fais ca faudra gerer les conflits si le bloc location / est
+    aussi defini et contient des infos contradictoires...
+3) check des locations :
+    - une fonction getRelevantLocation() qui return 1 seule Location
+    - une fonction getRelevantExtension() qui return 1 seule Location
+    - La je travaille sur une fonction setPathInfo() (en fait je sais pas
+vraiment si c'est la variable PATH_INFO du cgi que je veux construire
+ou PATH_TRANSLATED) qui fait appel aux 2 fonctions et qui check si la
+methode est autorisee. Elle est lancée depuis setPathQuery()
+--------------------------------------------------------------------------
+[23/6]
+    - Interrogations sur CONTENT_LENGTH qu'on doit set pour le CGI :
+D'apres la rfc3875 : "The server MUST set this meta-variable if and only
+if the request is accompanied by a message-body entity. The CONTENT_LENGTH
+value must reflect the length of the message-body after the server has 
+removed any transfer-codings or content-codings."
+-> du coup j'ai rajouté un if avant de set CONTENT_LENGTH, mais je me
+demande de quoi il parle quand il dit que notre serveur devrait enlever 
+des infos. Est ce qu'on doit le retoucher ou on envoie le header field ?
+    - Le nom d'un serveur par defaut doit il etre localhost ?
+--------------------------------------------------------------------------
 [21/6]
     - Modification du fichier de conf pour que la racine du serveur soit
 maintenant /YoupiBanane
@@ -72,6 +119,32 @@ la clé et le scope des instructions comme etant le contenu.
 
 "Because you won’t call the CGI directly use the full path as PATH_INFO"
 "the cgi should be run in the correct directory for relativ path file access"
+
+[X] choose the port and host of each "server"
+[X] setup the server_names or not
+[ ] The first server for a host:port will be the default for this host:port (meaning
+        it will answer to all request that doesn’t belong to an other server)
+[ ] setup default error pages
+[ ] limit client body size
+[ ] setup routes with one or multiple of the following rules/configuration (routes
+        wont be using regexp):
+    [X] -> define a list of accepted HTTP Methods for the route
+    [ ] -> define an HTTP redirection.
+    [ ] -> define a directory or a file from where the file should be search (for example
+        if url /kapouet is rooted to /tmp/www, url /kapouet/pouic/toto/pouet is
+        /tmp/www/pouic/toto/pouet)
+    [ ] -> turn on or off directory listing
+    [ ] -> default file to answer if the request is a directory
+    [ ] -> execute CGI based on certain file extension (for example .php)
+        [ ] -> Because you won’t call the CGI directly, use the full path as PATH_INFO
+        [X] -> Just remembers that for chunked request, your server needs to unchunked it 
+            and the CGI will expect EOF as end of the body.
+        [ ] -> Same things for the output of the CGI. if no content_length is returned
+            from the CGI, EOF will mean the end of the returned data.
+        [ ] -> Your program should call the cgi with the file requested as first argument
+        [ ] -> the cgi should be run in the correct directory for relativ path file access
+        [ ] -> your server should work with one CGI (php-cgi, python...)
+    [ ] -> make the route able to accept uploaded files and configure where it should be saved
 
 --> [XSI] Structure used by kernel to store most addresses.
     struct sockaddr {

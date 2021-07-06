@@ -6,14 +6,15 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/06/29 09:58:55 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/06 09:57:22 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/Server.hpp"
 
 Server::Server(Config &conf, std::string server_conf) : 
-    _rqst(*(new Request)), _main_conf(conf), _server_conf(server_conf), _client_socket(-1)
+    _rqst(*(new Request)), _main_conf(conf), _server_conf(server_conf),
+    _client_socket(-1), _autoindex(false)
 {
     try
     {
@@ -28,12 +29,22 @@ Server::Server(Config &conf, std::string server_conf) :
         this->_root = parsingRoot(trimLocations(server_conf));
         std::cout << "- ServerRoot = " << _root << std::endl;
 
+        this->_indexes = parsingIndexes(trimLocations(server_conf));
+        std::cout << "- Indexes = ";
+        for (std::list<std::string>::iterator it = _indexes.begin(); it != _indexes.end(); it++)
+            std::cout << *it << " ";
+        std::cout << std::endl;
+
+        this->_autoindex = parsingAutoIndex(*this, trimLocations(server_conf));
+        std::cout << "- Autoindex -> " << _autoindex << std::endl;
+
         this->_host.sin_family = PF_INET;
         this->_host.sin_addr.s_addr = this->_ip;
         std::cout << "- ServerAddress = " << this->_host.sin_addr.s_addr << std::endl;
         this->_host.sin_port = htons(this->_port);
         this->_addrlen = sizeof(this->_host);
         this->_socket = socket(PF_INET, SOCK_STREAM, 0);
+
         this->_routes = parsingLocations(*this, server_conf);
 
         int enable = 1;
@@ -55,6 +66,13 @@ Server::~Server()
     close(this->_socket);
     delete &this->_rqst;
     delete &this->_main_conf;
+    for (std::list<Location>::iterator it = _routes.begin(); it != _routes.end(); it++)
+        // delete &it;   // jamais testé mais je pense que c'est de la merde
+        delete &(*it);   // ca c'est ptet mieux
+    // {                  // sinon ca ??
+    //     Location *loc = &(*it);
+    //     delete loc;
+    // }
 }
 
 int 	Server::exec_accept()
@@ -76,35 +94,6 @@ int 	Server::exec_server()
     close(this->_client_socket);
     this->_client_socket = -1; 
     return 1;
-}
-
-std::list<Location>    Server::getRelevantLocations(std::string target)
-{
-    std::list<Location> relevant_locations;
-
-	for (std::list<Location>::iterator it = _routes.begin(); it != _routes.end(); it++)
-    {
-        std::string path = it->getPath();
-        
-        if (path[0] == '/')
-        {
-            if (!target.compare(0, path.size(), path)) //&& path.size() <= target.size() )
-                relevant_locations.push_back(*it);
-        }
-        else if (path[0] == '*')
-        {
-            size_t extension_length = path.size() - 1;
-            path.erase(path.begin());
-            if ((target.size() > extension_length) && !target.compare(target.size() - extension_length, extension_length, path))
-                relevant_locations.push_back(*it);
-        }
-    }
-    std::cout << ">> Relevant locations for this request :\n";
-    for (std::list<Location>::iterator it = relevant_locations.begin(); it != relevant_locations.end(); it++)
-    {
-        std::cout << "\t- [" << it->getPath() << "]\tRoot = " << it->getRootPath() << std::endl;
-    }
-    return (relevant_locations);
 }
 
 int			Server::getPort() const
@@ -138,4 +127,19 @@ int			Server::getClientSocket() const
 Request		&Server::getRequest() const
 {
     return this->_rqst;
+}
+
+const std::list<Location> &Server::getRoutes() const
+{
+    return this->_routes;
+}
+
+const std::list<std::string>	&Server::getIndexes() const
+{
+    return (this->_indexes);
+}
+
+bool					Server::getAutoIndex() const
+{
+    return (this->_autoindex);
 }

@@ -44,10 +44,11 @@ execCGI::execCGI(Server &serv)
 	this->_env["STATUS_CODE"] = "200 OK";
 	if (this->_request.getBadRequest())
 		this->_env["STATUS_CODE"] = "400 Bad Request";
-	if (!this->check_method())
-		this->_env["STATUS_CODE"] = "405 Method Not Allowed";
+	// if (!this->check_method())  // commenté car deja géré dans setPathInfo()
+		// this->_env["STATUS_CODE"] = "405 Method Not Allowed";
 	// this->_env["AUTH_TYPE"] = std::string();
-	this->_env["CONTENT_LENGTH"] = this->_request.getHeaderField("Content-Length"); //not sure
+	if (!this->_request.getHeaderField("Content-Length").empty())
+		this->_env["CONTENT_LENGTH"] = this->_request.getHeaderField("Content-Length"); //not sure
 	this->_env["CONTENT_TYPE"] = this->_request.getHeaderField("Content-Type");
 	// if (!this->_request.getHeaderField("Accept").empty())
 	// 	this->_env["CONTENT_TYPE"] = this->_request.getHeaderField("Accept");
@@ -101,23 +102,21 @@ execCGI::~execCGI()
 void	execCGI::setPathQuery()
 {
 	std::string	target = this->_request.getTarget();
-	std::string root;
-	root = (*this->_location_list.begin()).getRootPath();
-	if ((*this->_location_list.begin()).getPath()[0] == '/')
-		target.erase(0, (*this->_location_list.begin()).getPath().size());
-	if (target[0] == '/')
-		target.erase(0, 1);
-	
-	if (chdir(_server.getRoot().c_str()) == -1)
-		return ;
-
-	this->_env["PATH_INFO"] = root + "/" + target.substr(0, target.find('?'));
-	target.insert(0, (*this->_location_list.begin()).getRoot() + '/');
-	if (target[0] == '/')
-		target.erase(0, 1);
-	std::cout << "TARGET [" << target << ']' << std::endl;
+	// if (target[0] == '/')
+	// 	target.erase(0, 1);
+	std::cout << "TARGET -> [" << target << "]" << std::endl;
 	this->_env["REQUEST_URI"] = target;
-	this->_env["PATH_TRANSLATED"] = target;
+
+	try {
+		this->_env["PATH_INFO"] = setPathInfo(_server, _request, target);
+	}
+	catch (methodNotAllowedException &e) {
+        this->_env["STATUS_CODE"] = e.what();
+	}
+	// this->_env["PATH_INFO"] = getCurrentDirectory() + "/" + target.substr(0, target.find_first_of("?=;"));
+	// this->_env["PATH_INFO"] = std::string(PATH) + target.substr(0, target.find('?'));
+	this->_env["PATH_TRANSLATED"] = this->_env["PATH_INFO"];
+	// this->_env["PATH_TRANSLATED"] = target;
 	this->_env["SCRIPT_FILENAME"] = target.substr(0, target.find('?'));
 	this->_env["SCRIPT_NAME"] = target.substr(0, target.find('?'));
 	if (target.find('?') != std::string::npos)
@@ -178,9 +177,6 @@ void	execCGI::exec_CGI()
 	this->_buf = NULL;
 	if (this->_env["STATUS_CODE"].compare("200 OK") != 0)
 		return ;
-
-	// std::string			path_info = this->_env["PATH_INFO"];
-	// std::list<Location>		location_list = this->_server.getRelevantLocations(this->_request.getTarget());
 
 	char		**env_array = this->env_to_char_array();
 	pid_t		pid;
@@ -270,11 +266,13 @@ void				execCGI::free_buf()
 	this->_buf = NULL;
 }
 
-bool	execCGI::check_method()
-{
-	// std::cout << "ROOT = " << (*this->_location_list.begin()).getRootPath() << std::endl;
-	return (this->_location_list.begin()->isAcceptedMethod(this->_env["REQUEST_METHOD"]));
-}
+// bool	execCGI::check_method()
+// {
+// 	return (!this->_env["REQUEST_METHOD"].empty() &&
+// 			(!this->_env["REQUEST_METHOD"].compare("GET") ||
+// 			!this->_env["REQUEST_METHOD"].compare("POST") ||
+// 			!this->_env["REQUEST_METHOD"].compare("DELETE")));
+// }
 
 void		execCGI::append_body(unsigned char *buffer, int size)
 {

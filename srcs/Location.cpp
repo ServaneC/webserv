@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:48:09 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/06 18:16:12 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/08 00:21:22 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,19 +20,21 @@ Location::Location(Server *server, std::string path, std::string location_conf) 
     _server(server), _path(path), _location_conf(location_conf), _autoindex(false)
 {
     this->_accepted_methods = parseAcceptedMethods(location_conf);
-    std::cout << "LOCATION -> " << _path << " : ";
-    for (std::vector<int>::iterator it = _accepted_methods.begin(); it != _accepted_methods.end(); it++)
-        std::cout << *it << " ";
-    std::cout << std::endl;
+    // std::cout << "LOCATION -> " << _path << " : ";
+    // for (std::vector<int>::iterator it = _accepted_methods.begin(); it != _accepted_methods.end(); it++)
+    //     std::cout << *it << " ";
+    // std::cout << std::endl;
     this->_root = parsingLocalRoot(_server->getRoot(), location_conf);
-    std::cout << "Local root for <" << path << "> is -> |" << _root << "|" << std::endl;
+    // std::cout << "Local root for <" << path << "> is -> |" << _root << "|" << std::endl;
     this->_indexes = parsingIndexes(&_server->getIndexes(), location_conf);
-    std::cout << "Local indexes = ";
-        for (std::list<std::string>::iterator it = _indexes.begin(); it != _indexes.end(); it++)
-            std::cout << *it << " ";
-        std::cout << std::endl;
+    // std::cout << "Local indexes = ";
+    //     for (std::list<std::string>::iterator it = _indexes.begin(); it != _indexes.end(); it++)
+    //         std::cout << *it << " ";
+    //     std::cout << std::endl;
     this->_autoindex = parsingAutoIndex(*_server, location_conf);
-    std::cout << "Local autoindex -> " << _autoindex << std::endl;
+    // std::cout << "Local autoindex -> " << _autoindex << std::endl;
+    this->_cgi_path = parsingCGIconf(location_conf);
+    // std::cout << "Local cgi path -> " << _cgi_path << std::endl;
 }
 
 bool Location::isAcceptedMethod(int code) const
@@ -69,3 +71,9 @@ bool					Location::getAutoIndex() const
 {
     return (this->_autoindex);
 }
+
+std::string         Location::getCGIPath() const
+{
+    return (this->_cgi_path);
+}
+

@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/06 21:54:58 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/08 00:28:46 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,7 +117,7 @@ std::list<std::string> parsingIndexes(const std::list<std::string> *root_indexes
     {
         if (root_indexes)
             return (std::list<std::string>(*root_indexes));
-        indexes.push_front("index.html");
+        indexes.push_front(DEFAULT_INDEX);
         return (indexes);
     }
     index_i += 6;
@@ -168,7 +168,7 @@ std::vector<int> parseAcceptedMethods(std::string location_conf)
     return (methods);
 }
 
-const Location *getRelevantLocation(const std::list<Location> &_routes, std::string target)
+const Location *getRelevantLocation(const std::list<Location> &_routes, const std::string &target)
 {
     const Location *mostRelevant = NULL;
 
@@ -179,14 +179,15 @@ const Location *getRelevantLocation(const std::list<Location> &_routes, std::str
         // {
             // std::cout << "SLASH : on compare ->\n";
         // std::cout << "path.size = " << path.size() << std::endl;
-        if (!target.compare(0, path.size(), path) && (!mostRelevant || mostRelevant->getPath().size() < path.size()))
+        if (!target.compare(0, path.size(), path) && (!mostRelevant
+            || mostRelevant->getPath().size() < path.size()))
             mostRelevant = &(*it);
         // }
     }
     return (mostRelevant);
 }
 
-const Location *getRelevantExtension(const std::list<Location> &_routes, std::string target)
+const Location *getRelevantExtension(const std::list<Location> &_routes, const std::string &target)
 {
     for (std::list<Location>::const_iterator it = _routes.begin(); it != _routes.end(); it++)
     {
@@ -203,73 +204,60 @@ const Location *getRelevantExtension(const std::list<Location> &_routes, std::st
     return (NULL);
 }
 
-std::string translatePath(Server &server, Request &request, const std::string &target, std::string &object)
+std::string buildPath(Server &server, Request &request, const std::string &target)
 {  
     const Location  *loc = getRelevantLocation(server.getRoutes(), target);
 	const Location  *ext = getRelevantExtension(server.getRoutes(), target);
-    std::string     path_info(target);
-    struct stat     statbuf;
+    std::string     path(target);
 
+    std::cout << "BUILD PATH :" << std::endl;
+    path.erase(path.find_last_of("/"), path.size() - path.find_last_of("/"));
+    std::cout << "\tTarget au debut (moins object) -> [" << path << "]" << std::endl;
     if ((loc && !loc->isAcceptedMethod(request.getMethodCode()))
         || (ext && !ext->isAcceptedMethod(request.getMethodCode())))
-        throw methodNotAllowedException();      
+        throw methodNotAllowedException();
+    
     if (loc)
-        path_info.replace(0, loc->getPath().size() - 1, loc->getRoot());
+    {
+        path.replace(0, loc->getPath().size() - 1, loc->getRoot());
+        request.setObject("");  // ca marchera pas si c'est [/directory/resource] qui est demandé est pas juste [/directory]
+    }
     else
     {
-        path_info.replace(0, 1, server.getRoot());
-        path_info.push_back('/');
+        path.replace(0, 1, server.getRoot());
+        path.push_back('/');
     }
-
-    std::cout << "PATH_INFO 2.0 -> [" << path_info << "]" << std::endl;
-    // std::cout << "TARGET 2.0 -> [" << target.substr(target.size() - object.size(), object.size()) << "]" << std::endl;
-
-    if (chdir((path_info.erase(path_info.size() - object.size(), object.size())).c_str()) == -1)
-        throw chdirFailException();
-    system("pwd; ls");
-    if (object.empty())
-    {
-        if (loc)
-            object = loc->getIndexes().front();
-        else
-            object = server.getIndexes().front();
-    }
-    if (stat(object.c_str(), &statbuf) == -1)  // target not found : either replacement needed or 404
-        throw targetNotFoundException();
-    path_info += object;
-    
-    std::cout << "PATH_INFO 2.1 -> [" << path_info << "]" << std::endl;
-
-    
-
-    // if (target.empty() || S_ISDIR(statbuf.st_mode) == true)   // check si c'est un directory
-    // {
-    //     std::string index("index.html"); 
-    //     if (loc)
-    //         index = loc->getIndexes().front();
-    //     if (stat((path + index).c_str(), &statbuf) == -1)  // index not found
-    //     {
-    //         // if (loc && loc->getAutoIndex() == true || server.getAutoIndex() == true)
-    //             // afficher auto index
-    //         // else
-    //             // 404 ou no input file ?
-    //         cgi_env["SCRIPT_NAME"] = "";
-    //         return (path);
-    //     }
-    //     path += index;
-	// 	cgi_env["SCRIPT_FILENAME"] = index;
-	// 	cgi_env["SCRIPT_NAME"] = index;
-	// }
-    // std::cout << "PATH = <<" << target << ">>" << std::endl;
-    return (path_info);
+    std::cout << "\tPath built-> [" << path << "]" << std::endl;
+    return (path);
 }
 
+std::string    parsingCGIconf(std::string location_conf)
+{
+    size_t      index = location_conf.find("cgi_path");
+    std::string cgi_path;
+    struct stat     statbuf;
 
-// bool isDirectory(const std::string &target)   bof en fait
-// {
-//     size_t last_slash = target.find_last_of('/');
-//     if (last_slash == target.size() - 1)
-//         return (true);
-//     return (false);
-// }
+    if (index == std::string::npos)
+        return (cgi_path);
+    index += 9;
+    index = location_conf.find_first_not_of(" \t\n\r\v\f", index);
+    size_t end = location_conf.find(";", index);
+    if (end == std::string::npos)
+        throw confInvalidCGIException();
+    cgi_path = location_conf.substr(index, end - index);
+    if (lstat(cgi_path.c_str(), &statbuf) == - 1)
+        throw confInvalidCGIException();
+    return (cgi_path);
+}
 
+const std::string firstValidIndex(const std::list<std::string> indexes)
+{
+    struct stat     statbuf;
+
+    for (std::list<std::string>::const_iterator it = indexes.begin(); it != indexes.end(); it++)
+    {
+        if (lstat((*it).c_str(), &statbuf) != -1)
+            return (*it);
+    }
+    return (std::string());
+}

@@ -15,6 +15,22 @@ $$$$$$  $$$$   $$  $$  $$$$   $$  $$    $$$    $$
 $ $$   $$  $$  $$  $$  $$$    $$ $$$  $$$$$$$  $$
 $$$     $$$$    $$$$   $$ $$  $$  $$ $$     $$ $$$$$$
 
+[07/6]
+1) J'ai remanie les variables de PATH mais c'est un tel bordel !!! J'ai 
+    stocké dans Request plein de morceaux de path pour etre au clair sur
+    ce que je manipule. J'ai qques soucis avec le concept "object" qui
+    peut etre soit un dir soit un file, c'est un peu embetant pour la 
+    gestion des locations.  
+2) J'ai affiché du gloubiboulga en html sur le navigateur sans execve !!
+    -> bon en fait c'etait deja gere.
+3) Parsing du cgi_path -> on peut le donner en location, la je l'ai mis
+    dans location / pour qu'il soit utilisé a chaque fois (maintenant que
+    j'ai compris le delire du path qui etait pas bon....)
+4) Fait une fonction firstValidIndex qui return le nom du premier index valide
+    de la liste, elle juste pas encore implementee.
+>> Demain je me debarasse des variables superflues dans Server et je gere
+root comme une location, la j'en ai un peu marre.  
+--------------------------------------------------------------------------
 [05/6]
 1) parsing autoindex -> default off
     - un bool dans Server

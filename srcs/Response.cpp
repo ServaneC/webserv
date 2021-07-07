@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
+/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 14:42:45 by schene            #+#    #+#             */
-/*   Updated: 2021/06/29 11:48:49 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/07 22:52:33 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +15,8 @@
 # define BUF_SIZE 500
 
 Response::Response(execCGI &my_CGI, int socket) :  
-	_cgi(my_CGI), _socket(socket), _idx(0)
+	_cgi(my_CGI), _socket(socket), _buf(NULL), _idx(0), _buf_size(0)
 {
-	this->_idx = 0;
-	this->_buf_size = 0;
-	this->_buf = NULL;
 	if (this->_cgi.getBuf())
 	{
 		this->_buf = NULL;
@@ -146,6 +143,8 @@ void		Response::check_content_type()
 			this->_headers["Content-Type"] = "text/css";
 		else if (!tmp.compare("jpeg") || !tmp.compare("jpg") || !tmp.compare("png"))
 			this->_headers["Content-Type"] = "image/" + tmp;
+		else if (!tmp.compare("html"))
+			this->_headers["Content-Type"] = "text/html";
 	}
 }
 

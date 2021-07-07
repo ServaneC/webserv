@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Autoindex.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
+/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/24 11:42:28 by schene            #+#    #+#             */
-/*   Updated: 2021/06/28 16:33:11 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/07 19:53:19 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ Autoindex::Autoindex(std::string dir_name, std::string dir_path) :
             if (content->d_type == DT_DIR)
                 name += '/';
             this->_listing.push_back(name);
-            if (!name.compare("index.html"))
+            if (!name.compare(DEFAULT_INDEX))
                 _index_file = true;
         }
         closedir(dir);

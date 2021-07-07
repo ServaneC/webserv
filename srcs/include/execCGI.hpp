@@ -28,14 +28,16 @@ class execCGI
 		char 								**_argv;
 		std::list<Location>					_location_list;
 
-		void	setPathQuery();
+		bool	setPathQuery();
 		char	**env_to_char_array();
 		void	exec_CGI();
 		int		set_argv();
 		bool	check_method();
 		void	append_body(unsigned char *buffer, int size);
-
-	public:
+		void  	printEnv(std::string);
+		bool	tryPath(Server &server, Request &request, const std::string &target);
+	
+public:
 		execCGI(Server &serv);
 		~execCGI();
 
@@ -45,6 +47,7 @@ class execCGI
 		unsigned char		*getBuf() const;
 		int					getBufSize() const;
 		time_t				getLastModified() const;
+
 };
 
 #endif

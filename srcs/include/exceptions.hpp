@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/08 17:06:46 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/06 20:00:20 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/07 23:25:28 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,6 +65,12 @@ class confInvalidRootException : public std::exception {
     public :
         const char* what() const throw() {
             return ("Configuration file: Invalid root path"); }
+};
+
+class confInvalidCGIException : public std::exception {
+    public :
+        const char* what() const throw() {
+            return ("Configuration file: Invalid cgi path"); }
 };
 
 #endif

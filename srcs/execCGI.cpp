@@ -83,12 +83,15 @@ bool execCGI::tryPath(Server &server, Request &request, const std::string &targe
         throw chdirFailException();
     // system("pwd; ls");
 
-	this->_env["PATH_INFO"] = this->_request.getDirPath() + this->_request.getObject();
+	std::cout << "DIR [" << this->_request.getDirPath() << ']' << std::endl;
+	this->_env["PATH_INFO"] = this->_request.getDirPath();
+	if (!this->_request.getObject().empty())
+		this->_env["PATH_INFO"] += '/' + this->_request.getObject();
 	this->_env["PATH_TRANSLATED"] = this->_env["PATH_INFO"];
 	this->_env["SCRIPT_FILENAME"] = this->_request.getObject();
 	this->_env["SCRIPT_NAME"] = this->_request.getObject();
 
-    Autoindex autoidx(target, request.getDirPath() + request.getObject());
+    Autoindex autoidx(target, this->_env["PATH_INFO"]);
 	if (autoidx.isDir() && !autoidx.getIndex())  // index absent
 	{
 		std::string tmp = autoidx.autoindex_generator();
@@ -102,10 +105,6 @@ bool execCGI::tryPath(Server &server, Request &request, const std::string &targe
 	{
 		if (autoidx.isDir() && autoidx.getIndex())  
 		{
-			// this->_env["PATH_INFO"] = this->_env["PATH_INFO"] + '/' + std::string(INDEX);
-			// this->_env["SCRIPT_FILENAME"] = this->_env["PATH_INFO"];
-			// this->_env["SCRIPT_NAME"] = this->_env["PATH_INFO"];
-			// this->_env["PATH_TRANSLATED"] = this->_env["PATH_INFO"];
 			this->_env["PATH_INFO"] = this->_env["PATH_INFO"] + '/' + std::string(DEFAULT_INDEX);
 			this->_env["PATH_TRANSLATED"] = this->_env["PATH_INFO"];
 			this->_env["SCRIPT_FILENAME"] = DEFAULT_INDEX;
@@ -169,7 +168,12 @@ bool	execCGI::setPathQuery()
 
 	if (target.find('?') != std::string::npos)
 	{
-		this->_env["QUERY_STRING"] = target.substr(target.find('?') + 1, target.size()); //maybe wrong if no '?'
+		this->_env["QUERY_STRING"] = target.substr(target.find('?') + 1, target.size());
+		target.erase(target.find('?'), target.size());
+		object.erase(object.find('?'), object.size());
+		this->_request.setObject(object);
+		// std::cout << "&&&&& (" << target << ')' << std::endl;
+	}	
 	std::cout << "SetPathQuery : TARGET -> [" << target << "]" << std::endl;
 	std::cout << "SetPathQuery : OBJECT -> [" << object << "]" << std::endl;
 
@@ -187,8 +191,6 @@ bool	execCGI::setPathQuery()
 	return (autoindex);
 }
 
-    // if (object[0] == '/')
-	// 	object.erase(0, 1);  
 char	**execCGI::env_to_char_array()
 {
 	char	**array = new char*[this->_env.size() + 1];

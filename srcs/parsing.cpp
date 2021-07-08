@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/08 11:10:49 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/08 16:00:33 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -219,8 +219,23 @@ std::string buildPath(Server &server, Request &request, const std::string &targe
     
     if (loc)
     {
-        path.replace(0, loc->getPath().size() - 1, loc->getRoot());
-        request.setObject("");  // ca marchera pas si c'est [/directory/resource] qui est demandé est pas juste [/directory]
+        path.insert(0, loc->getRoot());
+        std::cout << "Path-> [" << path << "]" << std::endl;
+        std::cout << "loc path-> [" << loc->getPath() << "]" << std::endl;
+        if (loc->getPath().size() > 1 && server.getRoot().compare(loc->getRoot()) != 0) // take only location w/ a root set
+        {
+            if (path.find(loc->getPath()) != std::string::npos) // '/' at the end
+                path.erase(path.find(loc->getPath()), loc->getPath().size());
+            else if (request.getObject().find(&loc->getPath()[1]) != std::string::npos) // no '/' at the end
+            {
+                std::string tmp = request.getObject();
+                tmp.erase(tmp.find(&loc->getPath()[1]), loc->getPath().size() - 1);
+                request.setObject(tmp);
+            }
+        }
+        // path.replace(0, loc->getPath().size() - 1, loc->getRoot()); // => insert instead
+        // request.setObject("");  // ca marchera pas si c'est [/directory/resource] qui est demandé est pas juste [/directory]
+        //      => on erase direct dans le path a la place
     }
     else
     {

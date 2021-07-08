@@ -595,7 +595,7 @@ AVANT CA:
 	- ca se liste bien mais y a des 404 not found quand on clique sur les liens
 	-> C'est bon ca marche on peut cliquer sur tout les liens, en revanche 
 		la gestion des routes que j'avais fait semble ne plus marcher
-		/Yeah renvois sur /root_yeah/Yeah et /directory sur /root_yeah/directory
+	(*)	/Yeah renvois sur /root_yeah/Yeah et /directory sur /root_yeah/directory
 		au lieu de juste /root_yeah
 		-> c'est bon j'ai rejouter dans setPathInfo le fait de erase le path de l'url 
 	-> faudra aussi linker au bool autoindex implementé par leila et gerer comme il faut
@@ -613,6 +613,24 @@ AVANT CA:
 	meme si on lui donne le bon path, je pense que fqut revoir les vqriqble du cgi 
 	-> J'ai bien set le PATH_INFO = toutes les autre variable PATH/SCRIPT et ca marche.
 
+08/07/2021
+-> implementer tout ce que leila a commencé pour que tout remarche comme avant
+-> l'index s'affiche bien comme avant avec le css et les images , j'ai commenté 
+	"request.setObject("");" dans buildPath parceque ca empechait au PATH de bien se set
+	et j'ai remplacé replace par insert (tjr dans buildPath)
+-> acceder a l'autoindex sans mettre le '/' a la fin ne marche plus non plus 
+		-> /img = 404 not found 
+		-> /img/ = work fine
+	✅ J'ai rajouté un '/' entre le dirPath et l'object dns PATH_INFO (quand y a un object)
+-> !! Les routes ne marchent plus 😢
+	-> c'etait un pb de method allowed et de cgi dans le conf file
+	-> il reste re le pb ou ca concatene au lieu de remplacer (cf (*) du 06/07/2021)
+	-> Le pb vient du request.setObject(""); que j'ai commenté, mais si je la remet 
+		plein d'autre chose ne marche plus, faut trouver une autre solution. (c'était ecrit a côté 🤦🏻‍♀️)
+	-> J'ai modifié BuilPath et mnt les routes marchent (sauf si pas de '/' a la fin des directory).
+	✅ Tout marche niquel juste un souci avec le parsing des query string
+	✅ apres avoir set Query String je la retire de target et object + je reset l'object dans request
+	
 ================================== NOTES ==================================
 
 -> utiliser un stat pour avoir toutes les infos (dir ou pas, size, ...)

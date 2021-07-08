@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/07 14:34:33 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/08 11:10:49 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,7 +106,7 @@ std::list<Location> parsingLocations(Server &server, std::string conf)
     return (routes);
 }
 
-std::list<std::string> parsingIndexes(std::string conf)
+std::list<std::string> parsingIndexes(const std::list<std::string> *root_indexes, std::string conf)
 {
     std::list<std::string>  indexes;
     size_t                  index_i = conf.find("index");
@@ -115,7 +115,9 @@ std::list<std::string> parsingIndexes(std::string conf)
         index_i = conf.find("index", index_i + 1);
     if (index_i == std::string::npos)
     {
-        indexes.push_front("index.html");
+        if (root_indexes)
+            return (std::list<std::string>(*root_indexes));
+        indexes.push_front(DEFAULT_INDEX);
         return (indexes);
     }
     index_i += 6;
@@ -166,7 +168,7 @@ std::vector<int> parseAcceptedMethods(std::string location_conf)
     return (methods);
 }
 
-const Location *getRelevantLocation(const std::list<Location> &_routes, std::string target)
+const Location *getRelevantLocation(const std::list<Location> &_routes, const std::string &target)
 {
     const Location *mostRelevant = NULL;
 
@@ -176,29 +178,25 @@ const Location *getRelevantLocation(const std::list<Location> &_routes, std::str
         // if (path[0] == '/')
         // {
             // std::cout << "SLASH : on compare ->\n";
-            // int i = target.compare(0, path.size(), path);
-            // std::cout << "ret de compare = " << i << std::endl;
-        if (!target.compare(0, path.size(), path) && (!mostRelevant || mostRelevant->getPath().size() < path.size()))
-            mostRelevant = &(*it);
         // std::cout << "path.size = " << path.size() << std::endl;
+        if (!target.compare(0, path.size(), path) && (!mostRelevant
+            || mostRelevant->getPath().size() < path.size()))
+            mostRelevant = &(*it);
         // }
     }
     return (mostRelevant);
 }
 
-const Location *getRelevantExtension(const std::list<Location> &_routes, std::string target)
+const Location *getRelevantExtension(const std::list<Location> &_routes, const std::string &target)
 {
     for (std::list<Location>::const_iterator it = _routes.begin(); it != _routes.end(); it++)
     {
         std::string path = it->getPath();
         // if (path[0] == '*')
         // {
-            // path.erase(path.begin());
             // std::cout << "ETOILE : on check -> " << std::endl;
-            // std::cout << "|" << target.substr(target.size() - extension_length, extension_length) << "|" << std::endl;
         // std::cout << "path.size = " << path.size() << std::endl;
         // std::cout << "target.size = " << target.size() << std::endl;
-        // if (target.size() > path.size() && !path.compare(target.size() - path.size(), path.size(), target))
         if (target.size() > path.size() && !target.compare(target.size() - path.size(), path.size(), path))
             return (&(*it));
         // }
@@ -206,31 +204,60 @@ const Location *getRelevantExtension(const std::list<Location> &_routes, std::st
     return (NULL);
 }
 
-std::string setPathInfo(Server &server, Request &request, std::string target)
-{
-    const Location *loc = getRelevantLocation(server.getRoutes(), target);
-	const Location *ext = getRelevantExtension(server.getRoutes(), target);
-	std::string path = server.getRoot();
-    std::cout << "loc -> "<< loc << std::endl;
-	if (loc)
-    {
-        path = loc->getRoot();
-        if (loc->getPath().size() > 1)
-        target.erase(1, loc->getPath().size() - 1);
-        // std::cout << "-> " <<  << std::endl;
-    }
+std::string buildPath(Server &server, Request &request, const std::string &target)
+{  
+    const Location  *loc = getRelevantLocation(server.getRoutes(), target);
+	const Location  *ext = getRelevantExtension(server.getRoutes(), target);
+    std::string     path(target);
+
+    std::cout << "BUILD PATH :" << std::endl;
+    path.erase(path.find_last_of("/"), path.size() - path.find_last_of("/"));
+    std::cout << "\tTarget au debut (moins object) -> [" << path << "]" << std::endl;
     if ((loc && !loc->isAcceptedMethod(request.getMethodCode()))
         || (ext && !ext->isAcceptedMethod(request.getMethodCode())))
         throw methodNotAllowedException();
-	// if (chdir(path.c_str()) == -1)
-	// {
-	// 	// this->_env["STATUS_CODE"] = "500";  ??
-	// 	return ;
-	// }
-    std::cout << "PATH = <<" << path << ">>" << std::endl;
-    if (target.compare("/") != 0)
-        // path = "/YoupiBanane" + target.substr(0, target.find_first_of("?=;"));
-        path += target.substr(0, target.find_first_of("?=;"));
-    std::cout << "PATH = <<" << path << ">>" << std::endl;
+    
+    if (loc)
+    {
+        path.replace(0, loc->getPath().size() - 1, loc->getRoot());
+        request.setObject("");  // ca marchera pas si c'est [/directory/resource] qui est demandé est pas juste [/directory]
+    }
+    else
+    {
+        path.replace(0, 1, server.getRoot());
+        path.push_back('/');
+    }
+    std::cout << "\tPath built-> [" << path << "]" << std::endl;
     return (path);
+}
+
+std::string    parsingCGIconf(std::string location_conf)
+{
+    size_t      index = location_conf.find("cgi_path");
+    std::string cgi_path;
+    struct stat     statbuf;
+
+    if (index == std::string::npos)
+        return (cgi_path);
+    index += 9;
+    index = location_conf.find_first_not_of(" \t\n\r\v\f", index);
+    size_t end = location_conf.find(";", index);
+    if (end == std::string::npos)
+        throw confInvalidCGIException();
+    cgi_path = location_conf.substr(index, end - index);
+    if (lstat(cgi_path.c_str(), &statbuf) == - 1)
+        throw confInvalidCGIException();
+    return (cgi_path);
+}
+
+const std::string firstValidIndex(const std::list<std::string> indexes)
+{
+    struct stat     statbuf;
+
+    for (std::list<std::string>::const_iterator it = indexes.begin(); it != indexes.end(); it++)
+    {
+        if (lstat((*it).c_str(), &statbuf) != -1)
+            return (*it);
+    }
+    return (std::string());
 }

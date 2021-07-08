@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
+/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 16:24:53 by schene            #+#    #+#             */
-/*   Updated: 2021/06/29 10:35:52 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/07 23:35:38 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,10 @@ class Request
 		std::string							_line;
 		std::string							_method;
 		int									_method_code;
-		std::string							_target;
+		std::string							_target;	// requested uri
+		std::string							_object;	// object part of uri (filename or dirname)
+		std::string							_dir_path;  // absolute path of the directory in which the object is stored
+		std::string							_path_info; // absolute path of the resource requested
 		std::string 						_http_version;
 		std::map<std::string, std::string>	_headers;
 		unsigned char 						*_body;
@@ -56,6 +59,10 @@ class Request
 		int			 		getBodySize() const;
 		bool				getBadRequest() const;
 		int					getMethodCode() const;
+		std::string	const	&getDirPath() const;
+		void				setDirPath(std::string path);
+		std::string	const	&getObject() const;
+		void				setObject(std::string object);
 };
 
 #endif

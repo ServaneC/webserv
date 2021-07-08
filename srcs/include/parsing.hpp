@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/08 16:33:16 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/05 21:31:51 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/08 00:02:18 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,11 +41,12 @@ std::string         parsingRoot(std::string conf);
 std::string         trimLocations(std::string conf);
 std::string         getCurrentDirectory();
 std::string         parsingLocalRoot(std::string server_root, std::string conf);
-std::string setPathInfo(Server &server, Request &request, std::string target);
-Location *getRelevantExtension(std::list<Location> &_routes, std::string target);
-Location *getRelevantLocation(std::list<Location> &_routes, std::string target);
-std::list<std::string> parsingIndexes(std::string conf);
+// std::string         translatePath(Server &server, Request &request, const std::string &target, std::string &object);
+const Location      *getRelevantExtension(const std::list<Location> &_routes, const std::string &target);
+const Location      *getRelevantLocation(const std::list<Location> &_routes, const std::string &target);
+std::list<std::string> parsingIndexes(const std::list<std::string> *root_indexes, std::string conf);
 bool parsingAutoIndex(Server &server, std::string conf);
-
+std::string buildPath(Server &server, Request &request, const std::string &target);
+std::string    parsingCGIconf(std::string location_conf);
 
 #endif

@@ -13,10 +13,6 @@
 #include "include/execCGI.hpp"
 #define _BUFSIZE 2000
 
-// # define PATH "/home/lilou/my_home/SC_webserv/"
-# define PATH "/Users/schene/Desktop/webserv/"
-# define INDEX "index.html"
-
 execCGI::execCGI(Server &serv) 
 	: _server(serv), _request(serv.getRequest()), _buf(NULL),
 		 _buf_size(0), _last_modified(0), _argv(NULL)
@@ -26,18 +22,25 @@ execCGI::execCGI(Server &serv)
 	// 42 MAC
 	// std::string cgi_path = "/Users/schene/.brew/Cellar/php/8.0.7/bin/php-cgi";
 	// OTHER MAC
-	std::string cgi_path = "/usr/local/Cellar/php/8.0.7/bin/php-cgi";
+	// std::string cgi_path = "/usr/local/Cellar/php/8.0.7/bin/php-cgi";
+	bool autoindex = false;
 
 	this->_env["STATUS_CODE"] = "200 OK";
 	if (this->_location_list.size() > 1)
 		this->_location_list.erase(this->_location_list.begin());
 	this->_buf = NULL;
 	this->_env["SERVER_PROTOCOL"] = "HTTP/1.1";
+	this->_env["SERVER_NAME"] = this->_server.getName();
+	this->_env["SERVER_PORT"] = this->_server.getPort();
+	this->_env["SERVER_SOFTWARE"] = "webserv/1.0";
+	this->_env["GATEWAY_INTERFACE"] = "CGI/1.1";
+	this->_env["REQUEST_URI"] = _request.getTarget();
 	if (!this->_request.getBadRequest())
 	{
 		this->_env["REQUEST_METHOD"] = this->_request.getMethod();
 		this->_env["SERVER_PROTOCOL"] = this->_request.getHTTPVersion();
-		this->setPathQuery();
+		autoindex = this->setPathQuery();
+		printEnv("constructeur execCGI : after setPathQuery");
 	}
 	this->_env["REDIRECT_STATUS"] = "200"; 
 	this->_env["HTTP_ACCEPT"] = this->_request.getHeaderField("Accept"); 
@@ -49,31 +52,64 @@ execCGI::execCGI(Server &serv)
 	this->_env["CONTENT_TYPE"] = this->_request.getHeaderField("Content-Type");
 	// if (!this->_request.getHeaderField("Accept").empty())
 	// 	this->_env["CONTENT_TYPE"] = this->_request.getHeaderField("Accept");
-	this->_env["GATEWAY_INTERFACE"] = "CGI/1.1";
 	// this->_env["REMOTE_ADDR"] = std::string();
 	// this->_env["REMOTE_IDENT"] = std::string();
 	// this->_env["REMOTE_USER"] = std::string();
-	this->_env["SERVER_NAME"] = this->_server.getName();
-	this->_env["SERVER_PORT"] = this->_server.getPort();
-	this->_env["SERVER_SOFTWARE"] = "webserv/1.0";
 	
-	Autoindex autoidx(this->_request.getTarget(), this->_env["PATH_INFO"]);
-	if (autoidx.isDir() && !autoidx.getIndex())
+	printEnv("constructeur execCGI : before launching exec_CGI()");
+	if (autoindex == false)
+		this->exec_CGI();
+	Response((*this), this->_server.getClientSocket());
+}
+
+execCGI::~execCGI()
+{
+
+}
+
+bool execCGI::tryPath(Server &server, Request &request, const std::string &target)
+{
+	const Location  *loc = getRelevantLocation(server.getRoutes(), target);
+	const Location  *ext = getRelevantExtension(server.getRoutes(), target);
+	std::string		cgi_path;
+    // struct stat     statbuf;
+
+	if (loc && loc->getCGIPath().size())
+		cgi_path = loc->getCGIPath();
+	else if (ext && ext->getCGIPath().size())
+		cgi_path = ext->getCGIPath();
+
+    if (chdir(request.getDirPath().c_str()) == -1)
+        throw chdirFailException();
+    // system("pwd; ls");
+
+	this->_env["PATH_INFO"] = this->_request.getDirPath() + this->_request.getObject();
+	this->_env["PATH_TRANSLATED"] = this->_env["PATH_INFO"];
+	this->_env["SCRIPT_FILENAME"] = this->_request.getObject();
+	this->_env["SCRIPT_NAME"] = this->_request.getObject();
+
+    Autoindex autoidx(target, request.getDirPath() + request.getObject());
+	if (autoidx.isDir() && !autoidx.getIndex())  // index absent
 	{
 		std::string tmp = autoidx.autoindex_generator();
 		this->_buf_size = tmp.size();
 		this->_buf = new unsigned char[tmp.size()];
 		for (size_t i = 0; i < tmp.size(); i++)
 			this->_buf[i] = tmp[i];
+        return true;
 	}
-	else
+	else    // index present
 	{
-		if (autoidx.isDir() && autoidx.getIndex())
+		if (autoidx.isDir() && autoidx.getIndex())  
 		{
-			this->_env["PATH_INFO"] = this->_env["PATH_INFO"] + '/' + std::string(INDEX);
-			this->_env["SCRIPT_FILENAME"] = this->_env["PATH_INFO"];
-			this->_env["SCRIPT_NAME"] = this->_env["PATH_INFO"];
+			// this->_env["PATH_INFO"] = this->_env["PATH_INFO"] + '/' + std::string(INDEX);
+			// this->_env["SCRIPT_FILENAME"] = this->_env["PATH_INFO"];
+			// this->_env["SCRIPT_NAME"] = this->_env["PATH_INFO"];
+			// this->_env["PATH_TRANSLATED"] = this->_env["PATH_INFO"];
+			this->_env["PATH_INFO"] = this->_env["PATH_INFO"] + '/' + std::string(DEFAULT_INDEX);
 			this->_env["PATH_TRANSLATED"] = this->_env["PATH_INFO"];
+			this->_env["SCRIPT_FILENAME"] = DEFAULT_INDEX;
+			this->_env["SCRIPT_NAME"] = DEFAULT_INDEX;
 		}	
 		try {
 			this->_argv = new char*[3];
@@ -84,45 +120,75 @@ execCGI::execCGI(Server &serv)
 		catch (std::exception &e) {
 			std::cout << e.what() << std::endl; }
 
-		// this->_buf = NULL;
-		// if (this->_env["REQUEST_METHOD"].compare("GET") == 0)
-		// 	this->readFile();
-		// else
-			this->exec_CGI();
+		return false;
 	}
-	Response((*this), this->_server.getClientSocket());
+    // if ()
+    // if (request.getObject().empty())
+    // {
+    //     if (loc)
+    //         request.setObject(loc->getIndexes().front());
+    //     else
+    //         request.setObject(server.getIndexes().front());
+    // }
+    // if (stat(request.getObject().c_str(), &statbuf) == -1)  // object not found : either replacement needed or 404
+    //     throw targetNotFoundException();
+    // path_info += object;
+    
+    // std::cout << "PATH_INFO 2.1 -> [" << path_info << "]" << std::endl;
+
+    
+
+    // if (target.empty() || S_ISDIR(statbuf.st_mode) == true)   // check si c'est un directory
+    // {
+    //     std::string index("index.html"); 
+    //     if (loc)
+    //         index = loc->getIndexes().front();
+    //     if (stat((path + index).c_str(), &statbuf) == -1)  // index not found
+    //     {
+    //         // if (loc && loc->getAutoIndex() == true || server.getAutoIndex() == true)
+    //             // afficher auto index
+    //         // else
+    //             // 404 ou no input file ?
+    //         cgi_env["SCRIPT_NAME"] = "";
+    //         return (path);
+    //     }
+    //     path += index;
+	// 	cgi_env["SCRIPT_FILENAME"] = index;
+	// 	cgi_env["SCRIPT_NAME"] = index;
+	// }
+    // std::cout << "PATH = <<" << target << ">>" << std::endl;
+    // return (path_info);
 }
 
-execCGI::~execCGI()
-{
-
-}
-
-void	execCGI::setPathQuery()
+bool	execCGI::setPathQuery()
 {
 	std::string path;
 	std::string	target = this->_request.getTarget();
-	std::cout << "TARGET -> [" << target << "]" << std::endl;
+	std::string object = this->_request.getObject();
+	bool autoindex = false;
+
 	if (target.find('?') != std::string::npos)
 	{
 		this->_env["QUERY_STRING"] = target.substr(target.find('?') + 1, target.size()); //maybe wrong if no '?'
-		target.erase(target.find('?'), target.size());	
-	}
-	std::cout << "TARGET -> [" << target << "]" << std::endl;
+	std::cout << "SetPathQuery : TARGET -> [" << target << "]" << std::endl;
+	std::cout << "SetPathQuery : OBJECT -> [" << object << "]" << std::endl;
+
 	try {
-		path = setPathInfo(_server, _request, target);
+		printEnv("setPathQuery : before building path");
+		this->_request.setDirPath(buildPath(_server, _request, target));
+		printEnv("setPathQuery : after building path, before tryPath");
+		autoindex = tryPath(_server, _request, target);
+		printEnv("setPathQuery : after tryPath");
 	}
-	catch (methodNotAllowedException &e) {
+	catch (std::exception &e) {
         this->_env["STATUS_CODE"] = e.what();
 	}
-	this->_env["PATH_TRANSLATED"] = path;
-	this->_env["PATH_INFO"] = path;
-	this->_env["REQUEST_URI"] = path;
-	this->_env["SCRIPT_FILENAME"] = path;
-	this->_env["SCRIPT_NAME"] = path;
+	std::cout << "HERE" << std::endl;
+	return (autoindex);
 }
 
-
+    // if (object[0] == '/')
+	// 	object.erase(0, 1);  
 char	**execCGI::env_to_char_array()
 {
 	char	**array = new char*[this->_env.size() + 1];
@@ -160,18 +226,7 @@ void	execCGI::exec_CGI()
 		return ;
 	
 	this->_env["HTTP_HOST"] = this->_env["SERVER_NAME"];
-	std::cout << "-> REQUEST_METHOD = |" << this->_env["REQUEST_METHOD"] << '|' << std::endl;
-	std::cout << "-> REDIRECT_STATUS = |" << this->_env["REDIRECT_STATUS"] << '|' << std::endl;
-	std::cout << "-> SCRIPT_FILENAME = |" << this->_env["SCRIPT_FILENAME"] << '|' << std::endl;
-	std::cout << "-> SCRIPT_NAME = |" << this->_env["SCRIPT_NAME"] << '|' << std::endl;
-	std::cout << "-> PATH_INFO = |" << this->_env["PATH_INFO"] << '|' << std::endl;
-	std::cout << "-> SERVER_NAME = |" << this->_env["SERVER_NAME"] << '|' << std::endl;
-	std::cout << "-> SERVER_PROTOCOL = |" << this->_env["SERVER_PROTOCOL"] << '|' << std::endl;
-	std::cout << "-> REQUEST_URI = |" << this->_env["REQUEST_URI"] << '|' << std::endl;
-	std::cout << "-> HTTP_HOST = |" << this->_env["HTTP_HOST"] << '|' << std::endl;
-	std::cout << "-> CONTENT_LENGTH = |" << this->_env["CONTENT_LENGTH"] << '|' << std::endl;
-	std::cout << "-> CONTENT_TYPE = |" << this->_env["CONTENT_TYPE"] << '|' << std::endl;
-	std::cout << "-> QUERY_STRING = |" << this->_env["QUERY_STRING"] << '|' << std::endl;
+	printEnv("execCGI() : debut");
 	
 	//just to pass second test (very ugly, should be handle differently)
 	this->_buf = NULL;
@@ -213,7 +268,24 @@ void	execCGI::exec_CGI()
 		dup2(fdOut, STDOUT_FILENO);
 		execve(this->_argv[0], this->_argv, env_array);
 		std::cerr <<  "Execve crashed." << std::endl;
-		write(STDOUT_FILENO, "Status: 500\r\n\r\n", 15);
+
+		// std::string buffer;
+		// std::string line;
+		// std::ifstream myfile(_env["PATH_INFO"]);
+		// struct stat filestatus;
+		// stat(_env["PATH_INFO"].c_str(), &filestatus);
+		// if (myfile.is_open()) {
+		// 	while (myfile.good()) {
+		// 		getline(myfile, line);
+		// 		buffer.append(line);
+		// 	}
+		// 	std::cout << buffer << std::endl;
+		// }
+    	// int n = write(_server.getClientSocket(), buffer.c_str(), buffer.size());
+		// if (n < 0)
+		// 	write(STDERR_FILENO, "Error while writing\n", 20);
+		// else
+			write(STDOUT_FILENO, "Status: 500\r\n\r\n", 15);
 	}
 	else //in parent
 	{
@@ -342,4 +414,35 @@ int			execCGI::getBufSize() const
 time_t				execCGI::getLastModified() const
 {
 	return this->_last_modified;
+}
+
+void  execCGI::printEnv(std::string details)
+{
+	std::cout << " *** CGI ENVIRONEMENT ***\t\t" << details << std::endl;
+
+	// std::cout << "\t{ SERVER VARIABLES }" << std::endl;
+	// std::cout << "\t\t-> SERVER_SOFTWARE -> |" << this->_env["SERVER_SOFTWARE"] << "|" << std::endl;
+	// std::cout << "\t\t-> SERVER_NAME -> |" << this->_env["SERVER_NAME"] << "|" << std::endl;
+	// std::cout << "\t\t-> GATEWAY_INTERFACE -> |" << this->_env["GATEWAY_INTERFACE"] << "|" << std::endl;
+	// std::cout << "\t\t-> HTTP_HOST = |" << this->_env["HTTP_HOST"] << '|' << std::endl;
+
+	std::cout << "\t{ REQUEST-SPECIFIC VARIABLES }" << std::endl;
+	// std::cout << "\t\t-> SERVER_PROTOCOL = |" << this->_env["SERVER_PROTOCOL"] << '|' << std::endl;
+	std::cout << "\t\t-> SERVER_PORT = |" << this->_env["SERVER_PORT"] << '|' << std::endl;
+	std::cout << "\t\t-> REQUEST_METHOD = |" << this->_env["REQUEST_METHOD"] << '|' << std::endl;
+	std::cout << "\t\t-> REQUEST_URI = |" << this->_env["REQUEST_URI"] << '|' << std::endl;
+	std::cout << "\t\t-> PATH_INFO = |" << this->_env["PATH_INFO"] << '|' << std::endl;
+	std::cout << "\t\t-> PATH_TRANSLATED = |" << this->_env["PATH_TRANSLATED"] << '|' << std::endl;
+	std::cout << "\t\t-> SCRIPT_NAME = |" << this->_env["SCRIPT_NAME"] << '|' << std::endl;
+	std::cout << "\t\t-> SCRIPT_FILENAME = |" << this->_env["SCRIPT_FILENAME"] << '|' << std::endl;
+	// std::cout << "\t\t-> QUERY_STRING -> |" << this->_env["QUERY_STRING"] << "|" << std::endl;
+	// std::cout << "\t\t-> REMOTE_HOST -> |" << this->_env["REMOTE_HOST"] << "|" << std::endl;
+	// std::cout << "\t\t-> REMOTE_ADDR -> |" << this->_env["REMOTE_ADDR"] << "|" << std::endl;
+	// std::cout << "\t\t-> AUTH_TYPE -> |" << this->_env["AUTH_TYPE"] << "|" << std::endl;
+	// std::cout << "\t\t-> CONTENT_TYPE = |" << this->_env["CONTENT_TYPE"] << '|' << std::endl;
+	// std::cout << "\t\t-> CONTENT_LENGTH = |" << this->_env["CONTENT_LENGTH"] << '|' << std::endl;
+	
+	std::cout << "\t{ RESPONSE-SPECIFIC VARIABLES }" << std::endl;
+	std::cout << "\t\t-> STATUS_CODE -> |" << this->_env["STATUS_CODE"] << "|" << std::endl;
+	std::cout << "\t\t-> REDIRECT_STATUS = |" << this->_env["REDIRECT_STATUS"] << '|' << std::endl;
 }

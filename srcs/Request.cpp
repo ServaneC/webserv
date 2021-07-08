@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
+/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 16:24:45 by schene            #+#    #+#             */
-/*   Updated: 2021/06/29 11:23:20 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/07 21:06:35 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -212,6 +212,7 @@ void		Request::parseRequestLine(std::string line)
 		tmp.erase(0, tmp.find('/'));
 	}
 	this->_target = tmp;
+	this->_object = _target.substr(_target.find_last_of("/") + 1, _target.size() - _target.find_last_of("/") - 1);
 	line.erase(0, line.find(' ') + 1);
 	if (isspace(line[0]))
 		this->_bad_request = true;
@@ -305,7 +306,6 @@ int			 		Request::getBodySize() const
 	return this->_body_size;
 }
 
-
 bool				Request::getBadRequest() const
 {
 	return this->_bad_request;
@@ -314,4 +314,24 @@ bool				Request::getBadRequest() const
 int					Request::getMethodCode() const
 {
 	return this->_method_code;
+}
+
+std::string	const	&Request::getDirPath() const
+{
+	return this->_dir_path;
+}
+
+std::string	const	&Request::getObject() const
+{
+	return this->_object;
+}
+
+void				Request::setDirPath(std::string path)
+{
+	this->_dir_path = path;
+}
+
+void				Request::setObject(std::string object)
+{
+	this->_object = object;
 }

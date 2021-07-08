@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
+/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 15:34:32 by schene            #+#    #+#             */
-/*   Updated: 2021/06/28 15:35:48 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/07 23:39:02 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,14 @@
 
 #ifndef WEBSERV_HPP
 # define WEBSERV_HPP
+
+# define DEFAULT_INDEX "index.html"
+// 42 MAC
+// # define CGI_PATH "/Users/schene/.brew/Cellar/php/8.0.7/bin/php-cgi"
+// OTHER MAC
+// # define CGI_PATH "/usr/local/Cellar/php/8.0.7/bin/php-cgi"
+// VM or LINUX
+// # define CGI_PATH "/usr/bin/php-cgi"
 
 # include <sys/wait.h>
 # include <stdio.h>

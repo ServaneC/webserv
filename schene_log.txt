@@ -601,8 +601,22 @@ AVANT CA:
 	-> faudra aussi linker au bool autoindex implementé par leila et gerer comme il faut
 		+ renvoyer le bon index au lieu de index.html par defaut
 
-=> PUSH + MERGE main quand c'est fait 
+07/07/2021
+-> commencer a créer des fonctions pour gérer les méthodes sans passer par le CGI.
+	-> j'ai commencer en faisant une simple fonction readfile en utilisant les stream
+		mais comme ca ne lis que des char les images ne passent pas. 
+	-> j'ai utiliser les read/open de C basique avec des fd et ca marchent pour les images.
+	! quand on essaye d'acceder a un lien j'ai l'impression que ca prend plus de temp que d'habitude
+	! les query string ne sont pas gérés avec cette methode -> y a besoin de php donc php-cgi 
+		c'est peut etre normal que ca soit pas gere sans cgi du coup
+-> Il y a un pb avec le cgi, il ne trouve plus l'index, il ne prenqis pqs celui dqns YoupiBanane
+	meme si on lui donne le bon path, je pense que fqut revoir les vqriqble du cgi 
+	-> J'ai bien set le PATH_INFO = toutes les autre variable PATH/SCRIPT et ca marche.
+
 ================================== NOTES ==================================
+
+-> utiliser un stat pour avoir toutes les infos (dir ou pas, size, ...)
+
 
 Pour tester les chunk request:
 	curl -H "Transfer-Encoding: chunked" -d "nom=Servane&age=20" http://localhost:8080/action.php

@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 14:42:45 by schene            #+#    #+#             */
-/*   Updated: 2021/06/29 11:48:49 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/07 14:10:19 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,9 +28,9 @@ Response::Response(execCGI &my_CGI, int socket) :
 		std::memmove(this->_buf, this->_cgi.getBuf(), this->_buf_size);
 		this->_cgi.free_buf();
 	}
-		
 	this->_headers["Status"] = this->_cgi.getEnvVar("STATUS_CODE");
-	this->parse_cgi_buf();
+	// if (this->_cgi.getEnvVar("REQUEST_METHOD").compare("GET") != 0)
+		this->parse_cgi_buf();
 	this->_headers["Allow"] = std::string();
 	this->_headers["Content-Language"] = std::string();
 	this->_headers["Content-Length"] = ft_itoa_cpp(this->_buf_size);
@@ -44,6 +44,7 @@ Response::Response(execCGI &my_CGI, int socket) :
 	this->_headers["WWW-Authenticate"] = std::string();
 	this->check_content_type();
 	this->send_response();
+
 }
 
 Response::~Response()

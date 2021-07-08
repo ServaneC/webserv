@@ -31,8 +31,10 @@ class execCGI
 		void	setPathQuery();
 		char	**env_to_char_array();
 		void	exec_CGI();
+		void	exec_GET();
 		int		set_argv();
 		bool	check_method();
+		int		readFile();
 		void	append_body(unsigned char *buffer, int size);
 
 	public:

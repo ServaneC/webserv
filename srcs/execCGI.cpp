@@ -11,7 +11,7 @@
 /* ************************************************************************** */
 
 #include "include/execCGI.hpp"
-#define CGI_BUFSIZE 2000
+#define _BUFSIZE 2000
 
 // # define PATH "/home/lilou/my_home/SC_webserv/"
 # define PATH "/Users/schene/Desktop/webserv/"
@@ -24,9 +24,9 @@ execCGI::execCGI(Server &serv)
 	// VM
 	// std::string cgi_path = "/usr/bin/php-cgi";
 	// 42 MAC
-	std::string cgi_path = "/Users/schene/.brew/Cellar/php/8.0.7/bin/php-cgi";
+	// std::string cgi_path = "/Users/schene/.brew/Cellar/php/8.0.7/bin/php-cgi";
 	// OTHER MAC
-	// std::string cgi_path = "/usr/local/Cellar/php/8.0.7/bin/php-cgi";
+	std::string cgi_path = "/usr/local/Cellar/php/8.0.7/bin/php-cgi";
 
 	this->_env["STATUS_CODE"] = "200 OK";
 	if (this->_location_list.size() > 1)
@@ -43,8 +43,6 @@ execCGI::execCGI(Server &serv)
 	this->_env["HTTP_ACCEPT"] = this->_request.getHeaderField("Accept"); 
 	if (this->_request.getBadRequest())
 		this->_env["STATUS_CODE"] = "400 Bad Request";
-	// if (!this->check_method())  // commenté car deja géré dans setPathInfo()
-	// 	this->_env["STATUS_CODE"] = "405 Method Not Allowed";
 	// this->_env["AUTH_TYPE"] = std::string();
 	if (!this->_request.getHeaderField("Content-Length").empty())
 		this->_env["CONTENT_LENGTH"] = this->_request.getHeaderField("Content-Length"); //not sure
@@ -73,8 +71,9 @@ execCGI::execCGI(Server &serv)
 		if (autoidx.isDir() && autoidx.getIndex())
 		{
 			this->_env["PATH_INFO"] = this->_env["PATH_INFO"] + '/' + std::string(INDEX);
-			this->_env["SCRIPT_FILENAME"] = INDEX;
-			this->_env["SCRIPT_NAME"] = INDEX;
+			this->_env["SCRIPT_FILENAME"] = this->_env["PATH_INFO"];
+			this->_env["SCRIPT_NAME"] = this->_env["PATH_INFO"];
+			this->_env["PATH_TRANSLATED"] = this->_env["PATH_INFO"];
 		}	
 		try {
 			this->_argv = new char*[3];
@@ -85,7 +84,11 @@ execCGI::execCGI(Server &serv)
 		catch (std::exception &e) {
 			std::cout << e.what() << std::endl; }
 
-		this->exec_CGI();
+		// this->_buf = NULL;
+		// if (this->_env["REQUEST_METHOD"].compare("GET") == 0)
+		// 	this->readFile();
+		// else
+			this->exec_CGI();
 	}
 	Response((*this), this->_server.getClientSocket());
 }
@@ -97,22 +100,26 @@ execCGI::~execCGI()
 
 void	execCGI::setPathQuery()
 {
+	std::string path;
 	std::string	target = this->_request.getTarget();
 	std::cout << "TARGET -> [" << target << "]" << std::endl;
 	if (target.find('?') != std::string::npos)
+	{
 		this->_env["QUERY_STRING"] = target.substr(target.find('?') + 1, target.size()); //maybe wrong if no '?'
+		target.erase(target.find('?'), target.size());	
+	}
+	std::cout << "TARGET -> [" << target << "]" << std::endl;
 	try {
-		this->_env["PATH_INFO"] = setPathInfo(_server, _request, target);
+		path = setPathInfo(_server, _request, target);
 	}
 	catch (methodNotAllowedException &e) {
         this->_env["STATUS_CODE"] = e.what();
 	}
-	target = this->_env["PATH_INFO"];
-	this->_env["REQUEST_URI"] = target;
-	// this->_env["PATH_INFO"] = getCurrentDirectory() + "/" + target.substr(0, target.find_first_of("?=;"));
-	this->_env["PATH_TRANSLATED"] = target;
-	this->_env["SCRIPT_FILENAME"] = target.substr(0, target.find('?'));
-	this->_env["SCRIPT_NAME"] = target.substr(0, target.find('?'));
+	this->_env["PATH_TRANSLATED"] = path;
+	this->_env["PATH_INFO"] = path;
+	this->_env["REQUEST_URI"] = path;
+	this->_env["SCRIPT_FILENAME"] = path;
+	this->_env["SCRIPT_NAME"] = path;
 }
 
 
@@ -210,7 +217,7 @@ void	execCGI::exec_CGI()
 	}
 	else //in parent
 	{
-		unsigned char	buffer[CGI_BUFSIZE] = {0};
+		unsigned char	buffer[_BUFSIZE] = {0};
 
 		waitpid(-1, NULL, 0);
 		lseek(fdOut, 0, SEEK_SET);
@@ -218,8 +225,8 @@ void	execCGI::exec_CGI()
 		ret = 1;
 		while (ret > 0)
 		{
-			memset(buffer, 0, CGI_BUFSIZE);
-			ret = read(fdOut, buffer, CGI_BUFSIZE - 1);
+			memset(buffer, 0, _BUFSIZE);
+			ret = read(fdOut, buffer, _BUFSIZE - 1);
 			buffer[ret] = 0;
 			if (ret > 0)
 				this->append_body(buffer, ret);
@@ -253,19 +260,35 @@ void	execCGI::exec_CGI()
 		exit(0);
 }
 
+// void	execCGI::exec_GET()
+// {
+
+// }
+
+int		execCGI::readFile()
+{
+	int					fd;
+	unsigned char		*buffer;
+	struct stat			info;
+
+	fd = open(this->_env["PATH_INFO"].c_str(), O_RDONLY);
+	if (fd < 0)
+		return (403);
+	fstat(fd, &info);
+	buffer = new unsigned char [info.st_size];
+	if (read(fd, buffer, info.st_size) < 0)
+		return(500);
+	this->append_body((unsigned char *)buffer, info.st_size);
+	close(fd);
+	return (200);
+}
+
+
 void				execCGI::free_buf()
 {
 	delete [] this->_buf;
 	this->_buf = NULL;
 }
-
-// bool	execCGI::check_method()
-// {
-// 	return (!this->_env["REQUEST_METHOD"].empty() &&
-// 			(!this->_env["REQUEST_METHOD"].compare("GET") ||
-// 			!this->_env["REQUEST_METHOD"].compare("POST") ||
-// 			!this->_env["REQUEST_METHOD"].compare("DELETE")));
-// }
 
 void		execCGI::append_body(unsigned char *buffer, int size)
 {

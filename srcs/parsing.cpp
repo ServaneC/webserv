@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/06 13:46:07 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/07 14:34:33 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -229,6 +229,7 @@ std::string setPathInfo(Server &server, Request &request, std::string target)
 	// }
     std::cout << "PATH = <<" << path << ">>" << std::endl;
     if (target.compare("/") != 0)
+        // path = "/YoupiBanane" + target.substr(0, target.find_first_of("?=;"));
         path += target.substr(0, target.find_first_of("?=;"));
     std::cout << "PATH = <<" << path << ">>" << std::endl;
     return (path);

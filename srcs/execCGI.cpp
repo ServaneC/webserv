@@ -17,12 +17,6 @@ execCGI::execCGI(Server &serv)
 	: _server(serv), _request(serv.getRequest()), _buf(NULL),
 		 _buf_size(0), _last_modified(0), _argv(NULL)
 {
-	// VM
-	// std::string cgi_path = "/usr/bin/php-cgi";
-	// 42 MAC
-	// std::string cgi_path = "/Users/schene/.brew/Cellar/php/8.0.7/bin/php-cgi";
-	// OTHER MAC
-	// std::string cgi_path = "/usr/local/Cellar/php/8.0.7/bin/php-cgi";
 	bool autoindex = false;
 
 	this->_env["STATUS_CODE"] = "200 OK";
@@ -56,7 +50,7 @@ execCGI::execCGI(Server &serv)
 	// this->_env["REMOTE_IDENT"] = std::string();
 	// this->_env["REMOTE_USER"] = std::string();
 	
-	printEnv("constructeur execCGI : before launching exec_CGI()");
+	// printEnv("constructeur execCGI : before launching exec_CGI()");
 	if (autoindex == false)
 		this->exec_CGI();
 	Response((*this), this->_server.getClientSocket());
@@ -69,16 +63,18 @@ execCGI::~execCGI()
 
 bool execCGI::tryPath(Server &server, Request &request, const std::string &target)
 {
-	const Location  *loc = getRelevantLocation(server.getRoutes(), target);
-	const Location  *ext = getRelevantExtension(server.getRoutes(), target);
+	const Location  &loc = getRelevantLocation(server.getRoutes(), target);
+	const Location  &ext = getRelevantExtension(server.getRoutes(), target);
 	std::string		cgi_path;
+	
     // struct stat     statbuf;
 
-	if (loc && loc->getCGIPath().size())
-		cgi_path = loc->getCGIPath();
-	else if (ext && ext->getCGIPath().size())
-		cgi_path = ext->getCGIPath();
+	if (loc.getCGIPath().size())
+		cgi_path = loc.getCGIPath();
+	else if (ext.getCGIPath().size())
+		cgi_path = ext.getCGIPath();
 
+	// std::cout << "Je chdir -> " << request.getDirPath() << std::endl;
     if (chdir(request.getDirPath().c_str()) == -1)
         throw chdirFailException();
     // system("pwd; ls");
@@ -91,24 +87,29 @@ bool execCGI::tryPath(Server &server, Request &request, const std::string &targe
 	this->_env["SCRIPT_FILENAME"] = this->_request.getObject();
 	this->_env["SCRIPT_NAME"] = this->_request.getObject();
 
-    Autoindex autoidx(target, this->_env["PATH_INFO"]);
+	Autoindex autoidx(target, this->_env["PATH_INFO"], loc.getIndexes());
 	if (autoidx.isDir() && !autoidx.getIndex())  // index absent
 	{
+		// std::cout << "is Dir && Index absent" << std::endl;
 		std::string tmp = autoidx.autoindex_generator();
 		this->_buf_size = tmp.size();
 		this->_buf = new unsigned char[tmp.size()];
 		for (size_t i = 0; i < tmp.size(); i++)
 			this->_buf[i] = tmp[i];
-        return true;
+		return true;
 	}
 	else    // index present
 	{
+		// std::cout << "Is dir ? " << autoidx.isDir() << " / getIndex ? " << autoidx.getIndex() << std::endl;
 		if (autoidx.isDir() && autoidx.getIndex())  
 		{
-			this->_env["PATH_INFO"] = this->_env["PATH_INFO"] + '/' + std::string(DEFAULT_INDEX);
+			// std::cout << "is Dir && Index present" << std::endl;
+			const std::string index = firstValidIndex(loc.getIndexes());
+			// std::cout << "INDEX qu'on ajoute = " << index << std::endl;
+			this->_env["PATH_INFO"] = this->_env["PATH_INFO"] + '/' + index;
 			this->_env["PATH_TRANSLATED"] = this->_env["PATH_INFO"];
-			this->_env["SCRIPT_FILENAME"] = DEFAULT_INDEX;
-			this->_env["SCRIPT_NAME"] = DEFAULT_INDEX;
+			this->_env["SCRIPT_FILENAME"] = index;
+			this->_env["SCRIPT_NAME"] = index;
 		}	
 		try {
 			this->_argv = new char*[3];
@@ -121,42 +122,6 @@ bool execCGI::tryPath(Server &server, Request &request, const std::string &targe
 
 		return false;
 	}
-    // if ()
-    // if (request.getObject().empty())
-    // {
-    //     if (loc)
-    //         request.setObject(loc->getIndexes().front());
-    //     else
-    //         request.setObject(server.getIndexes().front());
-    // }
-    // if (stat(request.getObject().c_str(), &statbuf) == -1)  // object not found : either replacement needed or 404
-    //     throw targetNotFoundException();
-    // path_info += object;
-    
-    // std::cout << "PATH_INFO 2.1 -> [" << path_info << "]" << std::endl;
-
-    
-
-    // if (target.empty() || S_ISDIR(statbuf.st_mode) == true)   // check si c'est un directory
-    // {
-    //     std::string index("index.html"); 
-    //     if (loc)
-    //         index = loc->getIndexes().front();
-    //     if (stat((path + index).c_str(), &statbuf) == -1)  // index not found
-    //     {
-    //         // if (loc && loc->getAutoIndex() == true || server.getAutoIndex() == true)
-    //             // afficher auto index
-    //         // else
-    //             // 404 ou no input file ?
-    //         cgi_env["SCRIPT_NAME"] = "";
-    //         return (path);
-    //     }
-    //     path += index;
-	// 	cgi_env["SCRIPT_FILENAME"] = index;
-	// 	cgi_env["SCRIPT_NAME"] = index;
-	// }
-    // std::cout << "PATH = <<" << target << ">>" << std::endl;
-    // return (path_info);
 }
 
 bool	execCGI::setPathQuery()
@@ -178,16 +143,15 @@ bool	execCGI::setPathQuery()
 	std::cout << "SetPathQuery : OBJECT -> [" << object << "]" << std::endl;
 
 	try {
-		printEnv("setPathQuery : before building path");
+		// printEnv("setPathQuery : before building path");
 		this->_request.setDirPath(buildPath(_server, _request, target));
-		printEnv("setPathQuery : after building path, before tryPath");
+		// printEnv("setPathQuery : after building path, before tryPath");
 		autoindex = tryPath(_server, _request, target);
-		printEnv("setPathQuery : after tryPath");
+		// printEnv("setPathQuery : after tryPath");
 	}
 	catch (std::exception &e) {
         this->_env["STATUS_CODE"] = e.what();
 	}
-	std::cout << "HERE" << std::endl;
 	return (autoindex);
 }
 
@@ -228,7 +192,7 @@ void	execCGI::exec_CGI()
 		return ;
 	
 	this->_env["HTTP_HOST"] = this->_env["SERVER_NAME"];
-	printEnv("execCGI() : debut");
+	// printEnv("execCGI() : debut");
 	
 	//just to pass second test (very ugly, should be handle differently)
 	this->_buf = NULL;

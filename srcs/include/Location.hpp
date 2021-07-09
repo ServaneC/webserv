@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:43:38 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/07 23:46:58 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/09 18:20:35 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,9 +19,9 @@ class Location
 {
     private :
 
-        Server                  *_server;
-        std::string             _path;
-        std::string             _location_conf;
+        // const Server            *_server;
+        std::string       _path;
+        std::string       _location_conf;
         std::string             _root;
         std::vector<int>        _accepted_methods;
         std::list<std::string>  _indexes;
@@ -31,8 +31,11 @@ class Location
 
     public :
 
-        Location(Server *server, std::string path, std::string location_conf);
+        Location(const std::string path, const std::string location_conf, const std::string &server_conf, const std::list<Location> &list);
+        Location(const Location &ref);
         ~Location();
+        const Location &operator=(const Location &ref);
+
         std::string         getPath() const;
         std::string         getRoot() const;
         std::string         getCGIPath() const;

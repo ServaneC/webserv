@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/08 16:33:16 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/08 00:02:18 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/09 18:42:30 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,27 +26,29 @@ typedef union u_IPAddress
     unsigned int    address;
 }                       IPA_t;
 
-size_t              findClosingBracket(const std::string str, size_t begin);
-std::string         getScope(const std::string str, size_t index);
-unsigned char       getValueBetweenPoints(const std::string str, size_t *index);
+size_t              findClosingBracket(const std::string &str, size_t begin);
+std::string         getScope(const std::string &str, size_t index);
+unsigned char       getValueBetweenPoints(const std::string &str, size_t *index);
 bool                isCommentLine(const char *line);
-std::string         parsingName(std::string conf);
-unsigned int        convertIPAddress(std::string conf, size_t index);
-void                parsingIPAddress(std::string conf, unsigned int *ip, int *port);
-std::list<Location> parsingLocations(Server &server, std::string conf);
-int                 setMethodCode(std::string method_name);
-std::vector<int>    parseAcceptedMethods(std::string location_conf);
-int                 parseMethod(std::string str, size_t *index);
-std::string         parsingRoot(std::string conf);
+std::string         parsingName(const std::string &conf);
+unsigned int        convertIPAddress(const std::string &conf, size_t index);
+void                parsingIPAddress(const std::string &conf, unsigned int *ip, int *port);
+std::list<Location> parsingLocations(const std::string &conf);
+int                 setMethodCode(const std::string &method_name);
+std::vector<int>    parseAcceptedMethods(const std::string &location_conf);
+int                 parseMethod(const std::string &str, size_t *index);
+std::string         parsingRoot(const std::string &loc_conf, const std::string &server_conf, const std::list<Location> &list);//, const std::string &loc_path);
 std::string         trimLocations(std::string conf);
 std::string         getCurrentDirectory();
-std::string         parsingLocalRoot(std::string server_root, std::string conf);
+// std::string         parsingLocalRoot(std::string server_root, std::string conf);
 // std::string         translatePath(Server &server, Request &request, const std::string &target, std::string &object);
-const Location      *getRelevantExtension(const std::list<Location> &_routes, const std::string &target);
-const Location      *getRelevantLocation(const std::list<Location> &_routes, const std::string &target);
-std::list<std::string> parsingIndexes(const std::list<std::string> *root_indexes, std::string conf);
-bool parsingAutoIndex(Server &server, std::string conf);
-std::string buildPath(Server &server, Request &request, const std::string &target);
-std::string    parsingCGIconf(std::string location_conf);
+const Location      &getRelevantExtension(const std::list<Location> &_routes, const std::string &target);
+const Location      &getRelevantLocation(const std::list<Location> &_routes, const std::string &target);
+std::list<std::string> parsingIndexes(const std::string &loc_conf, const std::string &server_conf);
+bool                    parsingAutoIndex(const std::string &loc_conf, const std::string &server_conf);
+std::string             buildPath(Server &server, Request &request, const std::string &target);
+std::string             parsingCGIconf(const std::string &loc_conf, const std::string &server_conf);
+const std::string       firstValidIndex(const std::list<std::string> &indexes);
+const Location                *findRootLocation(const std::list<Location> &list);
 
 #endif

@@ -6,18 +6,19 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/24 11:42:28 by schene            #+#    #+#             */
-/*   Updated: 2021/07/07 19:53:19 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/09 19:18:57 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/Autoindex.hpp"
 
-Autoindex::Autoindex(std::string dir_name, std::string dir_path) :
+Autoindex::Autoindex(std::string dir_name, std::string dir_path, const std::list<std::string> indexes) :
     _dir_name(dir_name), _dir_path(dir_path), _index_file(false), _is_dir(true)
 {
     struct stat info;
 
     lstat(dir_path.c_str(), &info);
+    std::cout << "Je LSTAT -> " << dir_path << std::endl;
     if (!S_ISDIR(info.st_mode))
     {
         this->_is_dir = false;
@@ -37,8 +38,12 @@ Autoindex::Autoindex(std::string dir_name, std::string dir_path) :
             if (content->d_type == DT_DIR)
                 name += '/';
             this->_listing.push_back(name);
-            if (!name.compare(DEFAULT_INDEX))
-                _index_file = true;
+            for (std::list<std::string>::const_iterator it = indexes.begin(); it != indexes.end(); it++)
+            {
+                std::cout << "Compare " << name << " & " << *it << std::endl;
+                if (!name.compare(*it))
+                    _index_file = true;
+            }
         }
         closedir(dir);
     }

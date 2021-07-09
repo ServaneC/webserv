@@ -6,15 +6,17 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/07/07 17:28:57 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/09 18:44:41 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/Server.hpp"
 
+// Server::Server() {}
+
 Server::Server(Config &conf, std::string server_conf) : 
     _rqst(*(new Request)), _main_conf(conf), _server_conf(server_conf),
-    _client_socket(-1), _autoindex(false)
+    _client_socket(-1)//, _routes(1, Location(this, "/", server_conf))
 {
     try
     {
@@ -26,17 +28,21 @@ Server::Server(Config &conf, std::string server_conf) :
         this->_name = parsingName(server_conf);
         std::cout << "- ServerName = " << _name << std::endl;
 
-        this->_root = parsingRoot(trimLocations(server_conf));
-        std::cout << "- ServerRoot = " << _root << std::endl;
+        this->_routes = parsingLocations(server_conf);
 
-        this->_indexes = parsingIndexes(NULL, trimLocations(server_conf));
-        std::cout << "- Indexes = ";
-        for (std::list<std::string>::iterator it = _indexes.begin(); it != _indexes.end(); it++)
-            std::cout << *it << " ";
-        std::cout << std::endl;
+        this->_root = findRootLocation(_routes);
+    
+        // this->_root = parsingRoot(trimLocations(server_conf));
+        // std::cout << "- ServerRoot = " << _root << std::endl;
 
-        this->_autoindex = parsingAutoIndex(*this, trimLocations(server_conf));
-        std::cout << "- Autoindex -> " << _autoindex << std::endl;
+        // this->_indexes = parsingIndexes(NULL, trimLocations(server_conf));
+        // std::cout << "- Indexes = ";
+        // for (std::list<std::string>::iterator it = _indexes.begin(); it != _indexes.end(); it++)
+        //     std::cout << *it << " ";
+        // std::cout << std::endl;
+
+        // this->_autoindex = parsingAutoIndex(*this, trimLocations(server_conf));
+        // std::cout << "- Autoindex -> " << _autoindex << std::endl;
 
         this->_host.sin_family = PF_INET;
         this->_host.sin_addr.s_addr = this->_ip;
@@ -45,7 +51,6 @@ Server::Server(Config &conf, std::string server_conf) :
         this->_addrlen = sizeof(this->_host);
         this->_socket = socket(PF_INET, SOCK_STREAM, 0);
 
-        this->_routes = parsingLocations(*this, server_conf);
 
         int enable = 1;
         if (setsockopt(this->_socket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
@@ -107,7 +112,11 @@ std::string	Server::getName() const
 }
 std::string	Server::getRoot() const
 {
-    return this->_root;
+    return this->_root->getPath();
+}
+const Location	&Server::getRootLocation() const
+{
+    return *(this->_root);
 }
 int			Server::getFd() const
 {
@@ -134,12 +143,12 @@ const std::list<Location> &Server::getRoutes() const
     return this->_routes;
 }
 
-const std::list<std::string>	&Server::getIndexes() const
-{
-    return (this->_indexes);
-}
+// const std::list<std::string>	&Server::getIndexes() const
+// {
+//     return (this->_indexes);
+// }
 
-bool					Server::getAutoIndex() const
-{
-    return (this->_autoindex);
-}
+// bool					Server::getAutoIndex() const
+// {
+//     return (this->_autoindex);
+// }

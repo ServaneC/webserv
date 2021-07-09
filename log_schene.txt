@@ -632,11 +632,16 @@ AVANT CA:
 	✅ apres avoir set Query String je la retire de target et object + je reset l'object dans request
 
 09/07/2021
+-> J'ai supprimé plein de fichier inutile
+-> faire un fonction GET qui marche quand on as pas de CGI. ✅
+-> POST sans CGI renvoi juste un code erreur 
+-> DELETE ne passe jamais par le CGI
+-> J'ai rajouter un if dans l'autoindex + un getter et un bool pour check si le path existe = stat echoue
+	=> On a un beau "404 Not Found" des qu'on essaye de GET/DELETE sur un file qu n'existe pas/ plus
+		(avant c'etait un code aleatoire et parfois meme des 200 OK)
 
 
 ================================== NOTES ==================================
-
--> utiliser un seul stat pour avoir toutes les infos (dir ou pas, size, ...)
 
 Pour tester les chunk request:
 	curl -H "Transfer-Encoding: chunked" -d "nom=Servane&age=20" http://localhost:8080/action.php
@@ -645,18 +650,14 @@ TO DO:
 -> avoir le sujet de correction !
 -> gerer les chunk request -> pb avec l'envoi du body (the CGI will expect EOF as end of the body)
 -> toute la gestion des exceptions / retour d'erreur / free quand on quitte (ou en cas d'erreur) est a revoir
--> utiliser les routes
 -> error pages
 -> default file to answer if the request is a directory -> index
--> mieux gerer le Content-Type (utiliser stat ?)
-- MÉTHODES:
-	-> faire des fonctions pour chaque methode (si pas de cgi)
-	-> reussir une request DELETE
-	-> gérer l'upload de fichier (il faut passer par POST)
+-> gérer l'upload de fichier (il faut passer par POST)
 - (auto)INDEX:
 	-> il faudrait parser autoindex dans le conf file + afficher l'autoindex en fonction
 		(actuelement on considere qu'il est tout le temps on)
 	-> chercher pour le file index preciser dans le conf file (actuellement on prend juste index.html)
+-> faire plus de test (peut etre avec python)
 
 POST request from google chrome after an upload of a file
 -------------------------------------------------------------------------------
@@ -863,5 +864,3 @@ GET /directory/oulalala HTTP/1.1
 Host: localhost:8080
 User-Agent: Go-http-client/1.1
 Accept-Encoding: gzip
-
-

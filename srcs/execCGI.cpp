@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   execCGI.cpp                                            :+:      :+:    :+:   */
+/*   execCGI.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/30 13:24:55 by schene            #+#    #+#             */
-/*   Updated: 2021/04/01 15:26:17 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/09 15:53:17 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,14 +15,8 @@
 
 execCGI::execCGI(Server &serv) 
 	: _server(serv), _request(serv.getRequest()), _buf(NULL),
-		 _buf_size(0), _last_modified(0), _argv(NULL)
+		 _buf_size(0), _last_modified(0), _argv(NULL), _cgi(false)
 {
-	// VM
-	// std::string cgi_path = "/usr/bin/php-cgi";
-	// 42 MAC
-	// std::string cgi_path = "/Users/schene/.brew/Cellar/php/8.0.7/bin/php-cgi";
-	// OTHER MAC
-	// std::string cgi_path = "/usr/local/Cellar/php/8.0.7/bin/php-cgi";
 	bool autoindex = false;
 
 	this->_env["STATUS_CODE"] = "200 OK";
@@ -46,19 +40,13 @@ execCGI::execCGI(Server &serv)
 	this->_env["HTTP_ACCEPT"] = this->_request.getHeaderField("Accept"); 
 	if (this->_request.getBadRequest())
 		this->_env["STATUS_CODE"] = "400 Bad Request";
-	// this->_env["AUTH_TYPE"] = std::string();
 	if (!this->_request.getHeaderField("Content-Length").empty())
 		this->_env["CONTENT_LENGTH"] = this->_request.getHeaderField("Content-Length"); //not sure
 	this->_env["CONTENT_TYPE"] = this->_request.getHeaderField("Content-Type");
-	// if (!this->_request.getHeaderField("Accept").empty())
-	// 	this->_env["CONTENT_TYPE"] = this->_request.getHeaderField("Accept");
-	// this->_env["REMOTE_ADDR"] = std::string();
-	// this->_env["REMOTE_IDENT"] = std::string();
-	// this->_env["REMOTE_USER"] = std::string();
 	
 	printEnv("constructeur execCGI : before launching exec_CGI()");
-	if (autoindex == false)
-		this->exec_CGI();
+	if (autoindex == false && this->_env["STATUS_CODE"].compare("200 OK") == 0)
+		this->exec_method();
 	Response((*this), this->_server.getClientSocket());
 }
 
@@ -72,7 +60,6 @@ bool execCGI::tryPath(Server &server, Request &request, const std::string &targe
 	const Location  *loc = getRelevantLocation(server.getRoutes(), target);
 	const Location  *ext = getRelevantExtension(server.getRoutes(), target);
 	std::string		cgi_path;
-    // struct stat     statbuf;
 
 	if (loc && loc->getCGIPath().size())
 		cgi_path = loc->getCGIPath();
@@ -81,7 +68,6 @@ bool execCGI::tryPath(Server &server, Request &request, const std::string &targe
 
     if (chdir(request.getDirPath().c_str()) == -1)
         throw chdirFailException();
-    // system("pwd; ls");
 
 	std::cout << "DIR [" << this->_request.getDirPath() << ']' << std::endl;
 	this->_env["PATH_INFO"] = this->_request.getDirPath();
@@ -92,6 +78,11 @@ bool execCGI::tryPath(Server &server, Request &request, const std::string &targe
 	this->_env["SCRIPT_NAME"] = this->_request.getObject();
 
     Autoindex autoidx(target, this->_env["PATH_INFO"]);
+	if (!autoidx.path_exist())
+	{
+		this->_env["STATUS_CODE"] = "404 Not Found";
+		return false;
+	}
 	if (autoidx.isDir() && !autoidx.getIndex())  // index absent
 	{
 		std::string tmp = autoidx.autoindex_generator();
@@ -101,6 +92,7 @@ bool execCGI::tryPath(Server &server, Request &request, const std::string &targe
 			this->_buf[i] = tmp[i];
         return true;
 	}
+
 	else    // index present
 	{
 		if (autoidx.isDir() && autoidx.getIndex())  
@@ -111,52 +103,20 @@ bool execCGI::tryPath(Server &server, Request &request, const std::string &targe
 			this->_env["SCRIPT_NAME"] = DEFAULT_INDEX;
 		}	
 		try {
-			this->_argv = new char*[3];
-			this->_argv[0] = new char[cgi_path.size() + 1];
-			std::strcpy(_argv[0], cgi_path.c_str());
-			this->_argv[1] = NULL;
+			if (cgi_path.size())
+			{
+				this->_cgi = true;
+				this->_argv = new char*[3];
+				this->_argv[0] = new char[cgi_path.size() + 1];
+				std::strcpy(_argv[0], cgi_path.c_str());
+				this->_argv[1] = NULL;
+			}
 		}
 		catch (std::exception &e) {
 			std::cout << e.what() << std::endl; }
 
 		return false;
 	}
-    // if ()
-    // if (request.getObject().empty())
-    // {
-    //     if (loc)
-    //         request.setObject(loc->getIndexes().front());
-    //     else
-    //         request.setObject(server.getIndexes().front());
-    // }
-    // if (stat(request.getObject().c_str(), &statbuf) == -1)  // object not found : either replacement needed or 404
-    //     throw targetNotFoundException();
-    // path_info += object;
-    
-    // std::cout << "PATH_INFO 2.1 -> [" << path_info << "]" << std::endl;
-
-    
-
-    // if (target.empty() || S_ISDIR(statbuf.st_mode) == true)   // check si c'est un directory
-    // {
-    //     std::string index("index.html"); 
-    //     if (loc)
-    //         index = loc->getIndexes().front();
-    //     if (stat((path + index).c_str(), &statbuf) == -1)  // index not found
-    //     {
-    //         // if (loc && loc->getAutoIndex() == true || server.getAutoIndex() == true)
-    //             // afficher auto index
-    //         // else
-    //             // 404 ou no input file ?
-    //         cgi_env["SCRIPT_NAME"] = "";
-    //         return (path);
-    //     }
-    //     path += index;
-	// 	cgi_env["SCRIPT_FILENAME"] = index;
-	// 	cgi_env["SCRIPT_NAME"] = index;
-	// }
-    // std::cout << "PATH = <<" << target << ">>" << std::endl;
-    // return (path_info);
 }
 
 bool	execCGI::setPathQuery()
@@ -172,7 +132,6 @@ bool	execCGI::setPathQuery()
 		target.erase(target.find('?'), target.size());
 		object.erase(object.find('?'), object.size());
 		this->_request.setObject(object);
-		// std::cout << "&&&&& (" << target << ')' << std::endl;
 	}	
 	std::cout << "SetPathQuery : TARGET -> [" << target << "]" << std::endl;
 	std::cout << "SetPathQuery : OBJECT -> [" << object << "]" << std::endl;
@@ -221,16 +180,26 @@ int		execCGI::set_argv()
 	return 1;
 }
 
+void	execCGI::exec_method()
+{
+	if (!this->_env["REQUEST_METHOD"].compare("DELETE"))
+		this->exec_delete();
+	if (this->_cgi)
+		this->exec_CGI();
+	else if (!this->_env["REQUEST_METHOD"].compare("GET"))
+		this->readFile();
+	else if (!this->_env["REQUEST_METHOD"].compare("POST"))
+		this->_env["STATUS_CODE"] = "204 No Content";
+}
+
 void	execCGI::exec_CGI()
 {
-	// std::cout << "this->_env[STATUS_CODE] -> " << this->_env["STATUS_CODE"] << std::endl;
 	if (this->_env["STATUS_CODE"].compare("200 OK") != 0)
 		return ;
 	
 	this->_env["HTTP_HOST"] = this->_env["SERVER_NAME"];
 	printEnv("execCGI() : debut");
 	
-	//just to pass second test (very ugly, should be handle differently)
 	this->_buf = NULL;
 	if (this->_env["STATUS_CODE"].compare("200 OK") != 0)
 		return ;
@@ -242,8 +211,6 @@ void	execCGI::exec_CGI()
 
 	this->set_argv();
 
-	// std::cout << "BODY SIZE =" << this->_request.getBodySize() << std::endl;
-	// write(1, this->_request.getBody(), this->_request.getBodySize());
 	// SAVING STDIN AND STDOUT IN ORDER TO TURN THEM BACK TO NORMAL LATER
 	saveStdin = dup(STDIN_FILENO);
 	saveStdout = dup(STDOUT_FILENO);
@@ -270,24 +237,7 @@ void	execCGI::exec_CGI()
 		dup2(fdOut, STDOUT_FILENO);
 		execve(this->_argv[0], this->_argv, env_array);
 		std::cerr <<  "Execve crashed." << std::endl;
-
-		// std::string buffer;
-		// std::string line;
-		// std::ifstream myfile(_env["PATH_INFO"]);
-		// struct stat filestatus;
-		// stat(_env["PATH_INFO"].c_str(), &filestatus);
-		// if (myfile.is_open()) {
-		// 	while (myfile.good()) {
-		// 		getline(myfile, line);
-		// 		buffer.append(line);
-		// 	}
-		// 	std::cout << buffer << std::endl;
-		// }
-    	// int n = write(_server.getClientSocket(), buffer.c_str(), buffer.size());
-		// if (n < 0)
-		// 	write(STDERR_FILENO, "Error while writing\n", 20);
-		// else
-			write(STDOUT_FILENO, "Status: 500\r\n\r\n", 15);
+		write(STDOUT_FILENO, "Status: 500\r\n\r\n", 15);
 	}
 	else //in parent
 	{
@@ -334,12 +284,7 @@ void	execCGI::exec_CGI()
 		exit(0);
 }
 
-// void	execCGI::exec_GET()
-// {
-
-// }
-
-int		execCGI::readFile()
+void		execCGI::readFile()
 {
 	int					fd;
 	unsigned char		*buffer;
@@ -347,14 +292,26 @@ int		execCGI::readFile()
 
 	fd = open(this->_env["PATH_INFO"].c_str(), O_RDONLY);
 	if (fd < 0)
-		return (403);
-	fstat(fd, &info);
-	buffer = new unsigned char [info.st_size];
-	if (read(fd, buffer, info.st_size) < 0)
-		return(500);
-	this->append_body((unsigned char *)buffer, info.st_size);
-	close(fd);
-	return (200);
+		this->_env["STATUS_CODE"] = "403 Forbidden";
+	else
+	{
+		fstat(fd, &info);
+		buffer = new unsigned char [info.st_size];
+		if (read(fd, buffer, info.st_size) < 0)
+			this->_env["STATUS_CODE"] = "500 Internal Server Error";
+		else
+			this->append_body((unsigned char *)buffer, info.st_size);
+		close(fd);
+	}
+}
+
+void	execCGI::exec_delete()
+{
+
+	if (remove(this->_env["PATH_INFO"].c_str()) < 0)
+		this->_env["STATUS_CODE"] = "403 Forbidden";
+	else
+		this->_env["STATUS_CODE"] = "204 No Content";
 }
 
 
@@ -416,6 +373,11 @@ int			execCGI::getBufSize() const
 time_t				execCGI::getLastModified() const
 {
 	return this->_last_modified;
+}
+
+bool				execCGI::getCgi() const
+{
+	return this->_cgi;
 }
 
 void  execCGI::printEnv(std::string details)

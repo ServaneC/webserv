@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 14:42:45 by schene            #+#    #+#             */
-/*   Updated: 2021/07/08 11:10:55 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/09 15:50:57 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ Response::Response(execCGI &my_CGI, int socket) :
 		this->_cgi.free_buf();
 	}
 	this->_headers["Status"] = this->_cgi.getEnvVar("STATUS_CODE");
-	// if (this->_cgi.getEnvVar("REQUEST_METHOD").compare("GET") != 0)
+	if (this->_cgi.getCgi())
 		this->parse_cgi_buf();
 	this->_headers["Allow"] = std::string();
 	this->_headers["Content-Language"] = std::string();
@@ -77,7 +77,6 @@ void		Response::parse_cgi_buf()
 			if (name.compare("Content-type") == 0)
 				name = "Content-Type";
 			this->_headers[name] = tmp_s.substr(tmp_s.find(':') + 2, tmp_s.size()); // put the name and value in the _header map
-			// std::cout << '|' << name << " = " << this->_headers[name] << '|' << std::endl;
 		}
 	}
 	if ((&this->_buf[this->_idx])[0] == '\r' && (&this->_buf[this->_idx])[1] == '\n')

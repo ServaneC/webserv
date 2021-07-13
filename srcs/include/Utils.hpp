@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
+/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/13 12:10:32 by schene            #+#    #+#             */
-/*   Updated: 2021/06/25 14:29:00 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/13 21:34:41 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 
 std::string     ft_itoa_cpp(int n);
 int             hexa_to_int(std::string hexa);
+size_t          ft_atoul(std::string ulong);
 
 template <typename T>
 T *MyRealloc( T*& src, int oldSize, int newSize ) 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   exceptions.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
+/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/08 17:06:46 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/13 18:44:06 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/13 21:45:12 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,6 +71,12 @@ class confInvalidCGIException : public std::exception {
     public :
         const char* what() const throw() {
             return ("Configuration file: Invalid cgi path"); }
+};
+
+class confInvalidErrorPageException : public std::exception {
+    public :
+        const char* what() const throw() {
+            return ("Configuration file: Invalid error_page path"); }
 };
 
 #endif

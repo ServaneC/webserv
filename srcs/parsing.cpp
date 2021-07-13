@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parsing.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
+/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/13 16:13:07 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/13 21:56:51 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,6 @@ std::string parsingName(const std::string &conf)
     size_t name_index = conf.find("server_name");
     if (name_index == std::string::npos)
         return (std::string());
-        // throw confNoServerNameException();  // a voir, je sais pas si un serveur doit forcement avoir un nom donné en config
     name_index = conf.find_first_not_of(" \t\n\r\v\f", name_index + 12);
     size_t name_length = conf.find(";", name_index);
     if (name_length == std::string::npos)
@@ -138,7 +137,6 @@ bool parsingAutoIndex(const std::string &loc_conf, const std::string &server_con
         if (loc_conf != server_conf)
             return (parsingAutoIndex(server_conf, server_conf));
     }
-        // return (server.getAutoIndex());
     index += 10;
     index = loc_conf.find_first_not_of(" \t\n\r\v\f", index);
     if (!loc_conf.compare(index, 2, "on"))
@@ -173,18 +171,12 @@ const Location &getRelevantLocation(const std::list<Location> &_routes, const st
 {
     std::list<Location>::const_iterator it = _routes.begin();
     const Location *mostRelevant = &(*it);
-    // Location    &mostRelevant = *it;
 
     for (; it != _routes.end(); it++)
     {
         std::string     path = it->getPath();
-        // if (path[0] == '/')
-        // {
-            // std::cout << "SLASH : on compare ->\n";
-        // std::cout << "path.size = " << path.size() << std::endl;
         if (!target.compare(0, path.size(), path) && (mostRelevant->getPath().size() < path.size()))
             mostRelevant = &(*it);
-        // }
     }
     return (*mostRelevant);
 }
@@ -196,14 +188,8 @@ const Location &getRelevantExtension(const std::list<Location> &_routes, const s
     while (it != _routes.end())
     {
         std::string path = it->getPath();
-        // if (path[0] == '*')
-        // {
-            // std::cout << "ETOILE : on check -> " << std::endl;
-        // std::cout << "path.size = " << path.size() << std::endl;
-        // std::cout << "target.size = " << target.size() << std::endl;
         if (target.size() > path.size() && !target.compare(target.size() - path.size(), path.size(), path))
             return (*it);
-        // }
         it++;
     }
     it = _routes.begin();
@@ -218,9 +204,9 @@ std::string buildPath(Server &server, Request &request, const std::string &targe
 	const Location  &ext = getRelevantExtension(server.getRoutes(), target);
     std::string     path(target);
 
-    std::cout << "BUILD PATH :" << std::endl;
+    // std::cout << "BUILD PATH :" << std::endl;
     path.erase(path.find_last_of("/"), path.size() - path.find_last_of("/"));
-    std::cout << "\tTarget au debut (moins object) -> [" << path << "]" << std::endl;
+    // std::cout << "\tTarget au debut (moins object) -> [" << path << "]" << std::endl;
     if (!loc.isAcceptedMethod(request.getMethodCode()) || !ext.isAcceptedMethod(request.getMethodCode()))
         throw methodNotAllowedException();
     path.insert(0, loc.getRoot());
@@ -237,7 +223,7 @@ std::string buildPath(Server &server, Request &request, const std::string &targe
             request.setObject(tmp);
         }
     }
-    std::cout << "\tPath built-> [" << path << "]" << std::endl;
+    // std::cout << "\tPath built-> [" << path << "]" << std::endl;
     return (path);
 }
 
@@ -284,4 +270,47 @@ const Location *findRootLocation(const std::list<Location> &list)
             return (&(*it));
     }
     return (NULL);
+}
+
+size_t parsingBodySize(const std::string &loc_conf, const std::string &server_conf)
+{
+    size_t  index = loc_conf.find("max_body_size");
+    size_t  max_body_size = 0;
+
+    if (index == std::string::npos)
+    {
+        if (loc_conf != server_conf)
+            return (parsingBodySize(server_conf, server_conf));
+        else
+            return (--max_body_size);  //return ulong max si precisé nulle part
+    }
+    index += 14;
+    index = loc_conf.find_first_not_of(" \t\n\r\v\f", index);
+    size_t length = loc_conf.find_first_not_of("0123456789", index) - index;
+    max_body_size = ft_atoul(loc_conf.substr(index, length));
+    return (max_body_size);
+}
+
+std::string    parsingErrorPage(const std::string &location_conf, const std::string &server_conf)
+{
+    size_t      index = location_conf.find("error_page");
+    std::string page_path;
+    // struct stat statbuf;
+
+    if (index == std::string::npos)
+    {
+        if (location_conf != server_conf)
+            return (parsingErrorPage(server_conf, server_conf));
+        else
+            return (std::string());
+    }
+    index += 11;
+    index = location_conf.find_first_not_of(" \t\n\r\v\f", index);
+    size_t end = location_conf.find(";", index);
+    if (end == std::string::npos)
+        throw confInvalidErrorPageException();
+    page_path = location_conf.substr(index, end - index);
+    // if (lstat(page_path.c_str(), &statbuf) == - 1)
+    //     throw confInvalidErrorPageException();    // il faudrait construire le path absolu pour faire la verif, un peu complexe
+    return (page_path);
 }

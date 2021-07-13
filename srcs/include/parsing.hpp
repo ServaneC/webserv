@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/08 16:33:16 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/09 18:42:30 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/13 21:41:55 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,8 @@ bool                    parsingAutoIndex(const std::string &loc_conf, const std:
 std::string             buildPath(Server &server, Request &request, const std::string &target);
 std::string             parsingCGIconf(const std::string &loc_conf, const std::string &server_conf);
 const std::string       firstValidIndex(const std::list<std::string> &indexes);
-const Location                *findRootLocation(const std::list<Location> &list);
+const Location          *findRootLocation(const std::list<Location> &list);
+size_t                  parsingBodySize(const std::string &loc_conf, const std::string &server_conf);
+std::string             parsingErrorPage(const std::string &loc_conf, const std::string &server_conf);
 
 #endif

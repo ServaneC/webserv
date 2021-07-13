@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
+/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/13 12:10:03 by schene            #+#    #+#             */
-/*   Updated: 2021/06/25 14:28:49 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/13 21:33:33 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,4 +27,13 @@ int             hexa_to_int(std::string hexa)
     ss << std::hex << hexa;
     ss >> x;
     return x;
+}
+
+size_t ft_atoul(std::string ulong)
+{
+    size_t x;
+    std::stringstream ss;
+    ss << std::dec << ulong;
+    ss >> x;
+    return (x);
 }

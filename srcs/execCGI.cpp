@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   execCGI.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
+/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/30 13:24:55 by schene            #+#    #+#             */
-/*   Updated: 2021/07/13 18:40:34 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/13 22:58:30 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ execCGI::execCGI(Server &serv)
 		this->_env["REQUEST_METHOD"] = this->_request.getMethod();
 		this->_env["SERVER_PROTOCOL"] = this->_request.getHTTPVersion();
 		autoindex = this->setPathQuery();
-		printEnv("constructeur execCGI : after setPathQuery");
+		// printEnv("constructeur execCGI : after setPathQuery");
 	}
 	this->_env["REDIRECT_STATUS"] = "200"; 
 	this->_env["HTTP_ACCEPT"] = this->_request.getHeaderField("Accept"); 
@@ -46,6 +46,8 @@ execCGI::execCGI(Server &serv)
 	
 	if (autoindex == false && this->_env["STATUS_CODE"].compare("200 OK") == 0)
 		this->exec_method();
+	// else
+	// 	this->serveErrorPage();
 	Response((*this), this->_server.getClientSocket());
 }
 
@@ -68,12 +70,12 @@ bool execCGI::tryPath(Server &server, Request &request, const std::string &targe
 		cgi_path = ext.getCGIPath();
 
 	// std::cout << "Je chdir -> " << request.getDirPath() << std::endl;
-    if (chdir(request.getDirPath().c_str()) == -1)
-        throw chdirFailException();
+	if (chdir(request.getDirPath().c_str()) == -1)
+		throw chdirFailException();
 
-	std::cout << "DIR [" << this->_request.getDirPath() << ']' << std::endl;
+	// std::cout << "DIR [" << this->_request.getDirPath() << ']' << std::endl;
 	this->_env["PATH_INFO"] = this->_request.getDirPath();
-	std::cout << "obj => (" << this->_request.getObject() << ')' << std::endl;
+	// std::cout << "obj => (" << this->_request.getObject() << ')' << std::endl;
 	if (!this->_request.getObject().empty())
 		this->_env["PATH_INFO"] += '/' + this->_request.getObject();
 	this->_env["PATH_TRANSLATED"] = this->_env["PATH_INFO"];
@@ -128,13 +130,13 @@ bool	execCGI::setPathQuery()
 
 	if (target.find('?') != std::string::npos)
 	{
-		this->_env["QUERY_STRING"] = target.substr(target.find('?') + 1, target.size());
+		// this->_env["QUERY_STRING"] = target.substr(target.find('?') + 1, target.size());
 		target.erase(target.find('?'), target.size());
 		object.erase(object.find('?'), object.size());
 		this->_request.setObject(object);
 	}	
-	std::cout << "SetPathQuery : TARGET -> [" << target << "]" << std::endl;
-	std::cout << "SetPathQuery : OBJECT -> [" << object << "]" << std::endl;
+	// std::cout << "SetPathQuery : TARGET -> [" << target << "]" << std::endl;
+	// std::cout << "SetPathQuery : OBJECT -> [" << object << "]" << std::endl;
 
 	try {
 		this->_request.setDirPath(buildPath(_server, _request, target));
@@ -310,6 +312,26 @@ void	execCGI::exec_delete()
 		this->_env["STATUS_CODE"] = "204 No Content";
 }
 
+void execCGI::serveErrorPage(const std::string &path)
+{
+	int					fd;
+	unsigned char		*buffer;
+	struct stat			info;
+
+	fd = open(path.c_str(), O_RDONLY);
+	// if (fd < 0)
+	// 	this->_env["STATUS_CODE"] = "403 Forbidden";
+	// else
+	// {
+		fstat(fd, &info);
+		buffer = new unsigned char [info.st_size];
+		if (read(fd, buffer, info.st_size) < 0)
+			this->_env["STATUS_CODE"] = "500 Internal Server Error";
+		else
+			this->append_body((unsigned char *)buffer, info.st_size);
+		close(fd);
+	// }
+}
 
 void				execCGI::free_buf()
 {

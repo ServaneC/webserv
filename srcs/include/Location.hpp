@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
+/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:43:38 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/13 14:52:18 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/13 21:38:33 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,9 @@ class Location
         std::vector<int>        _accepted_methods;
         std::list<std::string>  _indexes;
         bool                    _autoindex;
-		std::string 			_cgi_path;  // empty if not in conf 
+		std::string 			_cgi_path;  // empty if not in conf
+        size_t                  _max_body_size;
+        std::string             _error_page;
         Location();
 
     public :
@@ -42,7 +44,9 @@ class Location
         std::vector<int>                getAcceptedMethods() const;
         bool                            isAcceptedMethod(int code) const;
         const std::list<std::string>    &getIndexes() const;
-		bool					        getAutoIndex() const;
+		bool                            getAutoIndex() const;
+		std::string                     getErrorPage() const;
+		size_t                          getMaxBodySize() const;
 };
 
 #endif

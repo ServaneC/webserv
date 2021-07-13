@@ -40,6 +40,7 @@ class execCGI
 		void	append_body(unsigned char *buffer, int size);
 		void  	printEnv(std::string);
 		bool	tryPath(Server &server, Request &request, const std::string &target);
+		void	serveErrorPage(const std::string &path);
 	
 public:
 		execCGI(Server &serv);

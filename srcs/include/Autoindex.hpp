@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/24 14:40:42 by schene            #+#    #+#             */
-/*   Updated: 2021/07/09 15:43:05 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/13 12:32:07 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ class Autoindex
         bool                            _exist;
     
     public:
-        Autoindex(std::string dir_name, std::string dir_path);
+        Autoindex(std::string dir_name, std::string dir_path, const std::list<std::string> indexes);
         ~Autoindex();
 
         std::string autoindex_generator();

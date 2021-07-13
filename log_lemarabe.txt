@@ -15,6 +15,10 @@ $$$$$$  $$$$   $$  $$  $$$$   $$  $$    $$$    $$
 $ $$   $$  $$  $$  $$  $$$    $$ $$$  $$$$$$$  $$
 $$$     $$$$    $$$$   $$ $$  $$  $$ $$     $$ $$$$$$
 
+[09/6]
+J'ai a peu pres reussi a faire ce que je voulais, j'ai juste un souci avec
+    le CSS (la 2eme requete que fait le navigateur tout seul) : y'a un /
+    en trop au milieu mais ca marche quand meme.
 [07/6]
 1) J'ai remanie les variables de PATH mais c'est un tel bordel !!! J'ai 
     stocké dans Request plein de morceaux de path pour etre au clair sur

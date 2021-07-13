@@ -6,24 +6,32 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/24 11:42:28 by schene            #+#    #+#             */
-/*   Updated: 2021/07/09 15:43:46 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/13 12:31:59 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/Autoindex.hpp"
 
-Autoindex::Autoindex(std::string dir_name, std::string dir_path) :
-    _dir_name(dir_name), _dir_path(dir_path), _index_file(false), 
-        _is_dir(true), _exist(true)
+// Autoindex::Autoindex(std::string dir_name, std::string dir_path) :
+//     _dir_name(dir_name), _dir_path(dir_path), _index_file(false), 
+//         _is_dir(true), _exist(true)
+// {
+//     struct stat info;
+
+
+//     if (lstat(dir_path.c_str(), &info) < 0)
+//     {
+//         this->_exist = false;
+//         return ;
+//     }
+    
+Autoindex::Autoindex(std::string dir_name, std::string dir_path, const std::list<std::string> indexes) :
+    _dir_name(dir_name), _dir_path(dir_path), _index_file(false), _is_dir(true)
 {
     struct stat info;
 
-
-    if (lstat(dir_path.c_str(), &info) < 0)
-    {
-        this->_exist = false;
-        return ;
-    }
+    lstat(dir_path.c_str(), &info);
+    std::cout << "Je LSTAT -> " << dir_path << std::endl;
     if (!S_ISDIR(info.st_mode))
     {
         this->_is_dir = false;
@@ -43,8 +51,12 @@ Autoindex::Autoindex(std::string dir_name, std::string dir_path) :
             if (content->d_type == DT_DIR)
                 name += '/';
             this->_listing.push_back(name);
-            if (!name.compare(DEFAULT_INDEX))
-                _index_file = true;
+            for (std::list<std::string>::const_iterator it = indexes.begin(); it != indexes.end(); it++)
+            {
+                std::cout << "Compare " << name << " & " << *it << std::endl;
+                if (!name.compare(*it))
+                    _index_file = true;
+            }
         }
         closedir(dir);
     }

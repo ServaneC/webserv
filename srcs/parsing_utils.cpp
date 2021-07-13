@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/07 15:29:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/06/20 00:10:31 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/09 18:09:08 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 #define PATH_LEN_MAX 1000
 
-size_t findClosingBracket(const std::string str, size_t begin)
+size_t findClosingBracket(const std::string &str, size_t begin)
 {
 	size_t end = begin;
 	size_t count = 1;
@@ -30,7 +30,7 @@ size_t findClosingBracket(const std::string str, size_t begin)
 	return (end);
 }
 
-std::string getScope(const std::string str, size_t index)
+std::string getScope(const std::string &str, size_t index)
 {
 	size_t open_bracket = str.find_first_not_of(" \t\n\r\v\f", index);
 	size_t close_bracket = findClosingBracket(str, open_bracket);
@@ -40,7 +40,7 @@ std::string getScope(const std::string str, size_t index)
 	return (std::string());
 }
 
-unsigned char    getValueBetweenPoints(const std::string str, size_t *index)
+unsigned char    getValueBetweenPoints(const std::string &str, size_t *index)
 {
     int result = 0;
     size_t limit = str.find_first_of(".;", *index);
@@ -65,7 +65,7 @@ bool    isCommentLine(const char *line)
     return (false);
 }
 
-int     parseMethod(std::string str, size_t *index)
+int     parseMethod(const std::string &str, size_t *index)
 {
     size_t method_index = str.find_first_not_of(" \t\n\r\v\f", *index);
     size_t method_length = str.find_first_of(" \t\n\r\v\f", method_index) - method_index;
@@ -96,6 +96,6 @@ std::string trimLocations(std::string conf)
 std::string getCurrentDirectory()
 {
     char buf[PATH_LEN_MAX];
-    std::string root(getcwd(buf, PATH_LEN_MAX));   //fonction interdite ??
+    std::string root(getcwd(buf, PATH_LEN_MAX));
     return (root);
 }

@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/30 13:24:55 by schene            #+#    #+#             */
-/*   Updated: 2021/07/09 15:53:17 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/13 12:31:38 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,9 +44,12 @@ execCGI::execCGI(Server &serv)
 		this->_env["CONTENT_LENGTH"] = this->_request.getHeaderField("Content-Length"); //not sure
 	this->_env["CONTENT_TYPE"] = this->_request.getHeaderField("Content-Type");
 	
-	printEnv("constructeur execCGI : before launching exec_CGI()");
-	if (autoindex == false && this->_env["STATUS_CODE"].compare("200 OK") == 0)
-		this->exec_method();
+	// printEnv("constructeur execCGI : before launching exec_CGI()");
+	// if (autoindex == false && this->_env["STATUS_CODE"].compare("200 OK") == 0)
+	// 	this->exec_method();
+	// printEnv("constructeur execCGI : before launching exec_CGI()");
+	if (autoindex == false)
+		this->exec_CGI();
 	Response((*this), this->_server.getClientSocket());
 }
 
@@ -57,15 +60,18 @@ execCGI::~execCGI()
 
 bool execCGI::tryPath(Server &server, Request &request, const std::string &target)
 {
-	const Location  *loc = getRelevantLocation(server.getRoutes(), target);
-	const Location  *ext = getRelevantExtension(server.getRoutes(), target);
+	const Location  &loc = getRelevantLocation(server.getRoutes(), target);
+	const Location  &ext = getRelevantExtension(server.getRoutes(), target);
 	std::string		cgi_path;
+	
+    // struct stat     statbuf;
 
-	if (loc && loc->getCGIPath().size())
-		cgi_path = loc->getCGIPath();
-	else if (ext && ext->getCGIPath().size())
-		cgi_path = ext->getCGIPath();
+	if (loc.getCGIPath().size())
+		cgi_path = loc.getCGIPath();
+	else if (ext.getCGIPath().size())
+		cgi_path = ext.getCGIPath();
 
+	// std::cout << "Je chdir -> " << request.getDirPath() << std::endl;
     if (chdir(request.getDirPath().c_str()) == -1)
         throw chdirFailException();
 
@@ -77,30 +83,36 @@ bool execCGI::tryPath(Server &server, Request &request, const std::string &targe
 	this->_env["SCRIPT_FILENAME"] = this->_request.getObject();
 	this->_env["SCRIPT_NAME"] = this->_request.getObject();
 
-    Autoindex autoidx(target, this->_env["PATH_INFO"]);
-	if (!autoidx.path_exist())
-	{
-		this->_env["STATUS_CODE"] = "404 Not Found";
-		return false;
-	}
+    // Autoindex autoidx(target, this->_env["PATH_INFO"]);
+	// if (!autoidx.path_exist())
+	// {
+	// 	this->_env["STATUS_CODE"] = "404 Not Found";
+	// 	return false;
+	// }
+	Autoindex autoidx(target, this->_env["PATH_INFO"], loc.getIndexes());
 	if (autoidx.isDir() && !autoidx.getIndex())  // index absent
 	{
+		// std::cout << "is Dir && Index absent" << std::endl;
 		std::string tmp = autoidx.autoindex_generator();
 		this->_buf_size = tmp.size();
 		this->_buf = new unsigned char[tmp.size()];
 		for (size_t i = 0; i < tmp.size(); i++)
 			this->_buf[i] = tmp[i];
-        return true;
+		return true;
 	}
 
 	else    // index present
 	{
+		// std::cout << "Is dir ? " << autoidx.isDir() << " / getIndex ? " << autoidx.getIndex() << std::endl;
 		if (autoidx.isDir() && autoidx.getIndex())  
 		{
-			this->_env["PATH_INFO"] = this->_env["PATH_INFO"] + '/' + std::string(DEFAULT_INDEX);
+			// std::cout << "is Dir && Index present" << std::endl;
+			const std::string index = firstValidIndex(loc.getIndexes());
+			// std::cout << "INDEX qu'on ajoute = " << index << std::endl;
+			this->_env["PATH_INFO"] = this->_env["PATH_INFO"] + '/' + index;
 			this->_env["PATH_TRANSLATED"] = this->_env["PATH_INFO"];
-			this->_env["SCRIPT_FILENAME"] = DEFAULT_INDEX;
-			this->_env["SCRIPT_NAME"] = DEFAULT_INDEX;
+			this->_env["SCRIPT_FILENAME"] = index;
+			this->_env["SCRIPT_NAME"] = index;
 		}	
 		try {
 			if (cgi_path.size())
@@ -137,16 +149,15 @@ bool	execCGI::setPathQuery()
 	std::cout << "SetPathQuery : OBJECT -> [" << object << "]" << std::endl;
 
 	try {
-		printEnv("setPathQuery : before building path");
+		// printEnv("setPathQuery : before building path");
 		this->_request.setDirPath(buildPath(_server, _request, target));
-		printEnv("setPathQuery : after building path, before tryPath");
+		// printEnv("setPathQuery : after building path, before tryPath");
 		autoindex = tryPath(_server, _request, target);
-		printEnv("setPathQuery : after tryPath");
+		// printEnv("setPathQuery : after tryPath");
 	}
 	catch (std::exception &e) {
         this->_env["STATUS_CODE"] = e.what();
 	}
-	std::cout << "HERE" << std::endl;
 	return (autoindex);
 }
 
@@ -198,7 +209,7 @@ void	execCGI::exec_CGI()
 		return ;
 	
 	this->_env["HTTP_HOST"] = this->_env["SERVER_NAME"];
-	printEnv("execCGI() : debut");
+	// printEnv("execCGI() : debut");
 	
 	this->_buf = NULL;
 	if (this->_env["STATUS_CODE"].compare("200 OK") != 0)

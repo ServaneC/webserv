@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
+/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 11:20:51 by schene            #+#    #+#             */
-/*   Updated: 2021/07/06 09:53:36 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/09 18:44:46 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ class Server
 	private:
 
 		Request								&_rqst;
-		Config								&_main_conf;
+		Config 								&_main_conf;
 		std::string							_server_conf;
 		// std::string							_buf;
 		unsigned int						_ip;
@@ -30,13 +30,14 @@ class Server
 		struct sockaddr_in					_host;
 		int									_client_socket;
 		int									_addrlen;
-		std::string							_root;
+		const Location						*_root;
 		// std::map<std::string, std::string>	_routes;
 		std::list<Location>					_routes;
-		std::list<std::string>				_indexes;
-		bool								_autoindex;
+		// std::list<std::string>				_indexes;
+		// bool								_autoindex;
 	
 		void		start_server();
+		Server();
 			
 	public:
 
@@ -56,8 +57,9 @@ class Server
 		const Location *getRelevantExtension(std::string target);
 		const Location *getRelevantLocation(std::string target);
 		const std::list<Location>		&getRoutes() const;
-		const std::list<std::string>	&getIndexes() const;
-		bool					getAutoIndex() const;
+		// const std::list<std::string>	&getIndexes() const;
+		// bool					getAutoIndex() const;
+		const Location	&getRootLocation() const;
 
 
 };

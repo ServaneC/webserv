@@ -6,31 +6,22 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/24 11:42:28 by schene            #+#    #+#             */
-/*   Updated: 2021/07/13 12:31:59 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/13 18:22:18 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/Autoindex.hpp"
-
-// Autoindex::Autoindex(std::string dir_name, std::string dir_path) :
-//     _dir_name(dir_name), _dir_path(dir_path), _index_file(false), 
-//         _is_dir(true), _exist(true)
-// {
-//     struct stat info;
-
-
-//     if (lstat(dir_path.c_str(), &info) < 0)
-//     {
-//         this->_exist = false;
-//         return ;
-//     }
     
 Autoindex::Autoindex(std::string dir_name, std::string dir_path, const std::list<std::string> indexes) :
-    _dir_name(dir_name), _dir_path(dir_path), _index_file(false), _is_dir(true)
+    _dir_name(dir_name), _dir_path(dir_path), _index_file(false), _is_dir(true), _exist(true)
 {
     struct stat info;
 
-    lstat(dir_path.c_str(), &info);
+    if (lstat(dir_path.c_str(), &info) < 0)
+    {
+        this->_exist = false;
+        return ;
+    }
     std::cout << "Je LSTAT -> " << dir_path << std::endl;
     if (!S_ISDIR(info.st_mode))
     {

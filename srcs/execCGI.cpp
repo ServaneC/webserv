@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/30 13:24:55 by schene            #+#    #+#             */
-/*   Updated: 2021/07/13 15:28:16 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/13 18:40:34 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,12 +44,8 @@ execCGI::execCGI(Server &serv)
 		this->_env["CONTENT_LENGTH"] = this->_request.getHeaderField("Content-Length"); //not sure
 	this->_env["CONTENT_TYPE"] = this->_request.getHeaderField("Content-Type");
 	
-	// printEnv("constructeur execCGI : before launching exec_CGI()");
-	// if (autoindex == false && this->_env["STATUS_CODE"].compare("200 OK") == 0)
-	// 	this->exec_method();
-	// printEnv("constructeur execCGI : before launching exec_CGI()");
-	if (autoindex == false)
-		this->exec_CGI();
+	if (autoindex == false && this->_env["STATUS_CODE"].compare("200 OK") == 0)
+		this->exec_method();
 	Response((*this), this->_server.getClientSocket());
 }
 
@@ -85,14 +81,11 @@ bool execCGI::tryPath(Server &server, Request &request, const std::string &targe
 	this->_env["SCRIPT_NAME"] = this->_request.getObject();
 
     Autoindex autoidx(target, this->_env["PATH_INFO"], loc.getIndexes());
-	// if (!autoidx.path_exist())
-	// {
-	// 	this->_env["STATUS_CODE"] = "404 Not Found";
-	// 	return false;
-	// }
-	if (autoidx.isDir() && !autoidx.getIndex())  // index absent
+	if (!autoidx.path_exist() ||  // path doesn't exist or is a dir and autoindex is off + no index file
+		(autoidx.isDir() && !autoidx.getIndex() && !loc.getAutoIndex()))
+		throw targetNotFoundException();
+	else if (autoidx.isDir() && !autoidx.getIndex())  // index absent
 	{
-		// std::cout << "is Dir && Index absent" << std::endl;
 		std::string tmp = autoidx.autoindex_generator();
 		this->_buf_size = tmp.size();
 		this->_buf = new unsigned char[tmp.size()];
@@ -100,15 +93,11 @@ bool execCGI::tryPath(Server &server, Request &request, const std::string &targe
 			this->_buf[i] = tmp[i];
 		return true;
 	}
-
 	else    // index present
 	{
-		// std::cout << "Is dir ? " << autoidx.isDir() << " / getIndex ? " << autoidx.getIndex() << std::endl;
 		if (autoidx.isDir() && autoidx.getIndex())  
 		{
-			// std::cout << "is Dir && Index present" << std::endl;
 			const std::string index = firstValidIndex(loc.getIndexes());
-			// std::cout << "INDEX qu'on ajoute = " << index << std::endl;
 			this->_env["PATH_INFO"] = this->_env["PATH_INFO"] + '/' + index;
 			this->_env["PATH_TRANSLATED"] = this->_env["PATH_INFO"];
 			this->_env["SCRIPT_FILENAME"] = index;
@@ -126,7 +115,6 @@ bool execCGI::tryPath(Server &server, Request &request, const std::string &targe
 		}
 		catch (std::exception &e) {
 			std::cout << e.what() << std::endl; }
-
 		return false;
 	}
 }
@@ -149,11 +137,8 @@ bool	execCGI::setPathQuery()
 	std::cout << "SetPathQuery : OBJECT -> [" << object << "]" << std::endl;
 
 	try {
-		// printEnv("setPathQuery : before building path");
 		this->_request.setDirPath(buildPath(_server, _request, target));
-		// printEnv("setPathQuery : after building path, before tryPath");
 		autoindex = tryPath(_server, _request, target);
-		// printEnv("setPathQuery : after tryPath");
 	}
 	catch (std::exception &e) {
         this->_env["STATUS_CODE"] = e.what();

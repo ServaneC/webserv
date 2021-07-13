@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   exceptions.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
+/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/08 17:06:46 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/07 23:25:28 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/13 18:44:06 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ class methodNotAllowedException : public std::exception {
 class targetNotFoundException : public std::exception {
     public :
         const char* what() const throw() {
-            return ("404 Not Found (c'est pas le cgi qui le dit, c'est lexception dns le parsing !!"); }
+            return ("404 Not Found"); }
 };
 
 class chdirFailException : public std::exception {

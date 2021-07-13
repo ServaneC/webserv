@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/30 13:24:55 by schene            #+#    #+#             */
-/*   Updated: 2021/07/13 12:31:38 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/13 15:28:16 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,19 +77,19 @@ bool execCGI::tryPath(Server &server, Request &request, const std::string &targe
 
 	std::cout << "DIR [" << this->_request.getDirPath() << ']' << std::endl;
 	this->_env["PATH_INFO"] = this->_request.getDirPath();
+	std::cout << "obj => (" << this->_request.getObject() << ')' << std::endl;
 	if (!this->_request.getObject().empty())
 		this->_env["PATH_INFO"] += '/' + this->_request.getObject();
 	this->_env["PATH_TRANSLATED"] = this->_env["PATH_INFO"];
 	this->_env["SCRIPT_FILENAME"] = this->_request.getObject();
 	this->_env["SCRIPT_NAME"] = this->_request.getObject();
 
-    // Autoindex autoidx(target, this->_env["PATH_INFO"]);
+    Autoindex autoidx(target, this->_env["PATH_INFO"], loc.getIndexes());
 	// if (!autoidx.path_exist())
 	// {
 	// 	this->_env["STATUS_CODE"] = "404 Not Found";
 	// 	return false;
 	// }
-	Autoindex autoidx(target, this->_env["PATH_INFO"], loc.getIndexes());
 	if (autoidx.isDir() && !autoidx.getIndex())  // index absent
 	{
 		// std::cout << "is Dir && Index absent" << std::endl;

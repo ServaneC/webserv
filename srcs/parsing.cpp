@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parsing.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
+/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/09 19:52:34 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/13 16:13:07 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,32 +25,20 @@ std::string parsingName(const std::string &conf)
     return (conf.substr(name_index, name_length - name_index));
 }
 
-// std::string parsingRoot(const std::string &conf)
-// {
-//     size_t root_index = conf.find("root");
-//     if (root_index == std::string::npos)
-//         return (getCurrentDirectory());
-//     root_index = conf.find_first_not_of(" \t\n\r\v\f", root_index + 4);
-//     size_t root_end = conf.find_first_of("; \t\n\r\v\f", root_index);
-//     if (root_end == std::string::npos)
-//         throw confInvalidRootException();
-//     std::string root = getCurrentDirectory();
-//     root.append(conf.substr(root_index, root_end - root_index));
-//     // if (root[root.size() - 1] != '/')
-//     //     root.append("/");
-//     return (root);
-// }
-
 std::string parsingRoot(const std::string &loc_conf, const std::string &server_conf, const std::list<Location> &list)
 {
     size_t root_index = loc_conf.find("root");
     if (root_index == std::string::npos)  // pas de directive root dans la loc
     {
-        std::string root = parsingRoot(server_conf, server_conf, list);  // chercher hors des locations
+        std::string root;
+        const Location *tmp = findRootLocation(list);
+        if (!tmp)
+            root = parsingRoot(server_conf, server_conf, list);  // chercher hors des locations
+        else
+            root = tmp->getRoot();  // la root du server a deja été trouvé
         if (root.empty())  // pas de directive root dans le server non plus
             return (getCurrentDirectory());
-        else
-            return (root);
+        return (root);
     }
     root_index = loc_conf.find_first_not_of(" \t\n\r\v\f", root_index + 4);
     size_t root_end = loc_conf.find_first_of("; \t\n\r\v\f", root_index);
@@ -236,29 +224,18 @@ std::string buildPath(Server &server, Request &request, const std::string &targe
     if (!loc.isAcceptedMethod(request.getMethodCode()) || !ext.isAcceptedMethod(request.getMethodCode()))
         throw methodNotAllowedException();
     path.insert(0, loc.getRoot());
-    std::cout << "Path-> [" << path << "]" << std::endl;
-    std::cout << "Loc path-> [" << loc.getPath() << "]" << std::endl;
-    
-    // if (loc->getPath().size() > 1 && server.getRoot().compare(loc->getRoot()) != 0) // take only location w/ a root set
     if (loc.getPath().size() > 1)
     {
-        if (path.find(loc.getPath()) != std::string::npos) // '/' at the end
-            path.erase(path.find(loc.getPath()), loc.getPath().size());
-        else if (request.getObject().find(&loc.getPath()[1]) != std::string::npos) // no '/' at the end
+        if (path.find(loc.getPath()) != std::string::npos &&
+            loc.getRoot().compare(server.getRoot()) != 0)
+                path.erase(path.find(loc.getPath()), loc.getPath().size());
+        if (request.getObject().find(&loc.getPath()[1]) != std::string::npos) // no '/' at the end
         {
             std::string tmp = request.getObject();
-            tmp.erase(tmp.find(&loc.getPath()[1]), loc.getPath().size() - 1);
+            if (loc.getRoot().compare(server.getRoot()) != 0)
+                tmp.erase(tmp.find(&loc.getPath()[1]), loc.getPath().size() - 1);
             request.setObject(tmp);
         }
-    }
-    // path.replace(0, loc->getPath().size() - 1, loc->getRoot()); // => insert instead
-    // request.setObject("");  // ca marchera pas si c'est [/directory/resource] qui est demandé est pas juste [/directory]
-    //      => on erase direct dans le path a la place
-//}
-    else
-    {
-        path.replace(0, 1, server.getRoot());
-        path.push_back('/');
     }
     std::cout << "\tPath built-> [" << path << "]" << std::endl;
     return (path);

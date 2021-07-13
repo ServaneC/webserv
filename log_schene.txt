@@ -640,8 +640,25 @@ AVANT CA:
 	=> On a un beau "404 Not Found" des qu'on essaye de GET/DELETE sur un file qu n'existe pas/ plus
 		(avant c'etait un code aleatoire et parfois meme des 200 OK)
 
+13/07/2021
+-> J'ai merge les changements de leila, faut revoir les path pour les redirections.
+	- les root des location sans root ont 2/YoupiBanane au lieu d'un (/Users/servanechene/Desktop/webserv_git/YoupiBanane/YoupiBanane)
+		✅ J'ai rajouté un if/else pour ne pas reparser la root du serveur si on l'as déja trouvé
+	- l'autoindex a l'air de plutot bien marcher
+	-> la gestion des path est a revoir:
+		- dans le path du CSS il y a // entre static et style1.css ✅
+		- Les images ne marches plus du tout, que des 404, surement un pb de path. ✅
+		- la resolution de ces pb a créé un soucis dans les path des routes
+			quand c'est plus que juste le dir de base : /directory marche bien
+				/directory/Yeah ça ne marche pas (/Users/servanechene/Desktop/webserv_git/YoupiBanane/root_yeah/directory/Yeah)
+			=> ✅ Toutes marche bien !
+	- l'acces au directory /img avec autoindex on ne marche que si on demande /img/ (/img ne marche pas)
+		🤷🏻‍♀️ Ca marche bien pour root_yeah (en plus ca devrait pas comme l'autoindex est pas précisé (je crois))
+		✅ J'ai ajouté un if pour erase dans object (dans buildPath())
+
 
 ================================== NOTES ==================================
+
 
 Pour tester les chunk request:
 	curl -H "Transfer-Encoding: chunked" -d "nom=Servane&age=20" http://localhost:8080/action.php

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
+/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 11:20:51 by schene            #+#    #+#             */
-/*   Updated: 2021/07/09 18:44:46 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/13 14:53:18 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,6 @@ class Server
 		int									_client_socket;
 		int									_addrlen;
 		const Location						*_root;
-		// std::map<std::string, std::string>	_routes;
 		std::list<Location>					_routes;
 		// std::list<std::string>				_indexes;
 		// bool								_autoindex;

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
+/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:48:09 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/09 18:48:09 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/13 12:46:31 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ Location::Location(const Location &ref) : _path(ref._path),
     _accepted_methods(ref._accepted_methods), _indexes(ref._indexes), 
     _autoindex(ref._autoindex), _cgi_path(ref._cgi_path)
 {
-    std::cout << "copy constructor called" << std::endl; 
+    // std::cout << "copy constructor called" << std::endl; 
 }
 
 const Location &Location::operator=(const Location &ref)

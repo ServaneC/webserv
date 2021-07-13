@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
+/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/07/09 18:44:41 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/13 14:55:23 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,7 +112,7 @@ std::string	Server::getName() const
 }
 std::string	Server::getRoot() const
 {
-    return this->_root->getPath();
+    return this->_root->getRoot();
 }
 const Location	&Server::getRootLocation() const
 {

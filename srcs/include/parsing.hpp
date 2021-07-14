@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/08 16:33:16 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/13 21:41:55 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/14 20:22:42 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,5 @@ std::string             parsingCGIconf(const std::string &loc_conf, const std::s
 const std::string       firstValidIndex(const std::list<std::string> &indexes);
 const Location          *findRootLocation(const std::list<Location> &list);
 size_t                  parsingBodySize(const std::string &loc_conf, const std::string &server_conf);
-std::string             parsingErrorPage(const std::string &loc_conf, const std::string &server_conf);
-std::string             &absolutePath(const Location &loc, std::string &name);
+std::string             parsingErrorPage(Location &location, Location &root_location);
 #endif

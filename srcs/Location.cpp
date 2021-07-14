@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:48:09 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/13 22:12:13 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/14 20:25:54 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,8 +44,8 @@ Location::Location(const std::string path, const std::string location_conf,
     this->_max_body_size = parsingBodySize(location_conf, server_conf);
     // std::cout << "Local max body size -> " << _max_body_size << std::endl;
 
-    this->_error_page = parsingErrorPage(location_conf, server_conf);
-    this->_error_page.insert(0, this->_root);
+    Location &root = *findRootLocation(list);
+    this->_error_page = parsingErrorPage(*this, root);
     std::cout << "Local error_page -> " << _error_page << std::endl;
 }
 
@@ -114,4 +114,7 @@ std::string     Location::getErrorPage() const {
 }
 size_t          Location::getMaxBodySize() const {
     return (this->_max_body_size);
+}
+std::string     Location::getConf() const {
+    return (this->_location_conf);
 }

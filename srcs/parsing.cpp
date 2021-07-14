@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/13 21:56:51 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/14 20:19:31 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -291,16 +291,18 @@ size_t parsingBodySize(const std::string &loc_conf, const std::string &server_co
     return (max_body_size);
 }
 
-std::string    parsingErrorPage(const std::string &location_conf, const std::string &server_conf)
+std::string    parsingErrorPage(Location &location, Location &root_location)
 {
+    std::string location_conf = location.getConf();
+    std::string server_conf = root_location.getConf();
     size_t      index = location_conf.find("error_page");
     std::string page_path;
-    // struct stat statbuf;
+    struct stat statbuf;
 
     if (index == std::string::npos)
     {
-        if (location_conf != server_conf)
-            return (parsingErrorPage(server_conf, server_conf));
+        if (&location != &root_location)
+            return (parsingErrorPage(root_location, root_location));
         else
             return (std::string());
     }
@@ -310,7 +312,15 @@ std::string    parsingErrorPage(const std::string &location_conf, const std::str
     if (end == std::string::npos)
         throw confInvalidErrorPageException();
     page_path = location_conf.substr(index, end - index);
-    // if (lstat(page_path.c_str(), &statbuf) == - 1)
-    //     throw confInvalidErrorPageException();    // il faudrait construire le path absolu pour faire la verif, un peu complexe
+    if (!page_path.empty())  // error page directive present
+    {
+        page_path.insert(0, "/");
+        // if (&location == &root_location)
+        //     page_path.insert(0, root_location.getRoot());  //build absolute path
+        // else
+        page_path.insert(0, location.getRoot());  //build absolute path
+    }
+    if (lstat(page_path.c_str(), &statbuf) == - 1)
+        throw confInvalidErrorPageException();
     return (page_path);
 }

@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:43:38 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/13 21:38:33 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/14 20:21:29 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ class Location
         const Location &operator=(const Location &ref);
 
         std::string                     getPath() const;
+        std::string                     getConf() const;
         std::string                     getRoot() const;
         std::string                     getCGIPath() const;
         std::vector<int>                getAcceptedMethods() const;

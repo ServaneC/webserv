@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/30 13:24:55 by schene            #+#    #+#             */
-/*   Updated: 2021/07/13 22:58:30 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/14 20:03:35 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ execCGI::execCGI(Server &serv)
 	
 	if (autoindex == false && this->_env["STATUS_CODE"].compare("200 OK") == 0)
 		this->exec_method();
-	else
+	else if (this->_env["STATUS_CODE"].compare("200 OK") != 0)  // cas d'erreur ou redirection (redirections pas encore gerees)
 		this->serveErrorPage(this->_env["PATH_INFO"]);  // en ayant change path info dans setPathQuery pour le fichier d'erreur au lieu de la target + le status code
 	Response((*this), this->_server.getClientSocket());
 }
@@ -62,7 +62,7 @@ bool execCGI::tryPath(Server &server, Request &request, const std::string &targe
 	const Location  &ext = getRelevantExtension(server.getRoutes(), target);
 	std::string		cgi_path;
 	
-    // struct stat     statbuf;
+	std::cout << "relevant loc = " << loc.getPath() << std::endl;
 
 	if (loc.getCGIPath().size())
 		cgi_path = loc.getCGIPath();
@@ -86,6 +86,7 @@ bool execCGI::tryPath(Server &server, Request &request, const std::string &targe
 	if (!autoidx.path_exist() ||  // path doesn't exist or is a dir and autoindex is off + no index file
 		(autoidx.isDir() && !autoidx.getIndex() && !loc.getAutoIndex()))
 	{
+		std::cout << "Hey !" << loc.getErrorPage() << std::endl;
 		this->_env["PATH_INFO"] = loc.getErrorPage();
 		throw targetNotFoundException();
 	}
@@ -195,6 +196,8 @@ void	execCGI::exec_method()
 
 void	execCGI::exec_CGI()
 {
+	std::cout << "#### ON PASSE PAR LE CGI ####" << std::endl;
+
 	if (this->_env["STATUS_CODE"].compare("200 OK") != 0)
 		return ;
 	
@@ -291,6 +294,8 @@ void		execCGI::readFile()
 	unsigned char		*buffer;
 	struct stat			info;
 
+	std::cout << "#### ON PASSE PAR READ_FILE() ####" << std::endl;
+	
 	fd = open(this->_env["PATH_INFO"].c_str(), O_RDONLY);
 	if (fd < 0)
 		this->_env["STATUS_CODE"] = "403 Forbidden";
@@ -308,6 +313,7 @@ void		execCGI::readFile()
 
 void	execCGI::exec_delete()
 {
+	std::cout << "#### ON PASSE PAR EXEC_DELETE() ####" << std::endl;
 
 	if (remove(this->_env["PATH_INFO"].c_str()) < 0)
 		this->_env["STATUS_CODE"] = "403 Forbidden";
@@ -322,6 +328,7 @@ void execCGI::serveErrorPage(const std::string &path)
 	struct stat			info;
 
 	fd = open(path.c_str(), O_RDONLY);
+	std::cout << "error path = " << path << std::endl;
 	// if (fd < 0)
 	// 	this->_env["STATUS_CODE"] = "403 Forbidden";
 	// else

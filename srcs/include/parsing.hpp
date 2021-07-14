@@ -52,5 +52,5 @@ const std::string       firstValidIndex(const std::list<std::string> &indexes);
 const Location          *findRootLocation(const std::list<Location> &list);
 size_t                  parsingBodySize(const std::string &loc_conf, const std::string &server_conf);
 std::string             parsingErrorPage(const std::string &loc_conf, const std::string &server_conf);
-
+std::string             &absolutePath(const Location &loc, std::string &name);
 #endif

@@ -45,7 +45,8 @@ Location::Location(const std::string path, const std::string location_conf,
     // std::cout << "Local max body size -> " << _max_body_size << std::endl;
 
     this->_error_page = parsingErrorPage(location_conf, server_conf);
-    // std::cout << "Local error_page -> " << _error_page << std::endl;
+    this->_error_page.insert(0, this->_root);
+    std::cout << "Local error_page -> " << _error_page << std::endl;
 }
 
 Location::Location(const Location &ref) : _path(ref._path), 

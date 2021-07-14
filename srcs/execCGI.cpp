@@ -46,8 +46,8 @@ execCGI::execCGI(Server &serv)
 	
 	if (autoindex == false && this->_env["STATUS_CODE"].compare("200 OK") == 0)
 		this->exec_method();
-	// else
-	// 	this->serveErrorPage();
+	else
+		this->serveErrorPage(this->_env["PATH_INFO"]);  // en ayant change path info dans setPathQuery pour le fichier d'erreur au lieu de la target + le status code
 	Response((*this), this->_server.getClientSocket());
 }
 
@@ -85,7 +85,10 @@ bool execCGI::tryPath(Server &server, Request &request, const std::string &targe
     Autoindex autoidx(target, this->_env["PATH_INFO"], loc.getIndexes());
 	if (!autoidx.path_exist() ||  // path doesn't exist or is a dir and autoindex is off + no index file
 		(autoidx.isDir() && !autoidx.getIndex() && !loc.getAutoIndex()))
+	{
+		this->_env["PATH_INFO"] = loc.getErrorPage();
 		throw targetNotFoundException();
+	}
 	else if (autoidx.isDir() && !autoidx.getIndex())  // index absent
 	{
 		std::string tmp = autoidx.autoindex_generator();

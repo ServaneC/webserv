@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
+/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 16:24:45 by schene            #+#    #+#             */
-/*   Updated: 2021/07/07 21:06:35 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/15 14:42:58 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,6 @@ int			Request::recvHeader() // recv byte per byte to stop at the end of the head
 			this->_buf.find("\n\n") == std::string::npos)
 	{
 		c = this->recv_one();
-		// std::cout << '[' << c << '|' << int(c) << ']';
 		if (int(c) != 255)
 			this->_buf.push_back(c);
 		else
@@ -119,7 +118,6 @@ int			Request::recvChunk()
 		if (size_buf.size() > 2)
 			size_buf.erase(size_buf.size() - 2, 2); // erase the CRLF
 		size = hexa_to_int(size_buf);
-		// std::cout << "size = " << size << std::endl;
 		//end of the chunk body
 		if (size == 0)
 		{
@@ -236,7 +234,6 @@ void		Request::parseHeaderFields(std::string line)
 			while (isspace(*(value.end() - 1))) // handle OWS between field-value and CRLF
 				value.erase(value.end() - 1);
 			it->second = value; // store header value in map
-			// std::cout << it->first << " = " << it->second << std::endl;
 		}
 		it++;
 	}

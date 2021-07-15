@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/08 17:06:46 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/13 18:44:06 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/15 14:46:07 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,12 @@
 # define WEBSERV_EXCEPTIONS_H
 
 # include "../../webserv.hpp"
+
+class InternalServerError : public std::exception {
+    public :
+        const char* what() const throw() {
+            return ("500 Internal Server Error"); }    
+};
 
 class methodNotAllowedException : public std::exception {
     public :

@@ -656,6 +656,25 @@ AVANT CA:
 		🤷🏻‍♀️ Ca marche bien pour root_yeah (en plus ca devrait pas comme l'autoindex est pas précisé (je crois))
 		✅ J'ai ajouté un if pour erase dans object (dans buildPath())
 
+15/07/2021
+-> commencer a gérer l'upload de fichier
+	-relevant extension renvoi la location de '/' si rien n'est trouvé
+		pb: ça créé un conflit sur les allowed methods comme on compare entre notre location et '/' si ont as pas d'extension de fichier.
+		✅  => on renvois la relevantLocation si pas de location pour extension trouvé.
+	- 404 automatique comme c'est un dir où fait la requete POST.
+		-> modifier le throw de l'exception targetNotFoundException
+		✅ => on check bien que c'est une request GET avant d'envoyer l'autoindex/404/index file !
+	-> je parse CONTENT_TYPE pour obtenir la boundary
+		=> on obtient le buf sans les lignes ----WebKit...
+	-> mnt il faut parser les header fields present avant le contenu du fichier.
+	=> l'upload des fichiers marche !
+		- il faut completement retravailler la fonction qui ai actuellement degueulasse ✅
+
+
+!! pb quand on veut delete juste apres upload (p-ê un pb dans recv ?)
+-> voir quoi renvoyer si on upload un file qui a déja ete upload (actuelement on renvoi quand meme un 301 Created)
+-> faudras rajouter + parser/stocker dans le conf file un path où uploader les files 
+-> creer une autre classe pour séparer les fonctions dans execCGI
 
 ================================== NOTES ==================================
 
@@ -698,11 +717,8 @@ Referer: http://localhost:8080/
 Accept-Encoding: gzip, deflate, br
 Accept-Language: en-US,en;q=0.9
 
-------WebKitFormBoundaryUid4GZZPaM6cz0Sq
-Content-Disposition: form-data; name="MAX_FILE_SIZE"
 
-1000000
-------WebKitFormBoundaryUid4GZZPaM6cz0Sq
+------WebKitFormBoundary9Q72TepSoYiOaCwf
 Content-Disposition: form-data; name="uploadedfile"; filename="to_upload.html"
 Content-Type: text/html
 
@@ -717,7 +733,7 @@ Content-Type: text/html
     </body>
 </html>
 
-------WebKitFormBoundaryUid4GZZPaM6cz0Sq--
+------WebKitFormBoundary9Q72TepSoYiOaCwf--
 -------------------------------------------------------------------------------
 
 

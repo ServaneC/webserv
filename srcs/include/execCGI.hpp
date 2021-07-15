@@ -21,6 +21,8 @@ class execCGI
 	private:
 		Server								&_server;
 		Request								&_request;
+		int									_request_buf_start;
+		int									_request_buf_size;
 		unsigned char						*_buf;
 		int									_buf_size;
 		time_t								_last_modified;
@@ -34,7 +36,10 @@ class execCGI
 		void	exec_CGI();
 		void	exec_method();
 		void	exec_delete();
+		void	parse_and_upload();
+		void	exec_post();
 		int		set_argv();
+		// int		gnl_exec();
 		bool	check_method();
 		void	readFile();
 		void	append_body(unsigned char *buffer, int size);

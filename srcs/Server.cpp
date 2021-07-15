@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/07/13 14:55:23 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/15 14:47:01 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,18 +31,6 @@ Server::Server(Config &conf, std::string server_conf) :
         this->_routes = parsingLocations(server_conf);
 
         this->_root = findRootLocation(_routes);
-    
-        // this->_root = parsingRoot(trimLocations(server_conf));
-        // std::cout << "- ServerRoot = " << _root << std::endl;
-
-        // this->_indexes = parsingIndexes(NULL, trimLocations(server_conf));
-        // std::cout << "- Indexes = ";
-        // for (std::list<std::string>::iterator it = _indexes.begin(); it != _indexes.end(); it++)
-        //     std::cout << *it << " ";
-        // std::cout << std::endl;
-
-        // this->_autoindex = parsingAutoIndex(*this, trimLocations(server_conf));
-        // std::cout << "- Autoindex -> " << _autoindex << std::endl;
 
         this->_host.sin_family = PF_INET;
         this->_host.sin_addr.s_addr = this->_ip;
@@ -54,13 +42,13 @@ Server::Server(Config &conf, std::string server_conf) :
 
         int enable = 1;
         if (setsockopt(this->_socket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
-            throw 20;
+            throw InternalServerError();
         if (fcntl(this->_socket, F_SETFL, O_NONBLOCK) < 0)
-            throw 20;
+            throw InternalServerError();
         if (bind(this->_socket, (struct sockaddr *)&this->_host, this->_addrlen) < 0)
-            throw 20;
+            throw InternalServerError();
         if (listen(this->_socket, 32) < 0)
-            throw 20;
+            throw InternalServerError();
     }
     catch (std::exception &e) {
         std::cout << e.what() << std::endl; }
@@ -72,12 +60,7 @@ Server::~Server()
     delete &this->_rqst;
     delete &this->_main_conf;
     for (std::list<Location>::iterator it = _routes.begin(); it != _routes.end(); it++)
-        // delete &it;   // jamais testé mais je pense que c'est de la merde
         delete &(*it);   // ca c'est ptet mieux
-    // {                  // sinon ca ??
-    //     Location *loc = &(*it);
-    //     delete loc;
-    // }
 }
 
 int 	Server::exec_accept()
@@ -142,13 +125,3 @@ const std::list<Location> &Server::getRoutes() const
 {
     return this->_routes;
 }
-
-// const std::list<std::string>	&Server::getIndexes() const
-// {
-//     return (this->_indexes);
-// }
-
-// bool					Server::getAutoIndex() const
-// {
-//     return (this->_autoindex);
-// }

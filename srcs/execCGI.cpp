@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/30 13:24:55 by schene            #+#    #+#             */
-/*   Updated: 2021/07/13 18:40:34 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/15 19:32:07 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,9 @@
 #define _BUFSIZE 2000
 
 execCGI::execCGI(Server &serv) 
-	: _server(serv), _request(serv.getRequest()), _buf(NULL),
-		 _buf_size(0), _last_modified(0), _argv(NULL), _cgi(false)
+	: _server(serv), _request(serv.getRequest()), _request_buf_start(0), 
+		_request_buf_size(_request.getBodySize()), _buf(NULL),
+		_buf_size(0), _last_modified(0), _argv(NULL), _cgi(false)
 {
 	bool autoindex = false;
 
@@ -59,8 +60,6 @@ bool execCGI::tryPath(Server &server, Request &request, const std::string &targe
 	const Location  &loc = getRelevantLocation(server.getRoutes(), target);
 	const Location  &ext = getRelevantExtension(server.getRoutes(), target);
 	std::string		cgi_path;
-	
-    // struct stat     statbuf;
 
 	if (loc.getCGIPath().size())
 		cgi_path = loc.getCGIPath();
@@ -81,28 +80,32 @@ bool execCGI::tryPath(Server &server, Request &request, const std::string &targe
 	this->_env["SCRIPT_NAME"] = this->_request.getObject();
 
     Autoindex autoidx(target, this->_env["PATH_INFO"], loc.getIndexes());
-	if (!autoidx.path_exist() ||  // path doesn't exist or is a dir and autoindex is off + no index file
-		(autoidx.isDir() && !autoidx.getIndex() && !loc.getAutoIndex()))
+	if (!autoidx.path_exist())
 		throw targetNotFoundException();
-	else if (autoidx.isDir() && !autoidx.getIndex())  // index absent
+	else if (autoidx.isDir() && !autoidx.getIndex() && !this->_env["REQUEST_METHOD"].compare("GET"))
 	{
-		std::string tmp = autoidx.autoindex_generator();
-		this->_buf_size = tmp.size();
-		this->_buf = new unsigned char[tmp.size()];
-		for (size_t i = 0; i < tmp.size(); i++)
-			this->_buf[i] = tmp[i];
-		return true;
+		if (!loc.getAutoIndex())
+			throw targetNotFoundException();
+		else
+		{
+			std::string tmp = autoidx.autoindex_generator();
+			this->_buf_size = tmp.size();
+			this->_buf = new unsigned char[tmp.size()];
+			for (size_t i = 0; i < tmp.size(); i++)
+				this->_buf[i] = tmp[i];
+			return true;
+		}	
 	}
-	else    // index present
+	else
 	{
-		if (autoidx.isDir() && autoidx.getIndex())  
+		if (autoidx.isDir() && !this->_env["REQUEST_METHOD"].compare("GET"))  // is a dir and index present
 		{
 			const std::string index = firstValidIndex(loc.getIndexes());
 			this->_env["PATH_INFO"] = this->_env["PATH_INFO"] + '/' + index;
 			this->_env["PATH_TRANSLATED"] = this->_env["PATH_INFO"];
 			this->_env["SCRIPT_FILENAME"] = index;
 			this->_env["SCRIPT_NAME"] = index;
-		}	
+		}
 		try {
 			if (cgi_path.size())
 			{
@@ -180,22 +183,77 @@ void	execCGI::exec_method()
 {
 	if (!this->_env["REQUEST_METHOD"].compare("DELETE"))
 		this->exec_delete();
-	if (this->_cgi)
+	else if (!this->_env["REQUEST_METHOD"].compare("POST"))
+		this->exec_post();
+	else if (this->_cgi)
 		this->exec_CGI();
 	else if (!this->_env["REQUEST_METHOD"].compare("GET"))
 		this->readFile();
-	else if (!this->_env["REQUEST_METHOD"].compare("POST"))
+}
+
+// WORK IN PROGRESS HERE
+void	execCGI::exec_post()
+{
+	std::string boundary;
+
+	if (!this->_env["CONTENT_TYPE"].compare(0, 19, "multipart/form-data"))
+	{
+		boundary = this->_env["CONTENT_TYPE"].substr(this->_env["CONTENT_TYPE"].find("boundary=") + 9);
+		boundary.insert(0, 2, '-');
+		this->_request_buf_start = boundary.size() + 2; // erase the first boundary + CRLF
+		this->_request_buf_size -= 2 * boundary.size() + 6; // erase the last boundary + '--' + CRLF
+		this->parse_and_upload();
+	}
+	// printEnv("before upload");
+	else if (this->_cgi)
+		this->exec_CGI();
+	else
 		this->_env["STATUS_CODE"] = "204 No Content";
 }
 
+void	execCGI::parse_and_upload()
+{
+	std::string	filename;
+	std::string	type;
+
+	//PARSING
+	int		next_n = ft_gnl(this->_request.getBody(), this->_request_buf_start);
+	filename = std::string((char *)(this->_request.getBody() + this->_request_buf_start), next_n - 1);
+	this->_request_buf_start += next_n + 1;
+	this->_request_buf_size -= next_n + 1;
+	next_n = ft_gnl(this->_request.getBody(), this->_request_buf_start);
+	type = std::string((char *)(this->_request.getBody() + this->_request_buf_start), next_n - 1);
+	this->_request_buf_start += next_n + 3;
+	this->_request_buf_size -= next_n + 3;
+	filename.erase(0, filename.find("filename=\""));
+	filename.erase(0, filename.find('\"') + 1);
+	filename.erase(filename.find_last_of('\"'), 1);
+	this->_env["CONTENT_TYPE"] = type.substr(type.find(':') + 2);
+	filename.insert(0, this->_env["SCRIPT_NAME"] + '/');
+
+	//UPLOAD 
+	int fd = open(filename.c_str(), O_WRONLY | O_CREAT, 00755);
+	if (fd < 0)
+	{
+		std::cerr << "ERROR OPEN << std::endl";
+		return ;
+	}
+	write(fd, &(this->_request.getBody()[this->_request_buf_start]), this->_request_buf_size);
+	close(fd);
+	this->_env["STATUS_CODE"] = "201 Created";
+}
+
+// END OF work in progress
+
 void	execCGI::exec_CGI()
 {
+	std::cout << "CALL TO THE CGI !" << std::endl;
 	if (this->_env["STATUS_CODE"].compare("200 OK") != 0)
 		return ;
 	
 	this->_env["HTTP_HOST"] = this->_env["SERVER_NAME"];
 	// printEnv("execCGI() : debut");
-	
+
 	this->_buf = NULL;
 	if (this->_env["STATUS_CODE"].compare("200 OK") != 0)
 		return ;
@@ -206,7 +264,7 @@ void	execCGI::exec_CGI()
 	int			saveStdout;
 
 	this->set_argv();
-
+	
 	// SAVING STDIN AND STDOUT IN ORDER TO TURN THEM BACK TO NORMAL LATER
 	saveStdin = dup(STDIN_FILENO);
 	saveStdout = dup(STDOUT_FILENO);
@@ -217,7 +275,7 @@ void	execCGI::exec_CGI()
 	long	fdOut = fileno(fOut);
 	int		ret = 1;
 
-	write(fdIn, this->_request.getBody(), this->_request.getBodySize());
+	write(fdIn, &(this->_request.getBody()[this->_request_buf_start]), this->_request_buf_size);
 	lseek(fdIn, 0, SEEK_SET);
 
 	pid = fork();
@@ -307,7 +365,8 @@ void	execCGI::exec_delete()
 	if (remove(this->_env["PATH_INFO"].c_str()) < 0)
 		this->_env["STATUS_CODE"] = "403 Forbidden";
 	else
-		this->_env["STATUS_CODE"] = "204 No Content";
+		this->_env["STATUS_CODE"] = "200 OK";
+		// this->_env["STATUS_CODE"] = "204 No Content";
 }
 
 

@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 14:42:45 by schene            #+#    #+#             */
-/*   Updated: 2021/07/09 15:50:57 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/15 17:18:17 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ void		Response::parse_cgi_buf()
 	if (!this->_buf)
 		return ;
 
-	while (memchr(this->_buf + this->_idx, ':', this->_buf_size - 1)) // check if there is still header-fields
+	while (std::memchr(this->_buf + this->_idx, ':', this->_buf_size - 1)) // check if there is still header-fields
 	{
 		if ((&this->_buf[this->_idx])[0] == '\r') // end of the header 
 			break ;

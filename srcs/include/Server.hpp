@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 11:20:51 by schene            #+#    #+#             */
-/*   Updated: 2021/07/13 14:53:18 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/15 14:47:13 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,6 @@ class Server
 		Request								&_rqst;
 		Config 								&_main_conf;
 		std::string							_server_conf;
-		// std::string							_buf;
 		unsigned int						_ip;
 		int									_port;
 		std::string 						_name;
@@ -32,8 +31,6 @@ class Server
 		int									_addrlen;
 		const Location						*_root;
 		std::list<Location>					_routes;
-		// std::list<std::string>				_indexes;
-		// bool								_autoindex;
 	
 		void		start_server();
 		Server();
@@ -52,12 +49,9 @@ class Server
 		int			getSocket() const;
 		int			getClientSocket() const;
 		Request		&getRequest() const;
-		// std::list<Location> getRelevantLocations(std::string path_info);
 		const Location *getRelevantExtension(std::string target);
 		const Location *getRelevantLocation(std::string target);
 		const std::list<Location>		&getRoutes() const;
-		// const std::list<std::string>	&getIndexes() const;
-		// bool					getAutoIndex() const;
 		const Location	&getRootLocation() const;
 
 

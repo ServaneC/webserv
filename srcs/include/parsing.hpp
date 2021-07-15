@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/08 16:33:16 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/14 20:22:42 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/15 20:20:31 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,8 +40,6 @@ int                 parseMethod(const std::string &str, size_t *index);
 std::string         parsingRoot(const std::string &loc_conf, const std::string &server_conf, const std::list<Location> &list);//, const std::string &loc_path);
 std::string         trimLocations(std::string conf);
 std::string         getCurrentDirectory();
-// std::string         parsingLocalRoot(std::string server_root, std::string conf);
-// std::string         translatePath(Server &server, Request &request, const std::string &target, std::string &object);
 const Location      &getRelevantExtension(const std::list<Location> &_routes, const std::string &target);
 const Location      &getRelevantLocation(const std::list<Location> &_routes, const std::string &target);
 std::list<std::string> parsingIndexes(const std::string &loc_conf, const std::string &server_conf);
@@ -51,5 +49,7 @@ std::string             parsingCGIconf(const std::string &loc_conf, const std::s
 const std::string       firstValidIndex(const std::list<std::string> &indexes);
 const Location          *findRootLocation(const std::list<Location> &list);
 size_t                  parsingBodySize(const std::string &loc_conf, const std::string &server_conf);
-std::string             parsingErrorPage(Location &location, Location &root_location);
+std::string             parsingErrorPage(const std::string &location_conf, const std::string &server_conf);//, const std::list<Location> &list);
+// std::string    parsingErrorPage(const Location *location, const Location *root_loc);//, const std::string &server_root);//, const std::list<Location> &list)
+void            updateWithRootInfos(std::list<Location> &routes, const Location *root);
 #endif

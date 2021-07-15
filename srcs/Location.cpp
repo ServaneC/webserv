@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:48:09 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/14 20:25:54 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/15 20:12:36 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,15 +44,15 @@ Location::Location(const std::string path, const std::string location_conf,
     this->_max_body_size = parsingBodySize(location_conf, server_conf);
     // std::cout << "Local max body size -> " << _max_body_size << std::endl;
 
-    Location &root = *findRootLocation(list);
-    this->_error_page = parsingErrorPage(*this, root);
+    this->_error_page = parsingErrorPage(this, findRootLocation(list));
     std::cout << "Local error_page -> " << _error_page << std::endl;
 }
 
 Location::Location(const Location &ref) : _path(ref._path), 
     _location_conf(ref._location_conf), _root(ref._root), 
     _accepted_methods(ref._accepted_methods), _indexes(ref._indexes), 
-    _autoindex(ref._autoindex), _cgi_path(ref._cgi_path)
+    _autoindex(ref._autoindex), _cgi_path(ref._cgi_path),
+    _max_body_size(ref._max_body_size), _error_page(ref._error_page)
 {
     // std::cout << "copy constructor called" << std::endl; 
 }
@@ -118,3 +118,11 @@ size_t          Location::getMaxBodySize() const {
 std::string     Location::getConf() const {
     return (this->_location_conf);
 }
+
+// void Location::addErrorPagePrefix(std::string prefix)
+// {
+//     std::cout << "prefixe = " << prefix << std::endl;
+//     std::cout << "error avant = " << _error_page << std::endl;
+//     this->_error_page.insert(0, prefix);
+//     std::cout << "error apres = " << _error_page << std::endl;
+// }

@@ -3,12 +3,12 @@ $$$$$$$$  $$$$        $$$$     $$$$
    $$    $$  $$  $$$  $$  $$  $$  $$
    $$     $$$$        $$$$     $$$$  $$ $$ $$
 
-Si c'est une request sur un directory :
-	- renvoyer le bon fichier index
-	- si pas d'index présent, et autoindex on -> renvoyer le directory listing
-	- si pas d'index et autoindex off (renvoyer un 404 ou autre)
-Remplacer getIndexes().front par une fonction qui essaie un a un les indexes dasn l'ordre
 
+Super mauvaise idee de gerer les pages d'erreur comme je fais :
+il faudrait construire le path absolu au moment ou on parse.
+    -> si on trouve une page d'erreur dans un bloc loc on l'associe a la
+root de la loc
+    -> si on trouve une page sans instruction root on donne la root du serveur
 
 $$$$$$  $$$$   $$  $$  $$$$   $$  $$    $$$    $$
   $$   $$  $$  $$  $$  $$ $$  $$$ $$   $$ $$   $$

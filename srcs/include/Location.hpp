@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:43:38 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/14 20:21:29 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/15 19:44:26 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,9 +26,9 @@ class Location
         std::vector<int>        _accepted_methods;
         std::list<std::string>  _indexes;
         bool                    _autoindex;
-		std::string 			_cgi_path;  // empty if not in conf
-        size_t                  _max_body_size;
-        std::string             _error_page;
+		std::string 			_cgi_path;      // empty if not in conf
+        size_t                  _max_body_size; //ulong max if not in conf
+        std::string             _error_page;    // empty if not in conf
         Location();
 
     public :

@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:43:38 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/15 19:44:26 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/16 17:30:40 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,13 +41,21 @@ class Location
         std::string                     getPath() const;
         std::string                     getConf() const;
         std::string                     getRoot() const;
-        std::string                     getCGIPath() const;
         std::vector<int>                getAcceptedMethods() const;
-        bool                            isAcceptedMethod(int code) const;
         const std::list<std::string>    &getIndexes() const;
 		bool                            getAutoIndex() const;
-		std::string                     getErrorPage() const;
+        std::string                     getCGIPath() const;
 		size_t                          getMaxBodySize() const;
+		std::string                     getErrorPage() const;
+
+        void    setRoot(const std::string &root);
+        void    setIndexes(const std::list<std::string> &indexes);
+        void    setAutoIndex(bool autoindex);
+        void    setCGIpath(const std::string &cgi_path);
+        void    setMaxBodySize(const std::string &error_page);
+        void    setErrorPage(const std::string &error_page);
+        
+        bool    isAcceptedMethod(int code) const;
 };
 
 #endif

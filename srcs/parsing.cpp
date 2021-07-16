@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/15 20:21:23 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/16 19:22:48 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -291,27 +291,52 @@ size_t parsingBodySize(const std::string &loc_conf, const std::string &server_co
     return (max_body_size);
 }
 
-std::string    parsingErrorPage(const std::string &location_conf, const std::string &server_conf)//, const std::list<Location> &list)
-{
-    std::string page_path;
-    struct stat statbuf;
-    size_t      index = location_conf.find("error_page");
-    std::string root_prefix = parsingRoot(location_conf, server_conf, list) + "/";
+// std::string    parsingErrorPage(const std::string &location_conf, const std::string &server_conf)//, const std::list<Location> &list)
+// {
+//     std::string page_path;
+//     // struct stat statbuf;
+//     size_t      index = location_conf.find("error_page");
 
-    if (index == std::string::npos || index == 0)
+//     if (index == std::string::npos || index == 0)
+//     {
+//         if (&location_conf == &server_conf)
+//             return (std::string());
+//         else
+//             return (parsingErrorPage(server_conf, server_conf));
+//     }
+//     index += 11;
+//     index = location_conf.find_first_not_of(" \t\n\r\v\f", index);
+//     size_t end = location_conf.find(";", index);
+//     if (end == std::string::npos)
+//         throw confInvalidErrorPageException();
+//     page_path = location_conf.substr(index, end - index);
+//     return (page_path);
+// }
+
+std::string parsingErrorPage(const Location &loc, const std::list<Location> &list)
+{
+    std::string loc_conf = loc.getConf();
+    size_t page_index = loc_conf.find("error_page");
+    std::cout << "PAGE INDEX =" << page_index << std::endl;
+    std::cout << "PATH =" << loc.getPath() << std::endl;
+    std::cout << "CONF =" << loc_conf << std::endl;
+    if (page_index == std::string::npos)  // pas de directive root dans la loc
     {
-        if (&location_conf == &server_conf)
-            return (std::string());
+        //const Location *root = findRootLocation(list);
+        const Location &gen_loc = list.front();
+        if (&loc == &gen_loc) //&gen_loc == NULL || 
+            return (std::string());  // pas de page d'erreur
         else
-            return (parsingErrorPage(server_conf, server_conf, list));
+            return (parsingErrorPage(gen_loc, list));  // chercher hors des locations
     }
-    index += 11;
-    index = location_conf.find_first_not_of(" \t\n\r\v\f", index);
-    size_t end = location_conf.find(";", index);
-    if (end == std::string::npos)
-        throw confInvalidErrorPageException();
-    page_path = location_conf.substr(index, end - index);
-    return (page_path);
+    page_index = loc_conf.find_first_not_of(" \t\n\r\v\f", page_index + 11);
+    size_t page_end = loc_conf.find_first_of("; \t\n\r\v\f", page_index);
+    if (page_end == std::string::npos)
+        throw confInvalidRootException();
+    // const Location *root = findRootLocation(list);
+    // if (root)
+    //     return (root->getRoot().append(loc_conf.substr(page_index, page_end - page_index)));
+    return (loc.getRoot().append("/" + loc_conf.substr(page_index, page_end - page_index)));
 }
 
 // void checkErrorPages(std::list<Location> &list)
@@ -333,23 +358,26 @@ std::string    parsingErrorPage(const std::string &location_conf, const std::str
 //     }
 // }
 
-void            updateWithRootInfos(std::list<Location> &routes, const Location *root)
-{
-    for (std::list<Location>::iterator it = list.begin(); it != list.end(); it++)
-    {
-        Location &loc = *it;
+// void            updateWithRootInfos(std::list<Location> &routes, const Location *root)
+// {
+//     for (std::list<Location>::iterator it = list.begin(); it != list.end(); it++)
+//     {
+//         Location &loc = *it;
 
-        if (loc.getRoot().empty())
-            loc.getRoot() = root->getRoot();
-        if (loc.getRoot().empty())
-            loc.getRoot() = root->getRoot();
-    }
+//         if (loc.getRoot().empty() && !root->getRoot().empty())
+//             loc.setRoot(root->getRoot());
+//         if (loc.getIndexes().empty() && !root->getIndexes().empty())
+//             loc.setIndexes(root->getIndexes());
+//         if (loc.getCGIPath().empty() && !root->getCGIPath().empty())
+//             loc.setCGIpath(root->getCGIPath());
+//         if (loc.getMaxBodySize())
+//     }
     
-    if (!page_path.empty())
-    {
-        page_path.insert(0, root_prefix);
-        std::cout << "PATH de la page d'erreur qu'on checke = " << page_path << std::endl;
-        if (lstat(page_path.c_str(), &statbuf) == - 1)
-            throw confInvalidErrorPageException();
-    }
-}
+//     if (!page_path.empty())
+//     {
+//         page_path.insert(0, root_prefix);
+//         std::cout << "PATH de la page d'erreur qu'on checke = " << page_path << std::endl;
+//         if (lstat(page_path.c_str(), &statbuf) == - 1)
+//             throw confInvalidErrorPageException();
+//     }
+// }

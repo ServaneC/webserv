@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/08 16:33:16 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/15 20:20:31 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/16 18:33:18 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,8 @@ std::string             parsingCGIconf(const std::string &loc_conf, const std::s
 const std::string       firstValidIndex(const std::list<std::string> &indexes);
 const Location          *findRootLocation(const std::list<Location> &list);
 size_t                  parsingBodySize(const std::string &loc_conf, const std::string &server_conf);
-std::string             parsingErrorPage(const std::string &location_conf, const std::string &server_conf);//, const std::list<Location> &list);
+// std::string             parsingErrorPage(const std::string &location_conf, const std::string &server_conf);//, const std::list<Location> &list);
 // std::string    parsingErrorPage(const Location *location, const Location *root_loc);//, const std::string &server_root);//, const std::list<Location> &list)
-void            updateWithRootInfos(std::list<Location> &routes, const Location *root);
+std::string parsingErrorPage(const Location &loc, const std::list<Location> &list);
+// void            updateWithRootInfos(std::list<Location> &routes, const Location *root);
 #endif

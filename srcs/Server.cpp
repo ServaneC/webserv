@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/07/15 20:14:35 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/16 19:11:08 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,11 +28,12 @@ Server::Server(Config &conf, std::string server_conf) :
         this->_name = parsingName(server_conf);
         std::cout << "- ServerName = " << _name << std::endl;
 
+        this->_routes.push_front(*(new Location(std::string(), trimLocations(server_conf), trimLocations(server_conf), _routes)));
         this->_routes = parsingLocations(server_conf);
 
         this->_root = findRootLocation(_routes);
 
-        updateWithRootInfos(_routes, _root);
+        //updateWithRootInfos(_routes, _root);
         
         // this->_root = parsingRoot(trimLocations(server_conf));
         // std::cout << "- ServerRoot = " << _root << std::endl;

@@ -10,6 +10,17 @@ il faudrait construire le path absolu au moment ou on parse.
 root de la loc
     -> si on trouve une page sans instruction root on donne la root du serveur
 
+En fait il faut bien differencier la location / des infos donnees hors des
+locations donc --> Nouvelle idee pour pas m'embrouiller :
+    - Avant de parser les locations, je push une premiere par defaut sans path
+qui contient toutes les infos donnees hors des blocs locations.
+    - Quand je parse les locations, si une info est absente je vais chercher
+si elle est presente dans le bloc trimLocations, je la recupere.
+
+Comme ca je peux simplifier le constructeur de Location et les fonctions de 
+parsing, y'aura plus besoin de server_conf, juste du premier maillon de la 
+liste qui sera deja construit dans tous les cas. 
+
 $$$$$$  $$$$   $$  $$  $$$$   $$  $$    $$$    $$
   $$   $$  $$  $$  $$  $$ $$  $$$ $$   $$ $$   $$
 $ $$   $$  $$  $$  $$  $$$    $$ $$$  $$$$$$$  $$

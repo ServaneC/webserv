@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 14:42:45 by schene            #+#    #+#             */
-/*   Updated: 2021/07/15 17:18:17 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/18 17:12:02 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 # define BUF_SIZE 500
 
-Response::Response(execCGI &my_CGI, int socket) :  
+Response::Response(execMethod &my_CGI, int socket) :  
 	_cgi(my_CGI), _socket(socket), _buf(NULL), _idx(0), _buf_size(0)
 {
 	if (this->_cgi.getBuf())
@@ -26,6 +26,9 @@ Response::Response(execCGI &my_CGI, int socket) :
 		this->_cgi.free_buf();
 	}
 	this->_headers["Status"] = this->_cgi.getEnvVar("STATUS_CODE");
+	std::cout << "LOCAION => [" << this->_cgi.getEnvVar("LOCATION") << ']' << std::endl;
+	if (!this->_cgi.getEnvVar("LOCATION").empty())
+		this->_headers["Location"] = this->_cgi.getEnvVar("LOCATION");
 	if (this->_cgi.getCgi())
 		this->parse_cgi_buf();
 	this->_headers["Allow"] = std::string();
@@ -34,7 +37,7 @@ Response::Response(execCGI &my_CGI, int socket) :
 	this->_headers["Content-Location"] = std::string();
 	this->setDate();
 	this->setLastModified();
-	this->_headers["Location"] = std::string();
+	// this->_headers["Location"] = std::string();
 	this->_headers["Retry-After"] = std::string();
 	this->_headers["Server"] = std::string("webserv/4.2");
 	this->_headers["Transfer-Encoding"] = std::string();

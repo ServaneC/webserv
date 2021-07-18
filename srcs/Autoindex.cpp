@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/24 11:42:28 by schene            #+#    #+#             */
-/*   Updated: 2021/07/13 18:22:18 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/18 16:25:27 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,7 @@ std::string Autoindex::autoindex_generator()
     std::string index;
     
     index = "<!DOCTYPE HTML>\n";
-    index += "<body>\n<h1>Index of " + this->_dir_name + "</h1>\n<hr>\n";
+    index += "<html><body>\n<h1>Index of " + this->_dir_name + "</h1>\n<hr>\n";
     for (std::list<std::string>::iterator it = this->_listing.begin(); it != this->_listing.end(); it++)
         index += "<p><a href = \"" + this->_dir_name + '/' + (*it) + "\">" +  (*it) + "</a></p>\n";
     index += "<hr>\n</body>\n</html>\n";  

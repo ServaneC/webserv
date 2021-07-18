@@ -670,11 +670,31 @@ AVANT CA:
 	=> l'upload des fichiers marche !
 		- il faut completement retravailler la fonction qui ai actuellement degueulasse ✅
 
-
+18/07/2021
 !! pb quand on veut delete juste apres upload (p-ê un pb dans recv ?)
--> voir quoi renvoyer si on upload un file qui a déja ete upload (actuelement on renvoi quand meme un 301 Created)
+	-> les request DELETE ne marche que si c'est la premiere request envoyé après le lancement du serveur
+		- le pb semble venir du fait que la requete viennent de curl
+	-> si on envoi une autre requete apres la requete du curl sera lu
+-> repasser le testeur 42
+	- fail au test POST (le 2eme, a cause du chunk) ✅  (c'etait un pb dans le conf file)
+	-> parfois erreur broken pipe, la requete n'est pas entierement recu...
+		=> j'ai rajouter un for qui essaye de lire 100 fois avant de declarer que c'est la fin du header.
+	✅ Tous les test passent jusqu'au premier PUT
+-> teste dans la VM
+	-> l'upload ne marche pas tout le temps 🤷🏻‍♀️
+-> gerer parfaitement l'upload des fichiers
+	-> revoir ce qui est renvoyé apres l'upload.
+		-> ajout du header Location
+		-> ajouter un body avec le lien vers la ressource créé ✅
+	-> voir quoi renvoyer si on upload un file qui a déja ete upload (actuellement on renvoi quand meme un 301 Created)
+	✅ on renvois un 200 OK et toujours un body avec le lien vers le fichier.
+-> créer une autre classe pour séparer les fonctions dans execCGI
+	- j'ai créé la classe execMethod et j'ai mis dedans tout ce qu'il y avait dans execCGI (qui est mnt vide)
+	-> J'AI COMMEMCER A reorganiser, je continuerais demain 
+
+
 -> faudras rajouter + parser/stocker dans le conf file un path où uploader les files 
--> creer une autre classe pour séparer les fonctions dans execCGI
+-> revoir la gestion du header Last-Modified
 
 ================================== NOTES ==================================
 

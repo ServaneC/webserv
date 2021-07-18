@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 16:24:45 by schene            #+#    #+#             */
-/*   Updated: 2021/07/15 14:42:58 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/18 16:21:55 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,8 +65,20 @@ int			Request::recvHeader() // recv byte per byte to stop at the end of the head
 		c = this->recv_one();
 		if (int(c) != 255)
 			this->_buf.push_back(c);
-		else
-			return (-1);
+		if (c == (unsigned char)-1)
+		{
+			for (int i = 0; i < 100; i++)
+			{
+				c = this->recv_one();
+				if (c != (unsigned char)-1)
+				{
+					this->_buf.push_back(c);
+					break ;
+				}
+			}
+			if (c == (unsigned char)-1)
+				return (-1);
+		}
 	}
 		
 	return 1;
@@ -118,13 +130,12 @@ int			Request::recvChunk()
 		if (size_buf.size() > 2)
 			size_buf.erase(size_buf.size() - 2, 2); // erase the CRLF
 		size = hexa_to_int(size_buf);
+		std::cout << "size = " << size << std::endl;
 		//end of the chunk body
 		if (size == 0)
 		{
-			recv_one();
-			recv_one();
-			recv_one();
-			recv_one();
+			while (recv_one() != (unsigned char)-1)
+				;
 			return 1;
 		}
 		// recv the chunk data + append to body
@@ -150,6 +161,7 @@ unsigned char	Request::recv_one()
 	{
 		c = 0;
 		recv_ret = recv(this->_socket, &c, 1, 0);
+		// std::cout << '|' << recv_ret << '|' << std::endl;
 		if (recv_ret < 0)
 			return (-1);
 		if (recv_ret > 0)

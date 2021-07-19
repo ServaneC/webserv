@@ -47,6 +47,8 @@ execRequest::execRequest(Server &serv)
 		this->_env["STATUS_CODE"] = "400 Bad Request";
 	if (autoindex == false && !this->_env["STATUS_CODE"].compare("200 OK"))
 		this->exec_method();
+	else if (this->_env["STATUS_CODE"].compare("200 OK") != 0)  // cas d'erreur ou redirection (redirections pas encore gerees)
+		this->serveErrorPage(this->_env["PATH_INFO"]);  // en ayant change path info dans setPathQuery pour le fichier d'erreur au lieu de la target + le status code
 	Response((*this), this->_server.getClientSocket());
 }
 
@@ -72,12 +74,25 @@ bool execRequest::tryPath(Server &server, Request &request, const std::string &t
 	// std::cout << "obj => (" << this->_request.getObject() << ')' << std::endl;
 
     Autoindex autoidx(target, this->_env["PATH_INFO"], loc.getIndexes());
+    // if (!autoidx.path_exist() ||  // path doesn't exist or is a dir and autoindex is off + no index file
+    //     (autoidx.isDir() && !autoidx.getIndex() && !loc.getAutoIndex()))
+    // {
+    //     std::cout << "Hey !" << loc.getErrorPage() << std::endl;
+    //     this->_env["PATH_INFO"] = loc.getErrorPage();
+    //     throw targetNotFoundException();
+    // }
 	if (!autoidx.path_exist())
+	{
+        this->_env["PATH_INFO"] = loc.getErrorPage();
 		throw targetNotFoundException();
+	}
 	else if (autoidx.isDir() && !autoidx.getIndex() && !this->_env["REQUEST_METHOD"].compare("GET"))
 	{
 		if (!loc.getAutoIndex())
+		{
+			this->_env["PATH_INFO"] = loc.getErrorPage();
 			throw targetNotFoundException();
+		}
 		else
 		{
 			std::string tmp = autoidx.autoindex_generator();

@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/30 13:24:55 by schene            #+#    #+#             */
-/*   Updated: 2021/07/19 17:56:38 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/19 20:39:06 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,3 +120,28 @@ void	execRequest::exec_CGI()
 	if (!pid)
 		exit(0);
 }
+
+void execRequest::serveErrorPage(const std::string &path)
+{
+	int					fd;
+	unsigned char		*buffer;
+	struct stat			info;
+
+	fd = open(path.c_str(), O_RDONLY);
+	std::cout << "error path = " << path << std::endl;
+	// if (fd < 0)
+	// 	this->_env["STATUS_CODE"] = "403 Forbidden";
+	// else
+	// {
+		if (fstat(fd, &info) == 0)
+		{
+			buffer = new unsigned char [info.st_size];
+			if (read(fd, buffer, info.st_size) < 0)
+				this->_env["STATUS_CODE"] = "500 Internal Server Error";
+			else
+				this->append_body((unsigned char *)buffer, info.st_size);
+		}
+		close(fd);
+	// }
+}
+

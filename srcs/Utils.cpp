@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/13 12:10:03 by schene            #+#    #+#             */
-/*   Updated: 2021/07/15 19:02:18 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/19 20:35:05 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,4 +37,13 @@ int             ft_gnl(unsigned char *buf, int buf_start)
 			return (next_n);
 		next_n++;
 	}
+}
+
+size_t ft_atoul(std::string ulong)
+{
+    size_t x;
+    std::stringstream ss;
+    ss << std::dec << ulong;
+    ss >> x;
+    return (x);
 }

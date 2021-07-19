@@ -53,6 +53,8 @@ class execRequest
 		void	exec_CGI();
 
 		void  	printEnv(std::string);
+		// bool	tryPath(Server &server, Request &request, const std::string &target);
+		void	serveErrorPage(const std::string &path);
 	
 public:
 		execRequest(Server &serv);

@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/24 11:42:28 by schene            #+#    #+#             */
-/*   Updated: 2021/07/19 19:14:13 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/19 20:31:45 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ Autoindex::Autoindex(std::string dir_name, std::string dir_path, const std::list
         this->_exist = false;
         return ;
     }
-    std::cout << "Je LSTAT -> " << dir_path << std::endl;
+    // std::cout << "Je LSTAT -> " << dir_path << std::endl;
     if (!S_ISDIR(info.st_mode))
     {
         this->_is_dir = false;
@@ -44,7 +44,7 @@ Autoindex::Autoindex(std::string dir_name, std::string dir_path, const std::list
             this->_listing.push_back(name);
             for (std::list<std::string>::const_iterator it = indexes.begin(); it != indexes.end(); it++)
             {
-                std::cout << "Compare " << name << " & " << *it << std::endl;
+                // std::cout << "Compare " << name << " & " << *it << std::endl;
                 if (!name.compare(*it))
                     _index_file = true;
             }

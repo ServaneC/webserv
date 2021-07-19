@@ -2,24 +2,46 @@ $$$$$$$$  $$$$        $$$$     $$$$
    $$    $$  $$       $$  $$  $$  $$
    $$    $$  $$  $$$  $$  $$  $$  $$
    $$     $$$$        $$$$     $$$$  $$ $$ $$
+--------------------------------------------------------------------------
 
-Si c'est une request sur un directory :
-	- renvoyer le bon fichier index
-	- si pas d'index présent, et autoindex on -> renvoyer le directory listing
-	- si pas d'index et autoindex off (renvoyer un 404 ou autre)
-Remplacer getIndexes().front par une fonction qui essaie un a un les indexes dasn l'ordre
+
 
 
 $$$$$$  $$$$   $$  $$  $$$$   $$  $$    $$$    $$
   $$   $$  $$  $$  $$  $$ $$  $$$ $$   $$ $$   $$
 $ $$   $$  $$  $$  $$  $$$    $$ $$$  $$$$$$$  $$
 $$$     $$$$    $$$$   $$ $$  $$  $$ $$     $$ $$$$$$
-
-[09/6]
+--------------------------------------------------------------------------
+[19/7]
+1) J'ai fait ma fameuse refonte du parsing, ca marche tres tres bien et ca m'a
+permis de terminer la gestion des pages d'erreurs.
+--------------------------------------------------------------------------
+[13/7]
+- J'ai rajouté le parsing de max_body_size et error_page dans les locations
+    mais pour l'instant ca n'intervient pas vraiment dans le code en soit.
+- En cours -> renvoyer les bonnes pages d'erreur selon ce qui est spécifié
+    dans le conf file.
+    Super mauvaise idee de gerer les pages d'erreur comme je fais :
+    il faudrait construire le path absolu au moment ou on parse.
+        -> si on trouve une page d'erreur dans un bloc loc on l'associe a la
+    root de la loc
+        -> si on trouve une page sans instruction root on donne la root du serveur
+- En fait il faut bien differencier la location / des infos donnees hors des
+    locations donc --> Nouvelle idee pour pas m'embrouiller :
+        - Avant de parser les locations, je push une premiere par defaut sans path
+    qui contient toutes les infos donnees hors des blocs locations.
+        - Quand je parse les locations, si une info est absente je vais chercher
+    si elle est presente dans le bloc trimLocations, je la recupere.
+-> Comme ca je peux simplifier le constructeur de Location et les fonctions de 
+    parsing, y'aura plus besoin de server_conf, juste du premier maillon de la 
+    liste qui sera deja construit dans tous les cas. 
+--------------------------------------------------------------------------
+[09/7]
 J'ai a peu pres reussi a faire ce que je voulais, j'ai juste un souci avec
     le CSS (la 2eme requete que fait le navigateur tout seul) : y'a un /
     en trop au milieu mais ca marche quand meme.
-[07/6]
+--------------------------------------------------------------------------
+[07/7]
 1) J'ai remanie les variables de PATH mais c'est un tel bordel !!! J'ai 
     stocké dans Request plein de morceaux de path pour etre au clair sur
     ce que je manipule. J'ai qques soucis avec le concept "object" qui
@@ -35,7 +57,7 @@ J'ai a peu pres reussi a faire ce que je voulais, j'ai juste un souci avec
 >> Demain je me debarasse des variables superflues dans Server et je gere
 root comme une location, la j'en ai un peu marre.  
 --------------------------------------------------------------------------
-[05/6]
+[05/7]
 1) parsing autoindex -> default off
     - un bool dans Server
 	- un bool dans Location
@@ -151,11 +173,11 @@ la clé et le scope des instructions comme etant le contenu.
         wont be using regexp):
     [X] -> define a list of accepted HTTP Methods for the route
     [ ] -> define an HTTP redirection.
-    [ ] -> define a directory or a file from where the file should be search (for example
+    [X] -> define a directory or a file from where the file should be search (for example
         if url /kapouet is rooted to /tmp/www, url /kapouet/pouic/toto/pouet is
         /tmp/www/pouic/toto/pouet)
-    [ ] -> turn on or off directory listing
-    [ ] -> default file to answer if the request is a directory
+    [X] -> turn on or off directory listing
+    [X] -> default file to answer if the request is a directory
     [ ] -> execute CGI based on certain file extension (for example .php)
         [ ] -> Because you won’t call the CGI directly, use the full path as PATH_INFO
         [X] -> Just remembers that for chunked request, your server needs to unchunked it 

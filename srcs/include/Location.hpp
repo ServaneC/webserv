@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:43:38 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/16 17:30:40 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/19 16:44:00 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,11 +29,11 @@ class Location
 		std::string 			_cgi_path;      // empty if not in conf
         size_t                  _max_body_size; //ulong max if not in conf
         std::string             _error_page;    // empty if not in conf
-        Location();
 
     public :
 
-        Location(const std::string path, const std::string location_conf, const std::string &server_conf, const std::list<Location> &list);
+        Location();
+        Location(const std::string path, const std::string location_conf, const Location &general);
         Location(const Location &ref);
         ~Location();
         const Location &operator=(const Location &ref);

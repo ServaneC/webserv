@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:48:09 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/16 19:23:54 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/19 16:45:28 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,38 +16,35 @@ Location::Location() {}
 
 Location::~Location() {}
 
-Location::Location(const std::string path, const std::string location_conf,
-    const std::string &server_conf, const std::list<Location> &list) : _path(path), _location_conf(location_conf),
-    _autoindex(false)
+Location::Location(const std::string path, const std::string location_conf, 
+    const Location &general) : _path(path), _location_conf(location_conf), 
+    _autoindex(false), _max_body_size(std::numeric_limits<size_t>::max())
 {
-    this->_accepted_methods = parseAcceptedMethods(location_conf);
+    this->_accepted_methods = parsingAcceptedMethods(location_conf);
     std::cout << "LOCATION -> " << _path << " : ";
     for (std::vector<int>::iterator it = _accepted_methods.begin(); it != _accepted_methods.end(); it++)
         std::cout << *it << " ";
     std::cout << std::endl;
 
-    
-    // std::cout << _server_conf << std::endl;
-
-    this->_root = parsingRoot(location_conf, server_conf, list);
+    this->_root = parsingRoot(location_conf, general);
     std::cout << "Local root for <" << path << "> is -> |" << _root << "|" << std::endl;
 
-    this->_indexes = parsingIndexes(location_conf, server_conf);
+    this->_indexes = parsingIndexes(location_conf, general);
     std::cout << "Local indexes = ";
         for (std::list<std::string>::iterator it = _indexes.begin(); it != _indexes.end(); it++)
             std::cout << *it << " ";
         std::cout << std::endl;
     
-    this->_autoindex = parsingAutoIndex(location_conf, server_conf);
+    this->_autoindex = parsingAutoIndex(location_conf, general);
     std::cout << "Local autoindex -> " << _autoindex << std::endl;
 
-    this->_cgi_path = parsingCGIconf(location_conf, server_conf);
+    this->_cgi_path = parsingCGIconf(location_conf, general);
     std::cout << "Local cgi path -> " << _cgi_path << std::endl;
 
-    this->_max_body_size = parsingBodySize(location_conf, server_conf);
+    this->_max_body_size = parsingBodySize(location_conf, general);
     std::cout << "Local max body size -> " << _max_body_size << std::endl;
 
-    this->_error_page = parsingErrorPage(*this, list);
+    this->_error_page = parsingErrorPage(*this, general);
     std::cout << "Local error_page -> " << _error_page << std::endl;
 }
 

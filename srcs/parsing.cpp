@@ -6,11 +6,15 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/18 19:59:30 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/19 18:20:34 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/parsing.hpp"
+
+// **************************************** //
+// ***********  PARSING SERVER  *********** //
+// **************************************** //
 
 std::string parsingName(const std::string &conf)
 {
@@ -55,15 +59,6 @@ std::string parsingRoot(const std::string &loc_conf, const Location &general)//,
     return (getCurrentDirectory().append(loc_conf.substr(root_index, root_end - root_index)));
 }
 
-unsigned int    convertIPAddress(const std::string &conf, size_t index)
-{
-    IPA_t   addr;
-    
-    for (int i = 3; i >= 0; i--)
-        addr.block[i] = getValueBetweenPoints(conf, &index);
-    return (addr.address);
-}
-
 void parsingIPAddress(const std::string &conf, unsigned int *ip, int *port)
 {
     size_t  addr_index = conf.find("listen");
@@ -83,10 +78,9 @@ void parsingIPAddress(const std::string &conf, unsigned int *ip, int *port)
         throw confInvalidPortException();
 }
 
-std::list<Location> parsingLocations(const std::string &conf)
+void parsingLocations(std::list<Location> &routes, const std::string &conf)
 {
     size_t              last_found = conf.find("location");
-    std::list<Location> routes;
 
     while (last_found < conf.size() && last_found < std::string::npos)
     {
@@ -97,13 +91,30 @@ std::list<Location> parsingLocations(const std::string &conf)
         std::string rules = getScope(conf, path_index + path_length);
         if (!rules.empty())
         {
-            Location *to_push = new Location(path, rules, trimLocations(conf), routes);
+            Location *to_push = new Location(path, rules, routes.front());
             routes.push_back(*to_push);
             //std::cout << "FOR LOCATION <" << path << ">, RULES ARE : " << rules << std::endl;
         }
         last_found = conf.find("location", last_found);
     }
-    return (routes);
+}
+
+// ******************************************* //
+// ***********  PARSING LOCATIONS  *********** //
+// ******************************************* //
+
+std::vector<int> parsingAcceptedMethods(const std::string &location_conf)
+{
+    std::vector<int>    methods;
+    size_t              index = location_conf.find("accepted_method");
+    size_t              end = location_conf.find(';', index);
+
+    if (index == std::string::npos || end == std::string::npos)
+        return (methods);
+    index += 15;
+    while (index != end)
+        methods.push_back(parseMethod(location_conf, &index));
+    return (methods);
 }
 
 std::list<std::string> parsingIndexes(const std::string &loc_conf, const Location &general)//, const std::string &server_conf)
@@ -115,13 +126,10 @@ std::list<std::string> parsingIndexes(const std::string &loc_conf, const Locatio
         index_i = loc_conf.find("index", index_i + 1);
     if (index_i == std::string::npos)
     {
-        // std::cout << "** SERVER CONF = " << server_conf << std::endl;
         if (general.getIndexes().empty())
             indexes.push_front("index.html");
         else
             indexes = general.getIndexes();
-        // if (loc_conf != server_conf)
-        //     indexes = parsingIndexes(server_conf, server_conf);
         return (indexes);
     }
     index_i += 6;
@@ -149,28 +157,64 @@ bool parsingAutoIndex(const std::string &loc_conf, const Location &general)//con
     return (false);
 }
 
-int     setMethodCode(const std::string &method_name)
+std::string    parsingCGIconf(const std::string &location_conf, const Location &general)//, const std::string &server_conf)
 {
-    int code = METHOD_NOT_ALLOWED;
-    code = !method_name.compare("GET") ? METHOD_GET : code;
-    code = !method_name.compare("POST") ? METHOD_POST : code;
-    code = !method_name.compare("DELETE") ? METHOD_DELETE : code;
-    return (code);
+    size_t      index = location_conf.find("cgi_path");
+    std::string cgi_path;
+    struct stat statbuf;
+
+    if (index == std::string::npos)
+        return (general.getCGIPath());
+    index += 9;
+    index = location_conf.find_first_not_of(" \t\n\r\v\f", index);
+    size_t end = location_conf.find(";", index);
+    if (end == std::string::npos)
+        throw confInvalidCGIException();
+    cgi_path = location_conf.substr(index, end - index);
+    if (lstat(cgi_path.c_str(), &statbuf) == - 1)
+        throw confInvalidCGIException();
+    return (cgi_path);
 }
 
-std::vector<int> parseAcceptedMethods(const std::string &location_conf)
+size_t parsingBodySize(const std::string &loc_conf, const Location &general)//const std::string &server_conf)
 {
-    std::vector<int>    methods;
-    size_t              index = location_conf.find("accepted_method");
-    size_t              end = location_conf.find(';', index);
+    size_t  index = loc_conf.find("max_body_size");
+    size_t  max_body_size = 0;
 
-    if (index == std::string::npos || end == std::string::npos)
-        return (methods);
-    index += 15;
-    while (index != end)
-        methods.push_back(parseMethod(location_conf, &index));
-    return (methods);
+    if (index == std::string::npos)
+        return (general.getMaxBodySize());
+    index += 14;
+    index = loc_conf.find_first_not_of(" \t\n\r\v\f", index);
+    size_t length = loc_conf.find_first_not_of("0123456789", index) - index;
+    max_body_size = ft_atoul(loc_conf.substr(index, length));
+    return (max_body_size);
 }
+
+std::string    parsingErrorPage(const Location &location, const Location &general)//, const std::list<Location> &list)
+{
+    struct stat statbuf;
+    std::string page_path;
+    std::string location_conf = location.getConf();
+    size_t      index = location_conf.find("error_page");
+
+    if (index == std::string::npos)
+        return (general.getErrorPage());
+    index += 11;
+    index = location_conf.find_first_not_of(" \t\n\r\v\f", index);
+    size_t end = location_conf.find(";", index);
+    if (end == std::string::npos)
+        throw confInvalidErrorPageException();
+    page_path = location_conf.substr(index, end - index);
+    page_path.insert(0, location.getRoot() + "/");
+    if (lstat(page_path.c_str(), &statbuf) == - 1)
+        throw confInvalidErrorPageException();
+    return (page_path);
+}
+
+// ******************************************** //
+// ***********  HANDLING LOCATIONS  *********** //
+// ******************************************** //
+
 
 const Location &getRelevantLocation(const std::list<Location> &_routes, const std::string &target)
 {
@@ -232,29 +276,6 @@ std::string buildPath(Server &server, Request &request, const std::string &targe
     return (path);
 }
 
-std::string    parsingCGIconf(const std::string &location_conf, const std::string &server_conf)
-{
-    size_t      index = location_conf.find("cgi_path");
-    std::string cgi_path;
-    struct stat statbuf;
-
-    if (index == std::string::npos)
-    {
-        if (location_conf != server_conf)
-            cgi_path = parsingCGIconf(server_conf, server_conf);
-        return (cgi_path);
-    }
-    index += 9;
-    index = location_conf.find_first_not_of(" \t\n\r\v\f", index);
-    size_t end = location_conf.find(";", index);
-    if (end == std::string::npos)
-        throw confInvalidCGIException();
-    cgi_path = location_conf.substr(index, end - index);
-    if (lstat(cgi_path.c_str(), &statbuf) == - 1)
-        throw confInvalidCGIException();
-    return (cgi_path);
-}
-
 const std::string firstValidIndex(const std::list<std::string> &indexes)
 {
     struct stat     statbuf;
@@ -276,113 +297,3 @@ const Location *findRootLocation(const std::list<Location> &list)
     }
     return (NULL);
 }
-
-size_t parsingBodySize(const std::string &loc_conf, const std::string &server_conf)
-{
-    size_t  index = loc_conf.find("max_body_size");
-    size_t  max_body_size = 0;
-
-    if (index == std::string::npos)
-    {
-        if (loc_conf != server_conf)
-            return (parsingBodySize(server_conf, server_conf));
-        else
-            return (--max_body_size);  //return ulong max si precisé nulle part
-    }
-    index += 14;
-    index = loc_conf.find_first_not_of(" \t\n\r\v\f", index);
-    size_t length = loc_conf.find_first_not_of("0123456789", index) - index;
-    max_body_size = ft_atoul(loc_conf.substr(index, length));
-    return (max_body_size);
-}
-
-// std::string    parsingErrorPage(const std::string &location_conf, const std::string &server_conf)//, const std::list<Location> &list)
-// {
-//     std::string page_path;
-//     // struct stat statbuf;
-//     size_t      index = location_conf.find("error_page");
-
-//     if (index == std::string::npos || index == 0)
-//     {
-//         if (&location_conf == &server_conf)
-//             return (std::string());
-//         else
-//             return (parsingErrorPage(server_conf, server_conf));
-//     }
-//     index += 11;
-//     index = location_conf.find_first_not_of(" \t\n\r\v\f", index);
-//     size_t end = location_conf.find(";", index);
-//     if (end == std::string::npos)
-//         throw confInvalidErrorPageException();
-//     page_path = location_conf.substr(index, end - index);
-//     return (page_path);
-// }
-
-std::string parsingErrorPage(const Location &loc, const std::list<Location> &list)
-{
-    std::string loc_conf = loc.getConf();
-    size_t page_index = loc_conf.find("error_page");
-    std::cout << "PAGE INDEX =" << page_index << std::endl;
-    std::cout << "PATH =" << loc.getPath() << std::endl;
-    std::cout << "CONF =" << loc_conf << std::endl;
-    if (page_index == std::string::npos)  // pas de directive root dans la loc
-    {
-        //const Location *root = findRootLocation(list);
-        const Location &gen_loc = list.front();
-        if (&loc == &gen_loc) //&gen_loc == NULL || 
-            return (std::string());  // pas de page d'erreur
-        else
-            return (parsingErrorPage(gen_loc, list));  // chercher hors des locations
-    }
-    page_index = loc_conf.find_first_not_of(" \t\n\r\v\f", page_index + 11);
-    size_t page_end = loc_conf.find_first_of("; \t\n\r\v\f", page_index);
-    if (page_end == std::string::npos)
-        throw confInvalidRootException();
-    // const Location *root = findRootLocation(list);
-    // if (root)
-    //     return (root->getRoot().append(loc_conf.substr(page_index, page_end - page_index)));
-    return (loc.getRoot().append("/" + loc_conf.substr(page_index, page_end - page_index)));
-}
-
-// void checkErrorPages(std::list<Location> &list)
-// {
-//     const Location *root = findRootLocation(list);
-
-//     for (std::list<Location>::iterator it = list.begin(); it != list.end(); it++)
-//     {
-//         std::cout << "PATH de la page d'erreur avant = " << it->getErrorPage() << std::endl;
-//         if (!it->getErrorPage().empty())  // error page directive present
-//         {
-//             if (!it->getRoot().empty())
-//                 it->addErrorPagePrefix(it->getRoot() + "/");
-//             else
-//                 it->addErrorPagePrefix(root->getRoot() + "/");
-//             if (lstat(it->getErrorPage().c_str(), &statbuf) == - 1)
-//                 throw confInvalidErrorPageException();
-//         }
-//     }
-// }
-
-// void            updateWithRootInfos(std::list<Location> &routes, const Location *root)
-// {
-//     for (std::list<Location>::iterator it = list.begin(); it != list.end(); it++)
-//     {
-//         Location &loc = *it;
-
-//         if (loc.getRoot().empty() && !root->getRoot().empty())
-//             loc.setRoot(root->getRoot());
-//         if (loc.getIndexes().empty() && !root->getIndexes().empty())
-//             loc.setIndexes(root->getIndexes());
-//         if (loc.getCGIPath().empty() && !root->getCGIPath().empty())
-//             loc.setCGIpath(root->getCGIPath());
-//         if (loc.getMaxBodySize())
-//     }
-    
-//     if (!page_path.empty())
-//     {
-//         page_path.insert(0, root_prefix);
-//         std::cout << "PATH de la page d'erreur qu'on checke = " << page_path << std::endl;
-//         if (lstat(page_path.c_str(), &statbuf) == - 1)
-//             throw confInvalidErrorPageException();
-//     }
-// }

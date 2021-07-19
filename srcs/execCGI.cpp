@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/30 13:24:55 by schene            #+#    #+#             */
-/*   Updated: 2021/07/14 20:03:35 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/19 17:07:58 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,7 +109,7 @@ bool execCGI::tryPath(Server &server, Request &request, const std::string &targe
 			this->_env["SCRIPT_FILENAME"] = index;
 			this->_env["SCRIPT_NAME"] = index;
 		}	
-		try {
+		try {  			/// pourquoi c'est dans un bloc try/catch ???
 			if (cgi_path.size())
 			{
 				this->_cgi = true;

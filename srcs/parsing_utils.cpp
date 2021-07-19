@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/07 15:29:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/09 18:09:08 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/19 16:22:02 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,15 @@ unsigned char    getValueBetweenPoints(const std::string &str, size_t *index)
     return (static_cast<unsigned char>(result));
 }
 
+unsigned int    convertIPAddress(const std::string &conf, size_t index)
+{
+    IPA_t   addr;
+    
+    for (int i = 3; i >= 0; i--)
+        addr.block[i] = getValueBetweenPoints(conf, &index);
+    return (addr.address);
+}
+
 bool    isCommentLine(const char *line)
 {
     std::string str(line);
@@ -63,6 +72,15 @@ bool    isCommentLine(const char *line)
     if (str[firstChar] == '#')
         return (true);
     return (false);
+}
+
+int     setMethodCode(const std::string &method_name)
+{
+    int code = METHOD_NOT_ALLOWED;
+    code = !method_name.compare("GET") ? METHOD_GET : code;
+    code = !method_name.compare("POST") ? METHOD_POST : code;
+    code = !method_name.compare("DELETE") ? METHOD_DELETE : code;
+    return (code);
 }
 
 int     parseMethod(const std::string &str, size_t *index)

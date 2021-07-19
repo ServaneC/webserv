@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/07/16 19:11:08 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/19 18:20:22 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,24 +28,11 @@ Server::Server(Config &conf, std::string server_conf) :
         this->_name = parsingName(server_conf);
         std::cout << "- ServerName = " << _name << std::endl;
 
-        this->_routes.push_front(*(new Location(std::string(), trimLocations(server_conf), trimLocations(server_conf), _routes)));
-        this->_routes = parsingLocations(server_conf);
+        Location *general = new Location(std::string(), trimLocations(server_conf), Location());
+        this->_routes.push_front(*general);
+        parsingLocations(this->_routes, server_conf);
 
         this->_root = findRootLocation(_routes);
-
-        //updateWithRootInfos(_routes, _root);
-        
-        // this->_root = parsingRoot(trimLocations(server_conf));
-        // std::cout << "- ServerRoot = " << _root << std::endl;
-
-        // this->_indexes = parsingIndexes(NULL, trimLocations(server_conf));
-        // std::cout << "- Indexes = ";
-        // for (std::list<std::string>::iterator it = _indexes.begin(); it != _indexes.end(); it++)
-        //     std::cout << *it << " ";
-        // std::cout << std::endl;
-
-        // this->_autoindex = parsingAutoIndex(*this, trimLocations(server_conf));
-        // std::cout << "- Autoindex -> " << _autoindex << std::endl;
 
         this->_host.sin_family = PF_INET;
         this->_host.sin_addr.s_addr = this->_ip;

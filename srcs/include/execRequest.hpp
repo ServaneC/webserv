@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   execMethod.hpp                                     :+:      :+:    :+:   */
+/*   execRequest.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,13 +10,13 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef execMethod_HPP
-# define execMethod_HPP
+#ifndef execRequest_HPP
+# define execRequest_HPP
 
 # include "../../webserv.hpp"
 # define READ_SIZE 2000
 
-class execMethod
+class execRequest
 {
 	private:
 		Server								&_server;
@@ -31,24 +31,32 @@ class execMethod
 		std::list<Location>					_location_list;
 		bool								_cgi;
 
+		// execRequest
+		bool	tryPath(Server &server, Request &request, const std::string &target);
+		void	setPathName(std::string path_info, std::string object);
 		bool	setPathQuery();
+		int		set_argv();
+		void	append_body(unsigned char *buffer, int size);
+		
+		// execMethod
+		void	exec_method();
+		void	readFile();
+		void	exec_delete();
+
+		// execPostMethod
+		void			exec_post();
+		std::string 	parseRequestBody();
+		void			upload_file();
+	
+		// execCGI
 		char	**env_to_char_array();
 		void	exec_CGI();
-		void	exec_method();
-		void	exec_delete();
-		void	parse_and_upload();
-		void	exec_post();
-		int		set_argv();
-		// int		gnl_exec();
-		bool	check_method();
-		void	readFile();
-		void	append_body(unsigned char *buffer, int size);
+
 		void  	printEnv(std::string);
-		bool	tryPath(Server &server, Request &request, const std::string &target);
 	
 public:
-		execMethod(Server &serv);
-		~execMethod();
+		execRequest(Server &serv);
+		~execRequest();
 
 		void				free_buf();
 		std::string const	&getEnvVar(std::string var_name) const;

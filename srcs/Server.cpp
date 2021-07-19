@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/07/18 17:12:02 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/19 17:56:38 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,7 @@ int 	Server::exec_server()
     fcntl(this->_client_socket, F_SETFL, O_NONBLOCK);
     if (this->_rqst.parseRequest(this->_client_socket) < 0)
         return (-1);
-    execMethod((*this));
+    execRequest((*this));
     close(this->_client_socket);
     this->_client_socket = -1; 
     return 1;

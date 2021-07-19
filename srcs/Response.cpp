@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 14:42:45 by schene            #+#    #+#             */
-/*   Updated: 2021/07/18 17:12:02 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/19 17:56:38 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 # define BUF_SIZE 500
 
-Response::Response(execMethod &my_CGI, int socket) :  
+Response::Response(execRequest &my_CGI, int socket) :  
 	_cgi(my_CGI), _socket(socket), _buf(NULL), _idx(0), _buf_size(0)
 {
 	if (this->_cgi.getBuf())

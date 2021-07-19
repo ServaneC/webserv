@@ -1,0 +1,78 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   execPostMethod.cpp                                 :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2021/07/19 18:25:24 by schene            #+#    #+#             */
+/*   Updated: 2021/07/19 19:20:03 by schene           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "include/execRequest.hpp"
+
+void	        execRequest::exec_post()
+{
+	if (!this->_env["CONTENT_TYPE"].compare(0, 19, "multipart/form-data"))
+		this->upload_file();
+	else if (this->_cgi)
+		this->exec_CGI();
+	else
+		this->_env["STATUS_CODE"] = "204 No Content";
+}
+
+std::string     execRequest::parseRequestBody()
+{
+	std::string boundary;
+    std::string	filename;
+	std::string	type;
+    int		    next_n; 
+
+	boundary = this->_env["CONTENT_TYPE"].substr(this->_env["CONTENT_TYPE"].find("boundary=") + 9);
+	boundary.insert(0, 2, '-');
+	this->_request_buf_start = boundary.size() + 2; // erase the first boundary + CRLF
+	this->_request_buf_size -= 2 * boundary.size() + 6; // erase the last boundary + '--' + CRLF
+	next_n = ft_gnl(this->_request.getBody(), this->_request_buf_start);
+	filename = std::string((char *)(this->_request.getBody() + this->_request_buf_start), next_n - 1);
+    this->_request_buf_start += next_n + 1;
+	this->_request_buf_size -= next_n + 1;
+	next_n = ft_gnl(this->_request.getBody(), this->_request_buf_start);
+	type = std::string((char *)(this->_request.getBody() + this->_request_buf_start), next_n - 1);
+	this->_request_buf_start += next_n + 3;
+	this->_request_buf_size -= next_n + 3;
+	filename.erase(0, filename.find("filename=\""));
+	filename.erase(0, filename.find('\"') + 1);
+	filename.erase(filename.find_last_of('\"'), 1);
+	this->_env["CONTENT_TYPE"] = type.substr(type.find(':') + 2);
+	filename.insert(0, this->_env["SCRIPT_NAME"] + '/');
+    return (filename);
+}
+
+void	        execRequest::upload_file()
+{
+	struct stat info;
+	std::string body;
+    std::string filename = this->parseRequestBody();
+
+	if (lstat(filename.c_str(), &info) == 0)
+		body = "<!DOCTYPE HTML>\n<html><body><h1> This file was already uploaded!</h1>\n";
+	else
+	{
+		int fd = open(filename.c_str(), O_WRONLY | O_CREAT, 00755);
+		if (fd < 0)
+		{
+			std::cerr << "ERROR OPEN << std::endl";
+			return ;
+		}
+		write(fd, &(this->_request.getBody()[this->_request_buf_start]), this->_request_buf_size);
+		close(fd);
+		this->_env["LOCATION"] = '/' + filename;
+		this->_env["STATUS_CODE"] = "201 Created";
+
+		body = "<!DOCTYPE HTML>\n<html><body><h1> File Uploaded !</h1>\n";
+	}
+	body += "<p>Go <a href = \"" + filename + "\">" +  "here</a> to check it out</p>\n";
+	body += "</body>\n</html>\n";
+	this->append_body((unsigned char *)body.c_str(), body.size());
+}

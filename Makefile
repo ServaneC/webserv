@@ -6,7 +6,7 @@
 #    By: schene <schene@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/25 14:21:19 by schene            #+#    #+#              #
-#    Updated: 2021/07/18 17:12:30 by schene           ###   ########.fr        #
+#    Updated: 2021/07/19 19:17:18 by schene           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,9 +16,9 @@ SRCSDIR		=  srcs
 
 OBJDIR		= .obj
 
-SRCS		= Server.cpp main.cpp Request.cpp execMethod.cpp execCGI.cpp \
-				Response.cpp Config.cpp parsing_utils.cpp Utils.cpp parsing.cpp \
-				Location.cpp Autoindex.cpp
+SRCS		= 	Server.cpp main.cpp Request.cpp execPostMethod.cpp execMethod.cpp \
+				execRequest.cpp execCGI.cpp Response.cpp Config.cpp parsing_utils.cpp \
+				Utils.cpp parsing.cpp Location.cpp Autoindex.cpp 
 
 OBJS		= $(addprefix $(OBJDIR)/, $(SRCS:.cpp=.o))
 
@@ -45,13 +45,6 @@ $(NAME) : $(OBJS) $(LIB)
 	@${CC} ${CFLAGS} -o ${NAME} ${OBJS} ${LIB}
 	@echo Compiled $(NAME) successfully !
 	@echo $(NAME) > .gitignore
-
-#${NAME}:	${OBJS} $(LIB)
-#			@echo "✅"
-#			@printf "[libft] " && make -C libft
-#			@printf "[$(NAME)] "
-#			@${CC} ${CFLAGS} -o ${NAME} ${OBJS} ${LIB}
-#			@echo "✅ \033[32mCompilation Done, ./${NAME} created.\033[0m"
 
 $(OBJDIR) :
 			@mkdir -p .obj 

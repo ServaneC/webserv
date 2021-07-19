@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 15:34:32 by schene            #+#    #+#             */
-/*   Updated: 2021/07/18 17:10:39 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/19 18:10:16 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,15 +56,14 @@
 class	Server;
 class	Request;
 class	execCGI;
-class	execMethod;
+class	execRequest;
 class	Response;
 class   Config;
 class   Location;
 
 # include "srcs/include/Server.hpp"
 # include "srcs/include/Request.hpp"
-# include "srcs/include/execCGI.hpp"
-# include "srcs/include/execMethod.hpp"
+# include "srcs/include/execRequest.hpp"
 # include "srcs/include/Response.hpp"
 # include "srcs/include/Config.hpp"
 # include "srcs/include/Location.hpp"

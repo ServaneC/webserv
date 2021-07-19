@@ -690,8 +690,11 @@ AVANT CA:
 	✅ on renvois un 200 OK et toujours un body avec le lien vers le fichier.
 -> créer une autre classe pour séparer les fonctions dans execCGI
 	- j'ai créé la classe execMethod et j'ai mis dedans tout ce qu'il y avait dans execCGI (qui est mnt vide)
-	-> J'AI COMMEMCER A reorganiser, je continuerais demain 
+	-> j'ai commencé a réeorganiser, je continuerais demain 
 
+19/07/2021
+-> j'ai revu toutes l'organisation des fonctions dans execCGI qui est mnt diviser en 4 fichier cpp 
+	relié a execRequest.hpp
 
 -> faudras rajouter + parser/stocker dans le conf file un path où uploader les files 
 -> revoir la gestion du header Last-Modified

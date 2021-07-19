@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 13:50:28 by schene            #+#    #+#             */
-/*   Updated: 2021/07/18 17:12:02 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/19 17:56:38 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 class Response
 {
 	private:
-		execMethod								&_cgi;
+		execRequest								&_cgi;
 		int									_socket;
 		unsigned char 						*_buf;
 		int									_idx;
@@ -38,7 +38,7 @@ class Response
 		void		check_content_type();
 
 	public:
-		Response(execMethod &my_CGI, int socket);
+		Response(execRequest &my_CGI, int socket);
 		~Response();
 };
 

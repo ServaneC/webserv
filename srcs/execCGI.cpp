@@ -6,14 +6,14 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/30 13:24:55 by schene            #+#    #+#             */
-/*   Updated: 2021/07/18 17:29:42 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/19 17:56:38 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "include/execMethod.hpp"
+#include "include/execRequest.hpp"
 #define _BUFSIZE 2000
 
-char	**execMethod::env_to_char_array()
+char	**execRequest::env_to_char_array()
 {
 	char	**array = new char*[this->_env.size() + 1];
 	int		j = 0;
@@ -29,7 +29,7 @@ char	**execMethod::env_to_char_array()
 	return array;
 }
 
-void	execMethod::exec_CGI()
+void	execRequest::exec_CGI()
 {
 	std::cout << "CALL TO THE CGI !" << std::endl;
 	if (this->_env["STATUS_CODE"].compare("200 OK") != 0)

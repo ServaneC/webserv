@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parsing.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
+/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/19 18:20:34 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/19 20:05:22 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -232,7 +232,7 @@ const Location &getRelevantLocation(const std::list<Location> &_routes, const st
 
 const Location &getRelevantExtension(const std::list<Location> &_routes, const std::string &target)
 {
-    std::list<Location>::const_iterator it = _routes.begin();
+    std::list<Location>::const_iterator it = ++_routes.begin();
 
     while (it != _routes.end())
     {
@@ -241,10 +241,7 @@ const Location &getRelevantExtension(const std::list<Location> &_routes, const s
             return (*it);
         it++;
     }
-    it = _routes.begin();
-    while (it != _routes.end() && it->getPath().compare("/"))
-        it++;
-    return (*it);
+    return (getRelevantLocation(_routes, target));
 }
 
 std::string buildPath(Server &server, Request &request, const std::string &target)
@@ -256,6 +253,9 @@ std::string buildPath(Server &server, Request &request, const std::string &targe
     // std::cout << "BUILD PATH :" << std::endl;
     path.erase(path.find_last_of("/"), path.size() - path.find_last_of("/"));
     // std::cout << "\tTarget au debut (moins object) -> [" << path << "]" << std::endl;
+
+    std::cout << "loc [" << loc.isAcceptedMethod(request.getMethodCode()) << ']' << std::endl;
+    std::cout << "ext [" << ext.isAcceptedMethod(request.getMethodCode()) << ']' << std::endl;
     if (!loc.isAcceptedMethod(request.getMethodCode()) || !ext.isAcceptedMethod(request.getMethodCode()))
         throw methodNotAllowedException();
     path.insert(0, loc.getRoot());

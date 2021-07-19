@@ -6,7 +6,7 @@
 /*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/16 19:22:48 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/18 19:59:30 by lemarabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,17 +24,20 @@ std::string parsingName(const std::string &conf)
     return (conf.substr(name_index, name_length - name_index));
 }
 
-std::string parsingRoot(const std::string &loc_conf, const std::string &server_conf, const std::list<Location> &list)
+std::string parsingRoot(const std::string &loc_conf, const Location &general)//, const std::string &server_conf, const std::list<Location> &list)
 {
+    std::string root;
     size_t root_index = loc_conf.find("root");
+    
     if (root_index == std::string::npos)  // pas de directive root dans la loc
     {
-        std::string root;
-        const Location *tmp = findRootLocation(list);
-        if (!tmp)
-            root = parsingRoot(server_conf, server_conf, list);  // chercher hors des locations
-        else
-            root = tmp->getRoot();  // la root du server a deja été trouvé
+        // std::string root;
+        // const Location *tmp = findRootLocation(list);
+        // if (!tmp)
+        root = general.getRoot();
+        //     root = parsingRoot(server_conf, server_conf, list);  // chercher hors des locations
+        // else
+        //     root = tmp->getRoot();  // la root du server a deja été trouvé
         if (root.empty())  // pas de directive root dans le server non plus
             return (getCurrentDirectory());
         return (root);
@@ -43,9 +46,12 @@ std::string parsingRoot(const std::string &loc_conf, const std::string &server_c
     size_t root_end = loc_conf.find_first_of("; \t\n\r\v\f", root_index);
     if (root_end == std::string::npos)
         throw confInvalidRootException();
-    const Location *root = findRootLocation(list);
-    if (root)
-        return (root->getRoot().append(loc_conf.substr(root_index, root_end - root_index)));
+    // const Location *root = findRootLocation(list);
+    // if (root)
+    //     return (root->getRoot().append(loc_conf.substr(root_index, root_end - root_index)));
+    root = general.getRoot();
+    if (!root.empty())
+        return (root.append(loc_conf.substr(root_index, root_end - root_index)));
     return (getCurrentDirectory().append(loc_conf.substr(root_index, root_end - root_index)));
 }
 
@@ -100,7 +106,7 @@ std::list<Location> parsingLocations(const std::string &conf)
     return (routes);
 }
 
-std::list<std::string> parsingIndexes(const std::string &loc_conf, const std::string &server_conf)
+std::list<std::string> parsingIndexes(const std::string &loc_conf, const Location &general)//, const std::string &server_conf)
 {
     std::list<std::string>  indexes;
     size_t                  index_i = loc_conf.find("index");
@@ -110,10 +116,12 @@ std::list<std::string> parsingIndexes(const std::string &loc_conf, const std::st
     if (index_i == std::string::npos)
     {
         // std::cout << "** SERVER CONF = " << server_conf << std::endl;
-        if (loc_conf != server_conf)
-            indexes = parsingIndexes(server_conf, server_conf);
-        else
+        if (general.getIndexes().empty())
             indexes.push_front("index.html");
+        else
+            indexes = general.getIndexes();
+        // if (loc_conf != server_conf)
+        //     indexes = parsingIndexes(server_conf, server_conf);
         return (indexes);
     }
     index_i += 6;
@@ -128,15 +136,12 @@ std::list<std::string> parsingIndexes(const std::string &loc_conf, const std::st
     return (indexes);
 }
 
-bool parsingAutoIndex(const std::string &loc_conf, const std::string &server_conf)
+bool parsingAutoIndex(const std::string &loc_conf, const Location &general)//const std::string &server_conf)
 {
     size_t  index = loc_conf.find("autoindex");
 
     if (index == std::string::npos)
-    {
-        if (loc_conf != server_conf)
-            return (parsingAutoIndex(server_conf, server_conf));
-    }
+        return (general.getAutoIndex());
     index += 10;
     index = loc_conf.find_first_not_of(" \t\n\r\v\f", index);
     if (!loc_conf.compare(index, 2, "on"))

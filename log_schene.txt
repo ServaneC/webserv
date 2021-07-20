@@ -696,27 +696,39 @@ AVANT CA:
 -> j'ai revu toutes l'organisation des fonctions dans execCGI qui est mnt diviser en 4 fichier cpp 
 	relié a execRequest.hpp
 
--> faudras rajouter + parser/stocker dans le conf file un path où uploader les files 
--> revoir la gestion du header Last-Modified
+20/07/2021
+-> faire marcher les chunks request !
+	- il y a exactement la même chose ecrit sur fdIn (entre chunk ou pas chunk)
+		 regarder du côté des variable d'env
+	🎉 RESOLU ! -> le pb venait de CONTENT_LENGTH qui etait set a partir du header Content-Length 
+		de la requete donc y en avait pas ans le cas d'une chunk request 🤦🏻‍♀️
+	=> mnt on le set a partir du _request_buf_size.
+-> J'ai le sujet de correction !
+	-> le test avec siege marche niquel ! avec 100% d'Availibility !!
+	-> request on forbidden file ✅
+
 
 ================================== NOTES ==================================
+
+TO DO:
+correction:
+	-> check select pour stdin et stdout ?!
+	-> redirected url ? -> erreur 301 / 302 / 303 comment gerer ?
+	-> what happen if we set up same port multiple time in conf file ? (should not work)
+	-> limit client body size ! + tester
+	-> different server names
+
+-> faudras rajouter + parser/stocker dans le conf file un path où uploader les files
+-> toute la gestion des exceptions / retour d'erreur / delete quand on quitte (ou en cas d'erreur) est a revoir
+-> error pages:
+	-> ont peut en setup des default par numero d'erreur dans le conf file
+		exemple: 'error_page 404	/custom_404.html;'
+
+-> faire plus de test (peut être avec python)
 
 
 Pour tester les chunk request:
 	curl -H "Transfer-Encoding: chunked" -d "nom=Servane&age=20" http://localhost:8080/action.php
-
-TO DO:
--> avoir le sujet de correction !
--> gerer les chunk request -> pb avec l'envoi du body (the CGI will expect EOF as end of the body)
--> toute la gestion des exceptions / retour d'erreur / free quand on quitte (ou en cas d'erreur) est a revoir
--> error pages
--> default file to answer if the request is a directory -> index
--> gérer l'upload de fichier (il faut passer par POST)
-- (auto)INDEX:
-	-> il faudrait parser autoindex dans le conf file + afficher l'autoindex en fonction
-		(actuelement on considere qu'il est tout le temps on)
-	-> chercher pour le file index preciser dans le conf file (actuellement on prend juste index.html)
--> faire plus de test (peut etre avec python)
 
 POST request from google chrome after an upload of a file
 -------------------------------------------------------------------------------

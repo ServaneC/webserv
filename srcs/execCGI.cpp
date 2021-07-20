@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/30 13:24:55 by schene            #+#    #+#             */
-/*   Updated: 2021/07/19 20:39:06 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/20 13:47:23 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,12 +35,6 @@ void	execRequest::exec_CGI()
 	if (this->_env["STATUS_CODE"].compare("200 OK") != 0)
 		return ;
 	
-	this->_env["HTTP_HOST"] = this->_env["SERVER_NAME"];
-
-	this->_buf = NULL;
-	if (this->_env["STATUS_CODE"].compare("200 OK") != 0)
-		return ;
-
 	char		**env_array = this->env_to_char_array();
 	pid_t		pid;
 	int			saveStdin;

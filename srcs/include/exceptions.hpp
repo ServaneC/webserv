@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/08 17:06:46 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/19 20:29:53 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/20 14:54:34 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,12 @@ class chdirFailException : public std::exception {
     public :
         const char* what() const throw() {
             return ("500 Internal Server Error (chdir failed)"); }
+};
+
+class ForbiddenException : public std::exception {
+    public :
+        const char* what() const throw() {
+            return ("403 Forbidden"); }
 };
 
 //////////////////////////

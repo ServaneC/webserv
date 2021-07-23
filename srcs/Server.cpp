@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/07/19 20:34:11 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/23 13:42:42 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,8 +34,8 @@ Server::Server(Config &conf, std::string server_conf) :
 
         this->_root = findRootLocation(_routes);
 
-        this->_host.sin_family = PF_INET;
-        this->_host.sin_addr.s_addr = this->_ip;
+        this->_host.sin_family = AF_INET;
+        this->_host.sin_addr.s_addr = htonl(this->_ip);
         std::cout << "- ServerAddress = " << this->_host.sin_addr.s_addr << std::endl;
         this->_host.sin_port = htons(this->_port);
         this->_addrlen = sizeof(this->_host);
@@ -61,17 +61,18 @@ Server::~Server()
     close(this->_socket);
     delete &this->_rqst;
     delete &this->_main_conf;
-    for (std::list<Location>::iterator it = _routes.begin(); it != _routes.end(); it++)
-        delete &(*it);   // ca c'est ptet mieux
+    std::list<Location>::iterator it = _routes.begin();
+    while (it != _routes.end())
+    {
+        Location *tmp = &(*it++);
+        delete tmp;
+    }
 }
 
 int 	Server::exec_accept()
 {    
-        if ((this->_client_socket = accept(this->_socket, (struct sockaddr *)&this->_host, (socklen_t*)&this->_addrlen))<0)
-        {
-            perror("In accept");
-            exit(EXIT_FAILURE);
-        }
+        if ((this->_client_socket = accept(this->_socket, (struct sockaddr *)&this->_host, (socklen_t*)&this->_addrlen)) < 0)
+            throw InternalServerError();
         return (this->_client_socket);
 }
 

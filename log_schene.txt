@@ -542,7 +542,7 @@ AVANT CA:
 	-> bon alors j'ai repris la gestion du select comme sur la branche main et ca a l'air de mieux marcher
 		(je pense qu'il va encore avoir des erreurs mais bcp moins)
 	-> bon enfait y en a quasi toujours autant 🤦🏻‍♀️
-	-> j'ai l'impression que ca va de recvHeader mais on pourrais peut etre gerer plus tot
+	-> j'ai l'impression que ca viens de recvHeader mais on pourrais peut etre gerer plus tot
 	-> bon la jai aucune erreurs mais je suis sûr qu'a un moment elles vont toutes revenir d'un coup
 	-> le if que j'ai ajuté dans recvHeader semble regler les pb
 -> les test passent toujours sur le tester
@@ -577,7 +577,7 @@ AVANT CA:
 	- trouver ou est le pb puis tout re-merge
 	-> J'ai commenté setPathInfo()
 	+ j'ai remodifié l'index.html je l.'avais changer avant de push la derniere fois jsp pq c'etait pas passé
--> les methodes autorisés ne sont plus chekés ?! 
+-> les methodes autorisés ne sont plus checkés ?! 
 	-> C'est parce que ca doit etre geré dans setpathinfo et ca marche pas du tout pour le moment 
 		j'arrives juste a avoir l'index.html mais apres il y a que des 404 pour les images et le css
 	-> Je comprend pas pq ca ne marche pas c'est le bon path dans path info !
@@ -642,7 +642,7 @@ AVANT CA:
 
 13/07/2021
 -> J'ai merge les changements de leila, faut revoir les path pour les redirections.
-	- les root des location sans root ont 2/YoupiBanane au lieu d'un (/Users/servanechene/Desktop/webserv_git/YoupiBanane/YoupiBanane)
+	- les root des location sans root ont 2 /YoupiBanane au lieu d'un (/Users/servanechene/Desktop/webserv_git/YoupiBanane/YoupiBanane)
 		✅ J'ai rajouté un if/else pour ne pas reparser la root du serveur si on l'as déja trouvé
 	- l'autoindex a l'air de plutot bien marcher
 	-> la gestion des path est a revoir:
@@ -651,7 +651,7 @@ AVANT CA:
 		- la resolution de ces pb a créé un soucis dans les path des routes
 			quand c'est plus que juste le dir de base : /directory marche bien
 				/directory/Yeah ça ne marche pas (/Users/servanechene/Desktop/webserv_git/YoupiBanane/root_yeah/directory/Yeah)
-			=> ✅ Toutes marche bien !
+			=> ✅ Tout marche bien !
 	- l'acces au directory /img avec autoindex on ne marche que si on demande /img/ (/img ne marche pas)
 		🤷🏻‍♀️ Ca marche bien pour root_yeah (en plus ca devrait pas comme l'autoindex est pas précisé (je crois))
 		✅ J'ai ajouté un if pour erase dans object (dans buildPath())
@@ -686,7 +686,7 @@ AVANT CA:
 	-> revoir ce qui est renvoyé apres l'upload.
 		-> ajout du header Location
 		-> ajouter un body avec le lien vers la ressource créé ✅
-	-> voir quoi renvoyer si on upload un file qui a déja ete upload (actuellement on renvoi quand meme un 301 Created)
+	-> voir quoi renvoyer si on upload un file qui a déja ete upload (actuellement on renvoi quand meme un 201 Created)
 	✅ on renvois un 200 OK et toujours un body avec le lien vers le fichier.
 -> créer une autre classe pour séparer les fonctions dans execCGI
 	- j'ai créé la classe execMethod et j'ai mis dedans tout ce qu'il y avait dans execCGI (qui est mnt vide)
@@ -707,25 +707,61 @@ AVANT CA:
 	-> le test avec siege marche niquel ! avec 100% d'Availibility !!
 	-> request on forbidden file ✅
 
+21/07/2021
+-> tester siege dans la vm
+	- les lignes ne s'affichent pas mais ça marche.
+-> limit client body size ! + tester
+	-> nginx default max_body_size = 1000000 (j'ai changé le default du coup)
+-> different server names, on les parse mais on ne gère rien !
+	- 127.0.0.1 n'autorise pas la connexion.
+		- ca crash dans la vm, revoir le retour d'erreur d'accept !
+
+23/07/2021
+-> le client max bodysize afiche toujours un default avec ulong max 🤔
+	-> le pb vient de la location general..
+	✅ Le pb venait du constructeur Location() où maxBodySize n'etait pas initialisé !
+-> gérer les server names
+	! impossible de se connecter a l'adresse 127.0.0.1 
+	-> le pb vient peut être du parsing d'ip adress comme jusqu'ici on avais tout le temps 0
+		-   INADDR_LOOPBACK = 2130706433
+		- parsing 127.0.0.1 = 2130706433
+		=> le pb vient pas du parsing 
+	- continuer a regarder du côté des fonctions bind(), accept() ...
+	🎉 🎉 il fallait juste ajouter htonl() dans l'assignation de this->_host.sin_addr.s_addr 🤦🏻‍♀️
+	-> ont peut mnt se connecter sans pb a 127.0.0.1 !
+	-> s'intéresser au header "Host:" ?
+-> vm_webserv.conf (pour eviter de devoir changer le path du cgi a chaque fois)
+
 
 ================================== NOTES ==================================
 
 TO DO:
 correction:
-	-> check select pour stdin et stdout ?!
 	-> redirected url ? -> erreur 301 / 302 / 303 comment gerer ?
 	-> what happen if we set up same port multiple time in conf file ? (should not work)
 	-> limit client body size ! + tester
 	-> different server names
-
+	-> upload via Curl, il va surement falloir gérer les 100-Continue 😣
 -> faudras rajouter + parser/stocker dans le conf file un path où uploader les files
 -> toute la gestion des exceptions / retour d'erreur / delete quand on quitte (ou en cas d'erreur) est a revoir
 -> error pages:
 	-> ont peut en setup des default par numero d'erreur dans le conf file
 		exemple: 'error_page 404	/custom_404.html;'
-
 -> faire plus de test (peut être avec python)
+-> se débarrasser de la gestion des extensions de fichier ?
+-> créer un (ou +) autre website pour bien voir la dif entre les différents ports (website actuel = /YoupiBanane)
+-> avoir plusieurs conf files
+-> execute CGI based on certain file extension (for example .php) ? 
+	-> exécuter le cgi que si on as .php ?
+	-> erreur si .php mais pas de cgi ?
+-> pour les methodes, si pas de accepted_method dans conf 
+	-> actuellement = rien d'autorisé
+	-> est ce qu'on devrait pas autoriser par default GET ?
+-> 411 Length Required pour POST sans body
 
+
+Pour tester server_name
+	curl --resolve example.com:8080:127.0.0.1 http://example.com/
 
 Pour tester les chunk request:
 	curl -H "Transfer-Encoding: chunked" -d "nom=Servane&age=20" http://localhost:8080/action.php
@@ -764,7 +800,7 @@ Content-Type: text/html
 </head>
     <body>
         <h1> this is an... </h1>
-        <h2> Ulpoaded file ! </h2>
+        <h2> Uploaded file ! </h2>
     </body>
 </html>
 

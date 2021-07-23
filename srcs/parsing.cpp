@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/19 20:34:07 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/23 14:13:04 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,24 +35,14 @@ std::string parsingRoot(const std::string &loc_conf, const Location &general)//,
     
     if (root_index == std::string::npos)  // pas de directive root dans la loc
     {
-        // std::string root;
-        // const Location *tmp = findRootLocation(list);
-        // if (!tmp)
-        root = general.getRoot();
-        //     root = parsingRoot(server_conf, server_conf, list);  // chercher hors des locations
-        // else
-        //     root = tmp->getRoot();  // la root du server a deja été trouvé
-        if (root.empty())  // pas de directive root dans le server non plus
+        if (general.getRoot().empty())  // pas de directive root dans le server non plus
             return (getCurrentDirectory());
-        return (root);
+        return (general.getRoot());
     }
     root_index = loc_conf.find_first_not_of(" \t\n\r\v\f", root_index + 4);
     size_t root_end = loc_conf.find_first_of("; \t\n\r\v\f", root_index);
     if (root_end == std::string::npos)
         throw confInvalidRootException();
-    // const Location *root = findRootLocation(list);
-    // if (root)
-    //     return (root->getRoot().append(loc_conf.substr(root_index, root_end - root_index)));
     root = general.getRoot();
     if (!root.empty())
         return (root.append(loc_conf.substr(root_index, root_end - root_index)));
@@ -93,7 +83,6 @@ void parsingLocations(std::list<Location> &routes, const std::string &conf)
         {
             Location *to_push = new Location(path, rules, routes.front());
             routes.push_back(*to_push);
-            //std::cout << "FOR LOCATION <" << path << ">, RULES ARE : " << rules << std::endl;
         }
         last_found = conf.find("location", last_found);
     }
@@ -260,8 +249,6 @@ std::string buildPath(Server &server, Request &request, const std::string &targe
     path.erase(path.find_last_of("/"), path.size() - path.find_last_of("/"));
     // std::cout << "\tTarget au debut (moins object) -> [" << path << "]" << std::endl;
 
-    std::cout << "loc [" << loc.isAcceptedMethod(request.getMethodCode()) << ']' << std::endl;
-    std::cout << "ext [" << ext.isAcceptedMethod(request.getMethodCode()) << ']' << std::endl;
     if (!loc.isAcceptedMethod(request.getMethodCode()) || !ext.isAcceptedMethod(request.getMethodCode()))
         throw methodNotAllowedException();
     path.insert(0, loc.getRoot());

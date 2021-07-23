@@ -6,19 +6,19 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:48:09 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/19 20:33:07 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/23 11:53:28 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/Location.hpp"
 
-Location::Location() {}
+Location::Location() : _max_body_size(1000000) {}
 
 Location::~Location() {}
 
 Location::Location(const std::string path, const std::string location_conf, 
     const Location &general) : _path(path), _location_conf(location_conf), 
-    _autoindex(false), _max_body_size(std::numeric_limits<size_t>::max())
+    _autoindex(false), _max_body_size(1000000)
 {
     this->_accepted_methods = parsingAcceptedMethods(location_conf);
     std::cout << "LOCATION -> " << _path << " : ";

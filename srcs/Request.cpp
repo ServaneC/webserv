@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 16:24:45 by schene            #+#    #+#             */
-/*   Updated: 2021/07/20 15:48:09 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/23 14:48:36 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,8 @@ int		Request::parseRequest(int socket)
 		this->recvBody(std::atoi(this->_headers["Content-Length"].c_str()));
 	else if (!this->getHeaderField("Transfer-Encoding").compare("chunked")) //chunk request
 		recvChunk();
+	// else if (!this->_method_code == METHOD_POST)
+
 	write(1, this->_body, this->_body_size);
 	std::cout << "========= END OF REQUEST =========" << std::endl;
 	return 1;

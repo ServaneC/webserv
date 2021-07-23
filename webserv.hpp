@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 15:34:32 by schene            #+#    #+#             */
-/*   Updated: 2021/07/19 18:10:16 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/21 13:37:44 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 
 # define DEFAULT_INDEX "index.html"
 // 42 MAC
-// # define CGI_PATH "/Users/schene/.brew/Cellar/php/8.0.7/bin/php-cgi"
+// # define CGI_PATH "/Users/schene/.brew/bin/php-cgi"
 // OTHER MAC
 // # define CGI_PATH "/usr/local/Cellar/php/8.0.7/bin/php-cgi"
 // VM or LINUX
@@ -52,6 +52,7 @@
 # include <fstream>
 # include <csignal>
 # include <sstream>
+# include <limits>
 
 class	Server;
 class	Request;

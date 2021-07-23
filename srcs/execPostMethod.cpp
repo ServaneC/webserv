@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/19 18:25:24 by schene            #+#    #+#             */
-/*   Updated: 2021/07/19 19:20:03 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/21 13:56:00 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,10 +29,13 @@ std::string     execRequest::parseRequestBody()
 	std::string	type;
     int		    next_n; 
 
-	boundary = this->_env["CONTENT_TYPE"].substr(this->_env["CONTENT_TYPE"].find("boundary=") + 9);
-	boundary.insert(0, 2, '-');
-	this->_request_buf_start = boundary.size() + 2; // erase the first boundary + CRLF
-	this->_request_buf_size -= 2 * boundary.size() + 6; // erase the last boundary + '--' + CRLF
+	if (this->_env["CONTENT_TYPE"].find("boundary=") != std::string::npos)
+	{
+		boundary = this->_env["CONTENT_TYPE"].substr(this->_env["CONTENT_TYPE"].find("boundary=") + 9);
+		boundary.insert(0, 2, '-');
+		this->_request_buf_start = boundary.size() + 2; // erase the first boundary + CRLF
+		this->_request_buf_size -= 2 * boundary.size() + 6; // erase the last boundary + '--' + CRLF
+	}
 	next_n = ft_gnl(this->_request.getBody(), this->_request_buf_start);
 	filename = std::string((char *)(this->_request.getBody() + this->_request_buf_start), next_n - 1);
     this->_request_buf_start += next_n + 1;

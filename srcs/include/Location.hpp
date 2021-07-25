@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:43:38 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/21 12:09:15 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/25 17:18:47 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ class Location
 		std::string 			_cgi_path;      // empty if not in conf
         size_t                  _max_body_size; // default = 1000000
         std::string             _error_page;    // empty if not in conf
+        bool                    _root_in_conf;
 
     public :
 
@@ -47,6 +48,7 @@ class Location
         std::string                     getCGIPath() const;
 		size_t                          getMaxBodySize() const;
 		std::string                     getErrorPage() const;
+        bool                            getRootInConf() const;
 
         void    setRoot(const std::string &root);
         void    setIndexes(const std::list<std::string> &indexes);

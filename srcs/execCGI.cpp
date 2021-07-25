@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/30 13:24:55 by schene            #+#    #+#             */
-/*   Updated: 2021/07/20 13:47:23 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/25 14:06:10 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,6 @@ char	**execRequest::env_to_char_array()
 
 void	execRequest::exec_CGI()
 {
-	std::cout << "CALL TO THE CGI !" << std::endl;
 	if (this->_env["STATUS_CODE"].compare("200 OK") != 0)
 		return ;
 	
@@ -122,7 +121,7 @@ void execRequest::serveErrorPage(const std::string &path)
 	struct stat			info;
 
 	fd = open(path.c_str(), O_RDONLY);
-	std::cout << "error path = " << path << std::endl;
+	// std::cout << "error path = " << path << std::endl;
 	// if (fd < 0)
 	// 	this->_env["STATUS_CODE"] = "403 Forbidden";
 	// else

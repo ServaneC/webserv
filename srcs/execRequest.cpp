@@ -57,14 +57,12 @@ execRequest::~execRequest() { }
 bool execRequest::tryPath(Server &server, Request &request, const std::string &target)
 {
 	const Location  &loc = getRelevantLocation(server.getRoutes(), target);
-	const Location  &ext = getRelevantExtension(server.getRoutes(), target);
 	std::string		cgi_path;
 
 	if (loc.getCGIPath().size())
 		cgi_path = loc.getCGIPath();
-	else if (ext.getCGIPath().size())
-		cgi_path = ext.getCGIPath();
 
+	std::cout << "CHDIR to [" << request.getDirPath() << ']' << std::endl;
     if (chdir(request.getDirPath().c_str()) == -1)
 	{
 		if (errno ==  EACCES)
@@ -72,10 +70,8 @@ bool execRequest::tryPath(Server &server, Request &request, const std::string &t
 		throw chdirFailException();
 	}
 
-	// std::cout << "DIR [" << this->_request.getDirPath() << ']' << std::endl;
 	this->setPathName(this->_request.getDirPath(), this->_request.getObject());
-	// std::cout << "obj => (" << this->_request.getObject() << ')' << std::endl;
-
+	
     Autoindex autoidx(target, this->_env["PATH_INFO"], loc.getIndexes());
 	if (!autoidx.path_exist())
 	{
@@ -87,7 +83,8 @@ bool execRequest::tryPath(Server &server, Request &request, const std::string &t
 		if (!loc.getAutoIndex())
 		{
 			this->_env["PATH_INFO"] = loc.getErrorPage();
-			throw targetNotFoundException();
+			throw ForbiddenException();
+			// throw targetNotFoundException();
 		}
 		else
 		{
@@ -144,8 +141,6 @@ bool	execRequest::setPathQuery()
 		object.erase(object.find('?'), object.size());
 		this->_request.setObject(object);
 	}	
-	std::cout << "SetPathQuery : TARGET -> [" << target << "]" << std::endl;
-	std::cout << "SetPathQuery : OBJECT -> [" << object << "]" << std::endl;
 
 	try {
 		this->_request.setDirPath(buildPath(_server, _request, target));

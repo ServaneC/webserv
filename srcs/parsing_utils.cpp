@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parsing_utils.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
+/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/07 15:29:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/19 16:22:02 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/25 14:06:58 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,6 @@ unsigned char    getValueBetweenPoints(const std::string &str, size_t *index)
     result = std::atoi(str.substr(*index, limit - *index).c_str());
     if (result < 0 || result > 255)
         throw confIPAddrException();
-    // std::cout << "before cast = " << result << std::endl;
     *index = limit + 1;
     return (static_cast<unsigned char>(result));
 }
@@ -106,7 +105,8 @@ std::string trimLocations(std::string conf)
     while ((loc_index = conf.find("location", loc_index + 1)) < std::string::npos)
     {
         size_t scope_begin = conf.find("{", loc_index);
-        conf.erase(scope_begin, findClosingBracket(conf, scope_begin) - scope_begin);
+        if (scope_begin != std::string::npos)
+            conf.erase(scope_begin, findClosingBracket(conf, scope_begin) - scope_begin);
     }
     return (conf);
 }

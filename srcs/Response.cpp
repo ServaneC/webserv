@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 14:42:45 by schene            #+#    #+#             */
-/*   Updated: 2021/07/19 17:56:38 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/25 14:07:39 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,6 @@ Response::Response(execRequest &my_CGI, int socket) :
 		this->_cgi.free_buf();
 	}
 	this->_headers["Status"] = this->_cgi.getEnvVar("STATUS_CODE");
-	std::cout << "LOCAION => [" << this->_cgi.getEnvVar("LOCATION") << ']' << std::endl;
 	if (!this->_cgi.getEnvVar("LOCATION").empty())
 		this->_headers["Location"] = this->_cgi.getEnvVar("LOCATION");
 	if (this->_cgi.getCgi())

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parsing.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lemarabe <lemarabe@student.42.fr>          +#+  +:+       +#+        */
+/*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/08 16:33:16 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/19 18:14:09 by lemarabe         ###   ########.fr       */
+/*   Updated: 2021/07/25 14:36:58 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,6 @@ std::string             parsingErrorPage(const Location &location, const Locatio
 
 // *********** HANDLING LOCATIONS *********** //
 
-const Location          &getRelevantExtension(const std::list<Location> &_routes, const std::string &target);
 const Location          &getRelevantLocation(const std::list<Location> &_routes, const std::string &target);
 std::string             buildPath(Server &server, Request &request, const std::string &target);
 const std::string       firstValidIndex(const std::list<std::string> &indexes);

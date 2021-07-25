@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/19 18:11:49 by schene            #+#    #+#             */
-/*   Updated: 2021/07/19 18:26:11 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/25 14:55:35 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,5 +51,6 @@ void	execRequest::exec_delete()
 	if (remove(this->_env["PATH_INFO"].c_str()) < 0)
 		this->_env["STATUS_CODE"] = "403 Forbidden";
 	else
-		this->_env["STATUS_CODE"] = "200 OK";
+		this->_env["STATUS_CODE"] = "204 No Content";
+		// this->_env["STATUS_CODE"] = "200 OK";
 }

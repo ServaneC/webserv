@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/30 09:49:40 by schene            #+#    #+#             */
-/*   Updated: 2021/07/21 13:29:18 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/25 14:06:00 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,9 +55,6 @@ int 	Config::readConfFile(char const *path)
 		if (conf_stream.eof())
 			break ;
 	}
-	// std::cout << "===== CONF =====" << std::endl;
-	// std::cout << this->_content << std::endl;
-	// std::cout << "================" << std::endl;
 	conf_stream.close();
 	return 1;
 }
@@ -80,14 +77,11 @@ void	Config::createServers(void)
 	{
 		last_found += 7;
 		std::string single_server_conf = getScope(_content, last_found);
-		// std::cout << "HERE'S WHAT I JUST CREATED :: " << single_server_conf << "\nOK BYE" << std::endl;
 		
 		if (!single_server_conf.empty())
 		{
-			// std::cout << "adding one server" << std::endl;
 			Server *to_push = new Server(*this, single_server_conf);
 			this->_servers.push_back(to_push);
-			// std::cout << "added one server" << std::endl;
 		}
 		last_found = _content.find("server", last_found);
 	}
@@ -159,7 +153,6 @@ void	Config::startServers()
 						}
 						if (FD_ISSET(i, &write_sockets) && (*it)->getClientSocket() != -1)
 						{
-							std::cout << "PORT -> [" << (*it)->getPort() << ']' << std::endl;
 							(*it)->exec_server();
 							FD_CLR(i, &this->_current_sockets);
 						}

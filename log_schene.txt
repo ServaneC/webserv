@@ -732,6 +732,20 @@ AVANT CA:
 	-> s'intéresser au header "Host:" ?
 -> vm_webserv.conf (pour eviter de devoir changer le path du cgi a chaque fois)
 
+25/07/2021
+-> enlever toute la gestion des extensions de fichier ✅
+-> passer le testeur de thervieu
+	-> il y a pas mal de test que l'on passe pas ... 
+	-> stress test => In select: Bad file descriptor + plein de leaks après
+	-> GET /use_location_root/ -> chdir =  /media/sf_Desktop/webserv/tester_documents/tester_documents
+		-> on gere pas les root de la meme facon -> voir comment gere nginx 
+		-> c'est nous qui le geront pas bien root de server est a utilisé seulement si il n'y en as pas dans la location !
+			✅  Mnt on prend soit la root de location soit celle de server, on ne concatene pas les deux !
+			❗️ ATTENTION a bien mettre /YoupiBanane avant /root_yeah dans le conf file !
+-> Dans la Location /use_location_root on parse 2 fois ?!  juste root est parsé ensuite 🤷🏻‍♀️
+	🙄 Le pb vient du fait que l'on cherche la 'location' suivante et il ya location dans le nom...
+	-> RESOLU: on cherche '}' avant de chercher la location suivante.
+
 
 ================================== NOTES ==================================
 
@@ -745,10 +759,9 @@ correction:
 -> faudras rajouter + parser/stocker dans le conf file un path où uploader les files
 -> toute la gestion des exceptions / retour d'erreur / delete quand on quitte (ou en cas d'erreur) est a revoir
 -> error pages:
-	-> ont peut en setup des default par numero d'erreur dans le conf file
+	-> on peut en setup des default par numero d'erreur dans le conf file
 		exemple: 'error_page 404	/custom_404.html;'
 -> faire plus de test (peut être avec python)
--> se débarrasser de la gestion des extensions de fichier ?
 -> créer un (ou +) autre website pour bien voir la dif entre les différents ports (website actuel = /YoupiBanane)
 -> avoir plusieurs conf files
 -> execute CGI based on certain file extension (for example .php) ? 
@@ -758,7 +771,6 @@ correction:
 	-> actuellement = rien d'autorisé
 	-> est ce qu'on devrait pas autoriser par default GET ?
 -> 411 Length Required pour POST sans body
-
 
 Pour tester server_name
 	curl --resolve example.com:8080:127.0.0.1 http://example.com/
@@ -847,63 +859,12 @@ Piste:
 -> faire une classe ‘env’ avec toutes les meta-variables a passer au CGI 
 -> stocker les meta-variables dans un container map ✅
 
-
-PHP_CGI
--> ont y fait appelle de la manière suivante:
-> php-cgi index.php
-> Content-type: text/html; charset=UTF-8
-  <html>
-   <head>
-    <title>Test PHP</title>
-   </head>
-   <body>
-   <p>Bonjour le monde</p> </body>
-  </html>%
-
-
-Conf file:
--> different « server » can be defined
--> we should be able to:
-	> choose the port and host for each of them
-	> choose the server name (or not)
-	> setup default error pages
-	> limit client body size
-	> define a list of accepted HTTP methods for the routes
-	> define a directory or a file from where the file should be search 	> turn on or off directory listing 	> default file to answer if the request is a directory 	> execute CGI based on certain file extension 
- 
-Test simple:
+ Test simple:
 telnet example.com 80
 HEAD /index.html HTTP/1.1
 Host: example.com
 
-
-- Create a directory YoupiBanane with:
-	-a file name youpi.bad_extension
-	-a file name youpi.bla
-	-a sub directory called nop
-		-a file name youpi.bad_extension in nop
-		-a file name other.pouic in nop
-	-a sub directory called Yeah
-		-a file name not_happy.bad_extension in Yeah
-
-Setup the configuration file as follow:
-- / must answer to GET request ONLY
-- /put_test/* must answer to PUT request and save files to a directory of your choice
-- any file with .bla as extension must answer to POST request by calling the cgi_test executable
-- /post_body must answer anything to POST request with a maxBody of 100
-- /directory/ must answer to GET request and the root of it would be the repository YoupiBanane and if no file are requested, it should search for youpi.bad_extension files
-
-
-
 Write = send avec 0 a la fin
-
-REDIRECT_STATUS=200 REQUEST_METHOD=GET SCRIPT_FILENAME=htdocs/index.php SCRIPT_NAME=/index.php PATH_INFO=/ SERVER_NAME=site.tld SERVER_PROTOCOL=HTTP/1.1 REQUEST_URI=/nl/page HTTP_HOST=site.tld /usr/bin/php-cgi 
-
-
-HTTP-message =	start-line
-		*( header-field CRLF )
-		CRLF
-		[ message-body ]
 
 				  Request	Response
 Accept-Charsets		✅		  ❌
@@ -926,45 +887,56 @@ User-Agent 			✅		  ❌
 WWW-Authenticate	❌		  ✅
 TOTAL				10		   12
 
+============================ THERVIEU's TESTER ============================
+basic
 
-request du tester:
+All tests  are done requesting on http://localhost:port
 
-GET / HTTP/1.1
-Host: localhost:8080
-User-Agent: Go-http-client/1.1
-Accept-Encoding: gzip
+test : GET /                                                             | result : ✅
+test : GET /auto autoindex                                               | result : ✅ 
+404
+test : GET /forbidden (403)                                              | result : ❌ Bad status code	// ✅  on avait un 404 et il faut un 403 pour le tester  (ca semble plus logique a mes yeux un 404 mais bon...)
+test : GET non_existing_dir (404)                                        | result : ❌ Bad Content		// ✅  j'ai mis 404.html en error page (ca sera parfait quand on gere les pages en fonction du code d'erreur !)
+test : GET / ports 8080 and 8081                                         | result : ✅ 
+test : GET / 1 worker 50 times                                           | result : ✅ 
+test : POST / method not authorized (405)                                | result : ✅ 
+405
+test : POST /post                                                        | result : ❌ Bad status code. // On ne gere pas l'upload des fichiers de la meme façon...
+405
+test : POST /post content length = 0                                     | result : ❌ Bad status code. // On ne gere pas l'upload des fichiers de la meme façon...
+405
+test : POST /post request too big (413)                                  | result : ❌ Bad status code. 
+test : POST /post_upload upload in /upload                               | result : ❌ couldn't connect // parcequ'on as pas encore gere upload_path
+File exists
+200
+test : DELETE /delete_folder/index.html                                  | result : ❌ Bad status code for DELETE. // ✅ renvoi 204 au lieu de 200
+File doesn't exist
+test : DELETE /delete_folder/index.html (404)                            | result : ✅ 
+test : GET http://webserv:port use of server_name                        | result : ✅ 
+404
+test : GET /redirect_me/please redirect 301 in /redirection/index.html   | result : ❌ Bad status code 	// pas encore géré
+test : GET /redirect_me/wrong redirect 301 in /redirection/lol.html      | result : ✅ 
+test : POST /post_upload upload in /upload                               | result : ❌ couldn't connect	// pas encore géré
+test : POST /post_upload upload in /upload                               | result : ❌ couldn't connect	// pas encore géré
+test : POST /post_upload upload in /upload                               | result : ❌ couldn't connect	// pas encore géré
+500
+test : GET /use_location_root/                                           | result : ❌ Bad status code // ✅ on gerait pas bien les root
+405																										
+test : POST /use_location_root/                                          | result : ❌ Bad status code / On ne gere pas l'upload des fichiers de la meme façon...
 
-POST / HTTP/1.1
-Host: localhost:8080
-User-Agent: Go-http-client/1.1
-Transfer-Encoding: chunked
-Content-Type: test/file
-Accept-Encoding: gzip
+CGI TESTS & CHUNKED REQUESTS:
+test : GET /cgi/file.tester                                              | result : ✅ 
+test : POST /cgi/file.tester                                             | result : ❌ Bad content / On ne gere pas l'upload des fichiers de la meme façon...
+test : GET /use_location_root_cgi/file.tester                            | result : ❌ Bad status code // ✅ on gerait pas bien les root
+test : POST /use_location_root_cgi/file.tester                           | result : ❌ Bad status code
+0
+test : POST /cgi/file.tester 20 bits                                     | result : ❌ Bad Length Response Body
+0
+test : POST /cgi/file.tester 500 bits                                    | result : ❌ Bad Length Response Body
 
 0
-👉 devrait renvoyer une erreur car « / must answer to GET request ONLY » (405 Method Not Allowed)
+test : POST /post-upload/another_file.tester 20 bits                     | result : ❌ Bad Length Response Body
+0
+test : POST /post-upload/another_file.tester 500 bits                    | result : ❌ Bad Length Response Body
 
-HEAD / HTTP/1.1
-Host: localhost:8080
-User-Agent: Go-http-client/1.1
-👉 devrait renvoyer une erreur car « / must answer to GET request ONLY » (405 Method Not Allowed)
-
-GET /directory HTTP/1.1
-Host: localhost:8080
-User-Agent: Go-http-client/1.1
-Accept-Encoding: gzip
-
-GET /directory/youpi.bad_extension HTTP/1.1
-Host: localhost:8080
-User-Agent: Go-http-client/1.1
-Accept-Encoding: gzip
-
-GET /directory/youpi.bla HTTP/1.1
-Host: localhost:8080
-User-Agent: Go-http-client/1.1
-Accept-Encoding: gzip
-
-GET /directory/oulalala HTTP/1.1
-Host: localhost:8080
-User-Agent: Go-http-client/1.1
-Accept-Encoding: gzip
+==============================================================

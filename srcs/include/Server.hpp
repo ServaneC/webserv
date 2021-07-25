@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 11:20:51 by schene            #+#    #+#             */
-/*   Updated: 2021/07/19 20:30:41 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/25 14:36:55 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,6 @@ class Server
 		int			getSocket() const;
 		int			getClientSocket() const;
 		Request		&getRequest() const;
-		const Location *getRelevantExtension(std::string target);
 		const Location *getRelevantLocation(std::string target);
 		const std::list<Location>		&getRoutes() const;
 		const Location	&getRootLocation() const;

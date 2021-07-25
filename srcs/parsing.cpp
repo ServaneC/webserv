@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/23 14:13:04 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/25 17:41:32 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,9 +43,6 @@ std::string parsingRoot(const std::string &loc_conf, const Location &general)//,
     size_t root_end = loc_conf.find_first_of("; \t\n\r\v\f", root_index);
     if (root_end == std::string::npos)
         throw confInvalidRootException();
-    root = general.getRoot();
-    if (!root.empty())
-        return (root.append(loc_conf.substr(root_index, root_end - root_index)));
     return (getCurrentDirectory().append(loc_conf.substr(root_index, root_end - root_index)));
 }
 
@@ -84,7 +81,8 @@ void parsingLocations(std::list<Location> &routes, const std::string &conf)
             Location *to_push = new Location(path, rules, routes.front());
             routes.push_back(*to_push);
         }
-        last_found = conf.find("location", last_found);
+        if ((last_found = conf.find("}", last_found)) != std::string::npos)
+            last_found = conf.find("location", last_found);
     }
 }
 
@@ -115,9 +113,6 @@ std::list<std::string> parsingIndexes(const std::string &loc_conf, const Locatio
         index_i = loc_conf.find("index", index_i + 1);
     if (index_i == std::string::npos)
     {
-        // if (loc_conf != server_conf)
-        //     indexes = parsingIndexes(server_conf, server_conf);
-        // else
         if (general.getIndexes().empty())
             indexes.push_front("index.html");
         else
@@ -140,10 +135,6 @@ bool parsingAutoIndex(const std::string &loc_conf, const Location &general)//con
     size_t  index = loc_conf.find("autoindex");
 
     if (index == std::string::npos)
-    // {
-    //     if (loc_conf != server_conf)
-    //         return (parsingAutoIndex(server_conf, server_conf));
-    // }
         return (general.getAutoIndex());
     index += 10;
     index = loc_conf.find_first_not_of(" \t\n\r\v\f", index);
@@ -225,31 +216,18 @@ const Location &getRelevantLocation(const std::list<Location> &_routes, const st
     return (*mostRelevant);
 }
 
-const Location &getRelevantExtension(const std::list<Location> &_routes, const std::string &target)
-{
-    std::list<Location>::const_iterator it = ++_routes.begin();
-
-    while (it != _routes.end())
-    {
-        std::string path = it->getPath();
-        if (target.size() > path.size() && !target.compare(target.size() - path.size(), path.size(), path))
-            return (*it);
-        it++;
-    }
-    return (getRelevantLocation(_routes, target));
-}
-
 std::string buildPath(Server &server, Request &request, const std::string &target)
 {  
     const Location  &loc = getRelevantLocation(server.getRoutes(), target);
-	const Location  &ext = getRelevantExtension(server.getRoutes(), target);
     std::string     path(target);
 
-    // std::cout << "BUILD PATH :" << std::endl;
+    if (loc.getRootInConf() && loc.getPath().size() > 1)
+    {
+        if (path.find(loc.getPath()) != std::string::npos)
+            path.erase(path.find(loc.getPath()), loc.getPath().size());
+    }
     path.erase(path.find_last_of("/"), path.size() - path.find_last_of("/"));
-    // std::cout << "\tTarget au debut (moins object) -> [" << path << "]" << std::endl;
-
-    if (!loc.isAcceptedMethod(request.getMethodCode()) || !ext.isAcceptedMethod(request.getMethodCode()))
+    if (!loc.isAcceptedMethod(request.getMethodCode()))
         throw methodNotAllowedException();
     path.insert(0, loc.getRoot());
     if (loc.getPath().size() > 1)
@@ -265,7 +243,7 @@ std::string buildPath(Server &server, Request &request, const std::string &targe
             request.setObject(tmp);
         }
     }
-    // std::cout << "\tPath built-> [" << path << "]" << std::endl;
+    std::cout << "path [" << path << ']' << std::endl;
     return (path);
 }
 

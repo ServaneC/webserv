@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:48:09 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/23 11:53:28 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/25 17:28:36 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,8 +26,11 @@ Location::Location(const std::string path, const std::string location_conf,
         std::cout << *it << " ";
     std::cout << std::endl;
 
+    if (location_conf.find("root") != std::string::npos)
+        this->_root_in_conf = true;
     this->_root = parsingRoot(location_conf, general);
     std::cout << "Local root for <" << path << "> is -> |" << _root << "|" << std::endl;
+
 
     this->_indexes = parsingIndexes(location_conf, general);
     std::cout << "Local indexes = ";
@@ -52,7 +55,8 @@ Location::Location(const Location &ref) : _path(ref._path),
     _location_conf(ref._location_conf), _root(ref._root), 
     _accepted_methods(ref._accepted_methods), _indexes(ref._indexes), 
     _autoindex(ref._autoindex), _cgi_path(ref._cgi_path),
-    _max_body_size(ref._max_body_size), _error_page(ref._error_page)
+    _max_body_size(ref._max_body_size), _error_page(ref._error_page),
+    _root_in_conf(ref._root_in_conf)
 {
     std::cout << "copy constructor called" << std::endl; 
 }
@@ -119,6 +123,11 @@ size_t          Location::getMaxBodySize() const {
 }
 std::string     Location::getConf() const {
     return (this->_location_conf);
+}
+
+bool            Location::getRootInConf() const
+{
+    return this->_root_in_conf;
 }
 
 // void Location::addErrorPagePrefix(std::string prefix)

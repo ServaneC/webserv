@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 16:24:45 by schene            #+#    #+#             */
-/*   Updated: 2021/07/23 14:48:36 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/25 14:07:34 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,7 +132,6 @@ int			Request::recvChunk()
 		if (size_buf.size() > 2)
 			size_buf.erase(size_buf.size() - 2, 2); // erase the CRLF
 		size = hexa_to_int(size_buf);
-		std::cout << "size = " << size << std::endl;
 		//end of the chunk body
 		if (size == 0)
 		{
@@ -163,7 +162,6 @@ unsigned char	Request::recv_one()
 	{
 		c = 0;
 		recv_ret = recv(this->_socket, &c, 1, 0);
-		// std::cout << '|' << recv_ret << '|' << std::endl;
 		if (recv_ret < 0)
 			return (-1);
 		if (recv_ret > 0)

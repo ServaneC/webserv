@@ -42,9 +42,21 @@ execRequest::execRequest(Server &serv)
 		this->_env["REQUEST_METHOD"] = this->_request.getMethod();
 		this->_env["SERVER_PROTOCOL"] = this->_request.getHTTPVersion();
 		autoindex = this->setPathQuery();
+		printEnv("execRequest ()");
+
 	}
 	else
-		this->_env["STATUS_CODE"] = "400 Bad Request";
+	{
+		if (this->_request.getBadRequest() == 100)
+			this->_env["STATUS_CODE"] = "100 Continue";
+		if (this->_request.getBadRequest() == 400)
+			this->_env["STATUS_CODE"] = "400 Bad Request";
+		if (this->_request.getBadRequest() == 411)
+			this->_env["STATUS_CODE"] = "411 Length Required";
+		if (this->_request.getBadRequest() == 413)
+			this->_env["STATUS_CODE"] = "413 Request Entity Too Large";
+	}
+	// printEnv("execRequest ()");
 	if (autoindex == false && !this->_env["STATUS_CODE"].compare("200 OK"))
 		this->exec_method();
 	else if (this->_env["STATUS_CODE"].compare("200 OK") != 0)  // cas d'erreur ou redirection (redirections pas encore gerees)
@@ -52,7 +64,10 @@ execRequest::execRequest(Server &serv)
 	Response((*this), this->_server.getClientSocket());
 }
 
-execRequest::~execRequest() { }
+execRequest::~execRequest() 
+{
+
+}
 
 bool execRequest::tryPath(Server &server, Request &request, const std::string &target)
 {
@@ -73,6 +88,7 @@ bool execRequest::tryPath(Server &server, Request &request, const std::string &t
 	this->setPathName(this->_request.getDirPath(), this->_request.getObject());
 	
     Autoindex autoidx(target, this->_env["PATH_INFO"], loc.getIndexes());
+	this->_last_modified = autoidx.getLastModified();
 	if (!autoidx.path_exist())
 	{
         this->_env["PATH_INFO"] = loc.getErrorPage();

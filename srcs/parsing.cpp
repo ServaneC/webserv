@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/25 17:41:32 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/26 16:09:10 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ std::string parsingName(const std::string &conf)
     return (conf.substr(name_index, name_length - name_index));
 }
 
-std::string parsingRoot(const std::string &loc_conf, const Location &general)//, const std::string &server_conf, const std::list<Location> &list)
+std::string parsingRoot(const std::string &loc_conf, const Location &general)//, const std::string &server_conf, const std::list<Location*> &list)
 {
     std::string root;
     size_t root_index = loc_conf.find("root");
@@ -65,7 +65,7 @@ void parsingIPAddress(const std::string &conf, unsigned int *ip, int *port)
         throw confInvalidPortException();
 }
 
-void parsingLocations(std::list<Location> &routes, const std::string &conf)
+void parsingLocations(std::list<Location*> &routes, const std::string &conf)
 {
     size_t              last_found = conf.find("location");
 
@@ -78,8 +78,8 @@ void parsingLocations(std::list<Location> &routes, const std::string &conf)
         std::string rules = getScope(conf, path_index + path_length);
         if (!rules.empty())
         {
-            Location *to_push = new Location(path, rules, routes.front());
-            routes.push_back(*to_push);
+            Location *to_push = new Location(path, rules, *routes.front());
+            routes.push_back(to_push);
         }
         if ((last_found = conf.find("}", last_found)) != std::string::npos)
             last_found = conf.find("location", last_found);
@@ -176,7 +176,7 @@ size_t parsingBodySize(const std::string &loc_conf, const Location &general)//co
     return (max_body_size);
 }
 
-std::string    parsingErrorPage(const Location &location, const Location &general)//, const std::list<Location> &list)
+std::string    parsingErrorPage(const Location &location, const Location &general)//, const std::list<Location*> &list)
 {
     struct stat statbuf;
     std::string page_path;
@@ -202,16 +202,16 @@ std::string    parsingErrorPage(const Location &location, const Location &genera
 // ******************************************** //
 
 
-const Location &getRelevantLocation(const std::list<Location> &_routes, const std::string &target)
+const Location &getRelevantLocation(const std::list<Location*> &_routes, const std::string &target)
 {
-    std::list<Location>::const_iterator it = _routes.begin();
-    const Location *mostRelevant = &(*it);
+    std::list<Location*>::const_iterator it = _routes.begin();
+    const Location *mostRelevant = (*it);
 
     for (; it != _routes.end(); it++)
     {
-        std::string     path = it->getPath();
+        std::string     path = (*it)->getPath();
         if (!target.compare(0, path.size(), path) && (mostRelevant->getPath().size() < path.size()))
-            mostRelevant = &(*it);
+            mostRelevant = (*it);
     }
     return (*mostRelevant);
 }
@@ -225,6 +225,8 @@ std::string buildPath(Server &server, Request &request, const std::string &targe
     {
         if (path.find(loc.getPath()) != std::string::npos)
             path.erase(path.find(loc.getPath()), loc.getPath().size());
+        if (path.empty())
+            path = "/";
     }
     path.erase(path.find_last_of("/"), path.size() - path.find_last_of("/"));
     if (!loc.isAcceptedMethod(request.getMethodCode()))
@@ -259,12 +261,12 @@ const std::string firstValidIndex(const std::list<std::string> &indexes)
     return (std::string());
 }
 
-const Location *findRootLocation(const std::list<Location> &list)
+const Location *findRootLocation(const std::list<Location*> &list)
 {
-    for (std::list<Location>::const_iterator it = list.begin(); it != list.end(); it++)
+    for (std::list<Location*>::const_iterator it = list.begin(); it != list.end(); it++)
     {
-        if (!it->getPath().compare("/"))
-            return (&(*it));
+        if (!(*it)->getPath().compare("/"))
+            return (*it);
     }
     return (NULL);
 }

@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/07/23 13:42:42 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/26 15:34:12 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ Server::Server(Config &conf, std::string server_conf) :
         std::cout << "- ServerName = " << _name << std::endl;
 
         Location *general = new Location(std::string(), trimLocations(server_conf), Location());
-        this->_routes.push_front(*general);
+        this->_routes.push_front(general);
         parsingLocations(this->_routes, server_conf);
 
         this->_root = findRootLocation(_routes);
@@ -61,12 +61,9 @@ Server::~Server()
     close(this->_socket);
     delete &this->_rqst;
     delete &this->_main_conf;
-    std::list<Location>::iterator it = _routes.begin();
-    while (it != _routes.end())
-    {
-        Location *tmp = &(*it++);
-        delete tmp;
-    }
+    std::list<Location*>::iterator it = _routes.begin();
+    for (; it != _routes.end(); it++)
+        delete [] (*it);
 }
 
 int 	Server::exec_accept()
@@ -79,9 +76,16 @@ int 	Server::exec_accept()
 int 	Server::exec_server()
 {
     fcntl(this->_client_socket, F_SETFL, O_NONBLOCK);
-    if (this->_rqst.parseRequest(this->_client_socket) < 0)
+    if (this->_rqst.parseRequest(this->_client_socket, this->_routes) < 0)
         return (-1);
+    if (this->_rqst.getBadRequest() == 100) // le body est envoye apres que le serveur est repondu (pour l'upload des fichier via Curl)
+    {
+        execRequest((*this));
+        if (this->_rqst.parseRequest(this->_client_socket, this->_routes) < 0)
+            return (-1);
+    }
     execRequest((*this));
+
     close(this->_client_socket);
     this->_client_socket = -1; 
     return 1;
@@ -124,7 +128,7 @@ Request		&Server::getRequest() const
     return this->_rqst;
 }
 
-const std::list<Location> &Server::getRoutes() const
+const std::list<Location*> &Server::getRoutes() const
 {
     return this->_routes;
 }

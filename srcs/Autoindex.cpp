@@ -6,14 +6,14 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/24 11:42:28 by schene            #+#    #+#             */
-/*   Updated: 2021/07/25 16:27:58 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/26 12:26:20 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/Autoindex.hpp"
     
 Autoindex::Autoindex(std::string dir_name, std::string dir_path, const std::list<std::string> indexes) :
-    _dir_name(dir_name), _dir_path(dir_path), _index_file(false), _is_dir(true), _exist(true)
+    _dir_name(dir_name), _dir_path(dir_path), _last_modified(0),_index_file(false), _is_dir(true), _exist(true)
 {
     struct stat info;
 
@@ -22,6 +22,7 @@ Autoindex::Autoindex(std::string dir_name, std::string dir_path, const std::list
         this->_exist = false;
         return ;
     }
+    this->_last_modified = info.st_mtime;
     if (!S_ISDIR(info.st_mode))
     {
         this->_is_dir = false;
@@ -65,6 +66,11 @@ std::string Autoindex::autoindex_generator()
         index += "<p><a href = \"" + this->_dir_name + '/' + (*it) + "\">" +  (*it) + "</a></p>\n";
     index += "<hr>\n</body>\n</html>\n";  
     return index;
+}
+
+time_t      Autoindex::getLastModified() const
+{
+    return this->_last_modified;
 }
 
 bool        Autoindex::getIndex() const

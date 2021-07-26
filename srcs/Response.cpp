@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 14:42:45 by schene            #+#    #+#             */
-/*   Updated: 2021/07/25 14:07:39 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/26 12:12:02 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,22 +14,22 @@
 
 # define BUF_SIZE 500
 
-Response::Response(execRequest &my_CGI, int socket) :  
-	_cgi(my_CGI), _socket(socket), _buf(NULL), _idx(0), _buf_size(0)
+Response::Response(execRequest &my_data, int socket) :  
+	_data(my_data), _socket(socket), _buf(NULL), _idx(0), _buf_size(0)
 {
-	if (this->_cgi.getBuf())
+	if (this->_data.getBuf())
 	{
 		this->_buf = NULL;
-		this->_buf_size = this->_cgi.getBufSize();
+		this->_buf_size = this->_data.getBufSize();
 		this->_buf = new unsigned char[this->_buf_size + 1];
-		std::memmove(this->_buf, this->_cgi.getBuf(), this->_buf_size);
-		this->_cgi.free_buf();
+		std::memmove(this->_buf, this->_data.getBuf(), this->_buf_size);
+		this->_data.free_buf();
 	}
-	this->_headers["Status"] = this->_cgi.getEnvVar("STATUS_CODE");
-	if (!this->_cgi.getEnvVar("LOCATION").empty())
-		this->_headers["Location"] = this->_cgi.getEnvVar("LOCATION");
-	if (this->_cgi.getCgi())
-		this->parse_cgi_buf();
+	this->_headers["Status"] = this->_data.getEnvVar("STATUS_CODE");
+	if (!this->_data.getEnvVar("LOCATION").empty())
+		this->_headers["Location"] = this->_data.getEnvVar("LOCATION");
+	if (this->_data.getCgi())
+		this->parse_data_buf();
 	this->_headers["Allow"] = std::string();
 	this->_headers["Content-Language"] = std::string();
 	this->_headers["Content-Length"] = ft_itoa_cpp(this->_buf_size);
@@ -51,7 +51,7 @@ Response::~Response()
 	this->_headers.clear();
 }
 
-void		Response::parse_cgi_buf()
+void		Response::parse_data_buf()
 {
 	if (!this->_buf)
 		return ;
@@ -99,8 +99,8 @@ void		Response::setDate()
 
 void			Response::setLastModified()
 {
-	if (this->_cgi.getLastModified() > 0)
-		this->_headers["Last-Modified"] = this->formatDate(this->_cgi.getLastModified());
+	if (this->_data.getLastModified() > 0)
+		this->_headers["Last-Modified"] = this->formatDate(this->_data.getLastModified());
 }
 
 std::string		Response::formatDate(time_t timestamp)
@@ -116,7 +116,7 @@ std::string		Response::formatDate(time_t timestamp)
 void			Response::writeStatusLine()
 {
 	// Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase CRLF
-	this->_response = this->_cgi.getEnvVar("SERVER_PROTOCOL") + ' '; // HTTP-Version SP 
+	this->_response = this->_data.getEnvVar("SERVER_PROTOCOL") + ' '; // HTTP-Version SP 
 	this->_response += this->_headers.find("Status")->second + "\r\n"; // Status-Code SP Reason-Phrase CRLF
 	this->_headers.erase("Status"); // Erase status from header to not print it as a header field
 }
@@ -137,7 +137,7 @@ void			Response::format_header()
 
 void		Response::check_content_type()
 {
-	std::string tmp(this->_cgi.getEnvVar("PATH_INFO"));
+	std::string tmp(this->_data.getEnvVar("PATH_INFO"));
 	if (tmp.find('.') != std::string::npos)
 	{
 		tmp.erase(0, tmp.find_last_of('.') + 1);

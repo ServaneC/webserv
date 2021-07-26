@@ -435,7 +435,7 @@ AVANT CA:
 => MERGE ✅
 ->continuer a changer les mallocs en new ✅
 ✅ Le CSS marche sur les fichier qui sont pas .html (youpi.bla et action.php)
--> remplacer recvRequest et recvBody en 1 seule fonction = recvData() ✅
+-> remplacer recvRequest et recvBodyCL en 1 seule fonction = recvData() ✅
 -> j'ai changer la variable _request en _buf (+ logique)
 
 18/06/2021
@@ -746,6 +746,34 @@ AVANT CA:
 	🙄 Le pb vient du fait que l'on cherche la 'location' suivante et il ya location dans le nom...
 	-> RESOLU: on cherche '}' avant de chercher la location suivante.
 
+26/07/2021
+-> gérer le header Last-Modified ✅ (on le set dans Autoindex avec stat)
+-> 411 Length Required pour POST sans body ✅ _bad_request n'est plus un bool mais un int (dans Request)
+-> limit client body size ! '
+	-> 413	Request Entity Too Large (si body superieur a ce qui est autorisé) ✅
+	=> on check la loc dans Request + on set Max Body Size + 
+		on set _bad_request a 413 si la size du body dépasse max body size
+-> regler toutes les leaks en cas d'erreur de select
+	-> les destructeurs ne semblent pas êtres appellés
+	=> j'ai transforme routes en une liste de pinteur <Location*> (au lieu de <Location>)
+		= on peu bien delete chaque element
+	-> il n'y as plus de leaks apres le stress test
+-> L'upload via Curl : curl -F  "data=@YoupiBanane/youpi.bla"  http://localhost:8080/upload
+	avec 100-Continue marche a moitié
+	=> le fichier est bien créé mais la data n'est pas reçu 😩
+	+ ca marche une fois ensuite ca segfault 
+	=> en recevant la reponse avec recv_one au lieu de direct recv(Content-Length), ca marche niquel
+		tout est bien recu. Je ne sais pas pourqoi mais apres le premier upload (quan le file est deja dans upload)
+		c'est pas exactement cont-Length qui est envoye par curl 🤷🏻‍♀️
+	-> But don't care ca marche !!!! 🎉
+-> réeorganiser un peu les fonctions dans Request.cpp ✅ => creation du file RequestBody.cpp
+-> 😩 Les routes ne marchent plus (/Yeah et /directory, ca renvoi un retour chelou)
+	-> HTTP/1.1 basic_string
+	-> ça marche avec le '/' a al fin (http://localhost:8080/Yeah/)
+	-> le pb semble venir de ce aue j'avais rajouter pour modifier la gestion des root hier ! 🤦🏻‍♀️
+	✅ Le path etait entierement effacé, j'ai ajouté une condition qui fait que si le path est vide on le set a '/'
+
+
 
 ================================== NOTES ==================================
 
@@ -753,24 +781,17 @@ TO DO:
 correction:
 	-> redirected url ? -> erreur 301 / 302 / 303 comment gerer ?
 	-> what happen if we set up same port multiple time in conf file ? (should not work)
-	-> limit client body size ! + tester
 	-> different server names
-	-> upload via Curl, il va surement falloir gérer les 100-Continue 😣
 -> faudras rajouter + parser/stocker dans le conf file un path où uploader les files
--> toute la gestion des exceptions / retour d'erreur / delete quand on quitte (ou en cas d'erreur) est a revoir
+-> revoir le retour d'erreur sur des request necessitant le cgi, sans cgi
 -> error pages:
 	-> on peut en setup des default par numero d'erreur dans le conf file
 		exemple: 'error_page 404	/custom_404.html;'
--> faire plus de test (peut être avec python)
 -> créer un (ou +) autre website pour bien voir la dif entre les différents ports (website actuel = /YoupiBanane)
 -> avoir plusieurs conf files
 -> execute CGI based on certain file extension (for example .php) ? 
 	-> exécuter le cgi que si on as .php ?
 	-> erreur si .php mais pas de cgi ?
--> pour les methodes, si pas de accepted_method dans conf 
-	-> actuellement = rien d'autorisé
-	-> est ce qu'on devrait pas autoriser par default GET ?
--> 411 Length Required pour POST sans body
 
 Pour tester server_name
 	curl --resolve example.com:8080:127.0.0.1 http://example.com/

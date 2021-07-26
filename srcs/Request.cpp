@@ -6,13 +6,13 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 16:24:45 by schene            #+#    #+#             */
-/*   Updated: 2021/07/25 14:07:34 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/26 16:15:27 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/Request.hpp"
 
-Request::Request() : _bad_request(false), _body(NULL)
+Request::Request() : _bad_request(0), _body(NULL)
 {
 
 }
@@ -23,8 +23,10 @@ Request::~Request()
 	close(this->_socket);
 }
 
-int		Request::parseRequest(int socket)
+int		Request::parseRequest(int socket, const std::list<Location*> &routes)
 {
+	if (this->_bad_request == 100 && this->_body_size == 0)
+		return (this->recvBody(routes));
 	this->reset_body();
 	this->_socket = socket;
 	this->resetHeaders();
@@ -34,7 +36,6 @@ int		Request::parseRequest(int socket)
 		return (- 1);
 	std::cout << "========= REQUEST =========" << std::endl;
 	std::cout << this->_buf;
-	std::cout << "===========================" << std::endl;
 
 	if (gnlRequest() > 0)
 		this->parseRequestLine(this->_line);
@@ -45,13 +46,13 @@ int		Request::parseRequest(int socket)
 	 	this->parseHeaderFields(this->_line);
 	}
 	this->_buf.clear();
-	// if payload-body -> read it
-	if (!this->getHeaderField("Content-Length").empty()) //request w/ a 'normal' body
-		this->recvBody(std::atoi(this->_headers["Content-Length"].c_str()));
-	else if (!this->getHeaderField("Transfer-Encoding").compare("chunked")) //chunk request
-		recvChunk();
-	// else if (!this->_method_code == METHOD_POST)
-
+	if (!this->_headers["Expect"].compare("100-continue") && !this->_bad_request)
+	{
+		this->_bad_request = 100;
+		return 1;
+	}
+	if (this->_method_code == METHOD_POST && !this->_bad_request)
+		this->recvBody(routes);
 	write(1, this->_body, this->_body_size);
 	std::cout << "========= END OF REQUEST =========" << std::endl;
 	return 1;
@@ -86,112 +87,6 @@ int			Request::recvHeader() // recv byte per byte to stop at the end of the head
 	return 1;
 }
 
-int			Request::recvBody(int size)
-{
-	unsigned char *recv_buf;
-	int  recv_ret;
-
-	try {
-		recv_buf = new unsigned char [size + 1];
-	}
-	catch (std::exception &e) {
-        std::cout << e.what() << std::endl;
-		return (-1);
-	}
-	memset(recv_buf, '\0', size);
-	while (1)
-	{
-		recv_ret = recv(this->_socket, recv_buf, size, 0);
-		if (recv_ret < 0)
-			return (-1);
-		if (recv_ret > 0)
-		{
-			recv_buf[recv_ret] = '\0';
-			this->append_body(recv_buf, recv_ret);
-			memset(recv_buf, '\0', recv_ret);
-			if (recv_ret == size)
-				break ;
-		}
-	}
-	delete [] recv_buf;
-	return 1;
-}
-
-int			Request::recvChunk()
-{
-	std::string		size_buf;
-	int				size;
-	unsigned char	buf;
-
-	while (1)
-	{
-		size = 0;
-		size_buf.clear();
-		while (size_buf.find("\r\n") == std::string::npos)
-			size_buf.push_back(recv_one());
-		if (size_buf.size() > 2)
-			size_buf.erase(size_buf.size() - 2, 2); // erase the CRLF
-		size = hexa_to_int(size_buf);
-		//end of the chunk body
-		if (size == 0)
-		{
-			while (recv_one() != (unsigned char)-1)
-				;
-			return 1;
-		}
-		// recv the chunk data + append to body
-		for (int i = 0; i < size; i++)
-		{
-			buf = recv_one();
-			this->append_body(&buf, 1);
-			buf = 0;
-		}
-		// recv the CRLF
-		recv_one();
-		recv_one();
-	}
-	return -1;
-}
-
-unsigned char	Request::recv_one()
-{
-	unsigned char	c;
-	int				recv_ret;
-
-	while (1)
-	{
-		c = 0;
-		recv_ret = recv(this->_socket, &c, 1, 0);
-		if (recv_ret < 0)
-			return (-1);
-		if (recv_ret > 0)
-			break ;
-	}
-	return (c);
-}
-
-
-int			Request::append_body(unsigned char *buffer, int size)
-{
-	try {
-		if (this->_body)
-		{
-			this->_body = MyRealloc(this->_body, this->_body_size, this->_body_size + size + 1);
-			std::memmove(this->_body + this->_body_size, buffer, size);
-		}
-		else
-		{
-			this->_body = new unsigned char[size + 1];
-			std::memmove(this->_body, buffer, size);
-		}
-		this->_body_size += size;
-	}
-	catch (std::exception &e) {
-        std::cout << e.what() << std::endl;
-		return (-1); }
-	return 1;
-}
-
 int Request::gnlRequest()
 {
 	size_t pos = this->_buf.find_first_of('\n');
@@ -213,7 +108,7 @@ void		Request::parseRequestLine(std::string line)
 	this->_method_code = setMethodCode(this->_method);
 	line.erase(0, line.find(' ') + 1);
 	if (isspace(line[0]))
-		this->_bad_request = true;
+		this->_bad_request = 400;
 	std::string tmp = line.substr(0, line.find(' ')); //parse request-target
 	if (tmp.compare(0, 7, "http://") == 0)
 	{
@@ -225,7 +120,7 @@ void		Request::parseRequestLine(std::string line)
 	this->_object = _target.substr(_target.find_last_of("/") + 1, _target.size() - _target.find_last_of("/") - 1);
 	line.erase(0, line.find(' ') + 1);
 	if (isspace(line[0]))
-		this->_bad_request = true;
+		this->_bad_request = 400;
 	this->_http_version = line.substr(0, line.find('\r')); //set http version
 }
 
@@ -234,7 +129,7 @@ void		Request::parseHeaderFields(std::string line)
 	std::string field_name = line.substr(0, line.find(':')); //parse field_name
 		
 	if (isspace(field_name[field_name.size() - 1])) //No whitespace is allowed between the header field-name and colon
-		this->_bad_request = true;
+		this->_bad_request = 400;
 	std::map<std::string, std::string>::iterator it = this->_headers.begin();
 	while (it != this->_headers.end())
 	{
@@ -264,16 +159,23 @@ void		Request::resetHeaders()
 	this->_headers["Referer"] = std::string();
 	this->_headers["Transfer-Encoding"] = std::string();
 	this->_headers["User-Agent"] = std::string();
+	this->_headers["Expect"] = std::string();
 }
 
 void		Request::reset_body()
 {
+	this->_bad_request = 0;
 	if (this->_body)
 		delete [] this->_body;
 	this->_body_size = 0;
 	this->_body = NULL;
 }
 
+void			Request::setMaxBodySize(const std::list<Location*> &routes)
+{
+	const Location  &loc = getRelevantLocation(routes, this->_target);
+	this->_max_body_size = loc.getMaxBodySize();
+}
 
 // GETTER
 std::string const	&Request::getMethod() const
@@ -315,7 +217,7 @@ int			 		Request::getBodySize() const
 	return this->_body_size;
 }
 
-bool				Request::getBadRequest() const
+int				Request::getBadRequest() const
 {
 	return this->_bad_request;
 }

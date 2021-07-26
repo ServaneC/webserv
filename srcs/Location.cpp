@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:48:09 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/25 17:28:36 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/26 14:41:42 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,9 @@
 
 Location::Location() : _max_body_size(1000000) {}
 
-Location::~Location() {}
+Location::~Location() 
+{
+}
 
 Location::Location(const std::string path, const std::string location_conf, 
     const Location &general) : _path(path), _location_conf(location_conf), 

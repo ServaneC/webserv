@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/30 09:49:40 by schene            #+#    #+#             */
-/*   Updated: 2021/07/25 14:06:00 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/26 14:36:20 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,43 +122,42 @@ void	Config::startServers()
 		std::memcpy(&read_sockets, &this->_current_sockets, sizeof(this->_current_sockets));
 		std::memcpy(&write_sockets, &this->_current_sockets, sizeof(this->_current_sockets));
 
-		select_ret = select(FD_SETSIZE, &read_sockets, &write_sockets, NULL, NULL);
-        if (select_ret < 0)
-        {
-			for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
-				close ((*it)->getSocket());
-            perror("In select");
-            exit(EXIT_FAILURE); 
-        }
-		else if (select_ret > 0)
+		try
 		{
-			for (int i = 0; i < FD_SETSIZE; i++)
+			select_ret = select(FD_SETSIZE, &read_sockets, &write_sockets, NULL, NULL);
+			if (select_ret < 0)
 			{
-				if (FD_ISSET(i, &read_sockets))
+				for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
+					close ((*it)->getSocket());
+				throw InternalServerError();
+			}
+			else if (select_ret > 0)
+			{
+				for (int i = 0; i < FD_SETSIZE; i++)
 				{
-					for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
+					if (FD_ISSET(i, &read_sockets))
 					{
-						if (i == (*it)->getSocket() && (*it)->getClientSocket() < 0)
+						for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
 						{
-							try
+							if (i == (*it)->getSocket() && (*it)->getClientSocket() < 0)
 							{
 								ret = (*it)->exec_accept();
 								FD_SET(ret, &this->_current_sockets);
 							}
-							catch(const std::exception& e)
+							if (FD_ISSET(i, &write_sockets) && (*it)->getClientSocket() != -1)
 							{
-								std::cerr << e.what() << '\n';
-								exit(EXIT_FAILURE);
+								(*it)->exec_server();
+								FD_CLR(i, &this->_current_sockets);
 							}
-						}
-						if (FD_ISSET(i, &write_sockets) && (*it)->getClientSocket() != -1)
-						{
-							(*it)->exec_server();
-							FD_CLR(i, &this->_current_sockets);
 						}
 					}
 				}
 			}
+		}
+		catch(const std::exception& e)
+		{
+			std::cerr << e.what() << '\n';
+			exit(EXIT_FAILURE);
 		}
 	}
 	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)

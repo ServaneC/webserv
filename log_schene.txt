@@ -785,9 +785,9 @@ AVANT CA:
 	- la correction ne dit rien sur les CGI, je propose qu'on simplifie et qu'on 
 		execute que si l'extension de fichier est '.php' (comme on est sensé gérer qu'un cgi)
 		-> si '.php' et pas de cgi, renvoyer une erreur.
-	(a revoir) => erreur 500 si .php sans CGI
-
-
+	✅  => erreur 500 si .php sans CGI
+-> j'ai enlevé plein de header fields qu'on gerait pas mais qu'on initialisait
+-> j'ai mis toutes les confs dans un repo (confs) = plus propre
 
 ================================== NOTES ==================================
 
@@ -798,7 +798,7 @@ correction:
 	-> make the route able to accept uploaded files and configure where it should be saved
 
 pour faire un webserv encore plus bg:
-	-> créer un (ou +) autre website pour bien voir la dif entre les différents ports (website actuel = /YoupiBanane)
+	-> créer un (ou +) autre website pour bien voir la diff entre les différents ports (website actuel = /YoupiBanane)
 	-> avoir plusieurs conf files
 
 

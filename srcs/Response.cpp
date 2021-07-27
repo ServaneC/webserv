@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 14:42:45 by schene            #+#    #+#             */
-/*   Updated: 2021/07/26 12:12:02 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/27 13:08:22 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,17 +30,10 @@ Response::Response(execRequest &my_data, int socket) :
 		this->_headers["Location"] = this->_data.getEnvVar("LOCATION");
 	if (this->_data.getCgi())
 		this->parse_data_buf();
-	this->_headers["Allow"] = std::string();
-	this->_headers["Content-Language"] = std::string();
 	this->_headers["Content-Length"] = ft_itoa_cpp(this->_buf_size);
-	this->_headers["Content-Location"] = std::string();
 	this->setDate();
 	this->setLastModified();
-	// this->_headers["Location"] = std::string();
-	this->_headers["Retry-After"] = std::string();
 	this->_headers["Server"] = std::string("webserv/4.2");
-	this->_headers["Transfer-Encoding"] = std::string();
-	this->_headers["WWW-Authenticate"] = std::string();
 	this->check_content_type();
 	this->send_response();
 

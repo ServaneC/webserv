@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 16:24:45 by schene            #+#    #+#             */
-/*   Updated: 2021/07/26 16:15:27 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/27 13:08:10 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -149,16 +149,11 @@ void		Request::parseHeaderFields(std::string line)
 void		Request::resetHeaders()
 {
 	this->_headers["Accept"] = std::string();
-	this->_headers["Accept-Charsets"] = std::string();
-	this->_headers["Accept-Language"] = std::string();
-	this->_headers["Authorization"] = std::string();
 	this->_headers["Content-Length"] = std::string();
 	this->_headers["Content-Type"] = std::string();
 	this->_headers["Date"] = std::string();
 	this->_headers["Host"] = std::string();
-	this->_headers["Referer"] = std::string();
 	this->_headers["Transfer-Encoding"] = std::string();
-	this->_headers["User-Agent"] = std::string();
 	this->_headers["Expect"] = std::string();
 }
 

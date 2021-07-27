@@ -785,7 +785,7 @@ AVANT CA:
 	- la correction ne dit rien sur les CGI, je propose qu'on simplifie et qu'on 
 		execute que si l'extension de fichier est '.php' (comme on est sensé gérer qu'un cgi)
 		-> si '.php' et pas de cgi, renvoyer une erreur.
-	✅ => erreur 500 si .php sans CGI
+	(a revoir) => erreur 500 si .php sans CGI
 
 
 

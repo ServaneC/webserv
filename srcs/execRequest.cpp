@@ -155,8 +155,8 @@ bool	execRequest::setPathQuery()
 		object.erase(object.find('?'), object.size());
 		this->_request.setObject(object);
 	}	
-	if (object.find_last_of('.') != std::string::npos)
-		this->_file_ext = object.substr(object.find_last_of('.') + 1);
+	// if (object.find_last_of('.') != std::string::npos)
+	// 	this->_file_ext = object.substr(object.find_last_of('.') + 1);
 	try {
 		this->_request.setDirPath(buildPath(_server, _request, target));
 		autoindex = tryPath(_server, _request, target);

@@ -788,19 +788,31 @@ AVANT CA:
 	✅  => erreur 500 si .php sans CGI
 -> j'ai enlevé plein de header fields qu'on gerait pas mais qu'on initialisait
 -> j'ai mis toutes les confs dans un repo (confs) = plus propre
+-> redirected url ? -> erreur 301 / 302 / 303 comment gerer ?
+	-> nginx return rule ?
+		ex: return 301 URL;
+	-> p-ê juste gérer la redirection 301
+-> il y a un pb car relvantLocation considere que 
+	/redirect_here/redirect.html appartient a la loc /redirect !
+	-> c'est un pb dans le compare qui prend la taille de /redirect donc forcement ca dit que c'est egal !
+	✅ J'ai modifié la fct getRelevantLocation() et ca marche niquel !
+	-> tester dans la vm ! ✅
+-> afficher un message d'erreur si le path du conf file est invalide ✅
+
 
 ================================== NOTES ==================================
 
 TO DO:
 correction:
-	-> redirected url ? -> erreur 301 / 302 / 303 comment gerer ?
 	-> error pages
 	-> make the route able to accept uploaded files and configure where it should be saved
+	=> reste a parser:
+		- les error pages par numero d'erreur
+		- la directive upload_path pour savoir où uploader les files
 
 pour faire un webserv encore plus bg:
-	-> créer un (ou +) autre website pour bien voir la diff entre les différents ports (website actuel = /YoupiBanane)
+	-> créer un autre website pour bien voir la diff entre les différents ports (website actuel = /YoupiBanane)
 	-> avoir plusieurs conf files
-
 
 Pour tester les chunk request:
 	curl -H "Transfer-Encoding: chunked" -d "nom=Servane&age=20" http://localhost:8080/action.php

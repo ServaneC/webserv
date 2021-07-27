@@ -84,6 +84,12 @@ bool execRequest::tryPath(Server &server, Request &request, const std::string &t
 
 	this->setPathName(this->_request.getDirPath(), this->_request.getObject());
 	
+	if (!loc.getRedirectURL().empty())
+	{
+		this->_env["STATUS_CODE"] = "301 Moved Permanently";
+		this->_env["LOCATION"] = loc.getRedirectURL();
+		return false;
+	}
     Autoindex autoidx(target, this->_env["PATH_INFO"], loc.getIndexes());
 	this->_last_modified = autoidx.getLastModified();
 	if (!autoidx.path_exist())

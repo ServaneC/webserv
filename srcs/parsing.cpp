@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/27 12:25:20 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/27 15:33:52 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,6 +198,28 @@ std::string    parsingErrorPage(const Location &location, const Location &genera
     return (page_path);
 }
 
+std::string parsingRedirection(const std::string &loc_conf, const Location &general)
+{
+    size_t          index = loc_conf.find("return");
+    int             code;
+    std::string     redirect_url;
+
+    if (index == std::string::npos)
+        return (general.getRedirectURL());
+    index += 7;
+    index = loc_conf.find_first_not_of(" \t\n\r\v\f", index);
+    size_t length = loc_conf.find_first_not_of("0123456789", index) - index;
+    code = std::atoi(loc_conf.substr(index, length).c_str());
+    index += length;
+    index = loc_conf.find_first_not_of(" \t\n\r\v\f", index);
+    if (code == 301)
+    {
+        length = loc_conf.find(';', index) - index;
+        return (loc_conf.substr(index, length));
+    }
+    return (general.getRedirectURL());
+}
+
 // ******************************************** //
 // ***********  HANDLING LOCATIONS  *********** //
 // ******************************************** //
@@ -205,13 +227,17 @@ std::string    parsingErrorPage(const Location &location, const Location &genera
 
 const Location &getRelevantLocation(const std::list<Location*> &_routes, const std::string &target)
 {
-    std::list<Location*>::const_iterator it = _routes.begin();
-    const Location *mostRelevant = (*it);
+    std::list<Location*>::const_iterator it = ++_routes.begin();
+    std::string    loc = target;
+    const Location *mostRelevant = (*(it));
 
+    if (target.size() > 1 && target.find('/', 1) != std::string::npos)
+        loc = loc.erase(target.find('/', 1));
     for (; it != _routes.end(); it++)
     {
         std::string     path = (*it)->getPath();
-        if (!target.compare(0, path.size(), path) && (mostRelevant->getPath().size() < path.size()))
+        size_t          size = path.size() > loc.size() ? path.size() : loc.size();
+        if (!loc.compare(0, size, path) && (mostRelevant->getPath().size() < path.size()))
             mostRelevant = (*it);
     }
     return (*mostRelevant);

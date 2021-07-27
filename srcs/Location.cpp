@@ -6,13 +6,15 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:48:09 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/27 11:14:42 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/27 14:35:08 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/Location.hpp"
 
-Location::Location() : _max_body_size(1000000) {}
+Location::Location() : _max_body_size(1000000) {
+    this->_redirect_url = std::string();
+}
 
 Location::~Location() 
 {
@@ -31,7 +33,7 @@ Location::Location(const std::string path, const std::string location_conf,
     if (location_conf.find("root") != std::string::npos)
         this->_root_in_conf = true;
     this->_root = parsingRoot(location_conf, general);
-    // std::cout << "Local root for <" << path << "> is -> |" << _root << "|" << std::endl;
+    // std::cout << "Local root f or <" << path << "> is -> |" << _root << "|" << std::endl;
 
 
     this->_indexes = parsingIndexes(location_conf, general);
@@ -51,6 +53,11 @@ Location::Location(const std::string path, const std::string location_conf,
 
     this->_error_page = parsingErrorPage(*this, general);
     // std::cout << "Local error_page -> " << _error_page << std::endl;
+
+    this->_redirect_url = parsingRedirection(location_conf, general);
+    // if (!this->_redirect_url.empty())
+    //     std::cout << "Redirect URL for " << path << " -> " << this->_redirect_url << std::endl;
+
 }
 
 Location::Location(const Location &ref) : _path(ref._path), 
@@ -77,10 +84,8 @@ const Location &Location::operator=(const Location &ref)
 
 bool Location::isAcceptedMethod(int code) const
 {
-    // std::cout << "CODE = " << code << std::endl;
     for (std::vector<int>::const_iterator it = this->_accepted_methods.begin(); it != this->_accepted_methods.end(); it++)
     {
-        // std::cout << "accepted => " << code << std::endl;
         if (*it == code)
            return true;
     }
@@ -130,6 +135,10 @@ std::string     Location::getConf() const {
 bool            Location::getRootInConf() const
 {
     return this->_root_in_conf;
+}
+
+std::string     Location::getRedirectURL() const {
+    return this->_redirect_url;
 }
 
 // void Location::addErrorPagePrefix(std::string prefix)

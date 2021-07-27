@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/30 09:49:40 by schene            #+#    #+#             */
-/*   Updated: 2021/07/26 14:36:20 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/27 15:45:15 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,11 @@ Config::Config() { g_ctrl_c = 0;}
 
 Config::Config(std::string conf_file) : _servers()
 {
-	readConfFile(conf_file.c_str());
-	createServers();
-	startServers();
+	if (readConfFile(conf_file.c_str()) > 0)
+	{
+		createServers();
+		startServers();
+	}
 }
 
 Config::~Config()
@@ -36,6 +38,11 @@ int 	Config::readConfFile(char const *path)
 	std::fstream conf_stream(path, std::ios_base::in); //open file for reading
 	char *line = NULL;
 	
+	if ( (conf_stream.rdstate() & std::ifstream::failbit ) != 0 )
+    {
+		std::cerr << "Error opening conf file (are you sure " << path << " exist ?)" << std::endl;
+		return -1;
+	}	
 	try {
 		line = new char [BUFF_SIZE];
 	}

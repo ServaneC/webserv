@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/08 16:33:16 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/27 11:27:21 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/27 14:13:35 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,7 @@ bool                    parsingAutoIndex(const std::string &loc_conf, const Loca
 std::string             parsingCGIconf(const std::string &loc_conf, const Location &general);
 size_t                  parsingBodySize(const std::string &loc_conf, const Location &general);
 std::string             parsingErrorPage(const Location &location, const Location &general);
+std::string             parsingRedirection(const std::string &loc_conf, const Location &general);
 
 // *********** HANDLING LOCATIONS *********** //
 

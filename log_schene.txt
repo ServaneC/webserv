@@ -773,6 +773,20 @@ AVANT CA:
 	-> le pb semble venir de ce aue j'avais rajouter pour modifier la gestion des root hier ! 🤦🏻‍♀️
 	✅ Le path etait entierement effacé, j'ai ajouté une condition qui fait que si le path est vide on le set a '/'
 
+27/07/2021
+-> faire un fonction pour write les conf sur std::cout
+-> what happen if we set up same port multiple time in conf file ? (should not work)
+	-> actuellement il y a 500 d'ecrit mais le programme s'execute quand même.
+	=> "Server currently running on 127.0.0.1:8080 (localhost:8080)" <- quand le serveur se lance
+	=> "ERROR: Server on 127.0.0.1:8080 (localhost:8080) was unable to start" <- quand il y a une erreur (hors pb conf file)
+-> different server names
+	-> il faut modifier le fichier host (sudo vim /etc/hosts dans la vm)
+-> execute CGI based on certain file extension (for example .php) ? 
+	- la correction ne dit rien sur les CGI, je propose qu'on simplifie et qu'on 
+		execute que si l'extension de fichier est '.php' (comme on est sensé gérer qu'un cgi)
+		-> si '.php' et pas de cgi, renvoyer une erreur.
+	✅ => erreur 500 si .php sans CGI
+
 
 
 ================================== NOTES ==================================
@@ -780,21 +794,13 @@ AVANT CA:
 TO DO:
 correction:
 	-> redirected url ? -> erreur 301 / 302 / 303 comment gerer ?
-	-> what happen if we set up same port multiple time in conf file ? (should not work)
-	-> different server names
--> faudras rajouter + parser/stocker dans le conf file un path où uploader les files
--> revoir le retour d'erreur sur des request necessitant le cgi, sans cgi
--> error pages:
-	-> on peut en setup des default par numero d'erreur dans le conf file
-		exemple: 'error_page 404	/custom_404.html;'
--> créer un (ou +) autre website pour bien voir la dif entre les différents ports (website actuel = /YoupiBanane)
--> avoir plusieurs conf files
--> execute CGI based on certain file extension (for example .php) ? 
-	-> exécuter le cgi que si on as .php ?
-	-> erreur si .php mais pas de cgi ?
+	-> error pages
+	-> make the route able to accept uploaded files and configure where it should be saved
 
-Pour tester server_name
-	curl --resolve example.com:8080:127.0.0.1 http://example.com/
+pour faire un webserv encore plus bg:
+	-> créer un (ou +) autre website pour bien voir la dif entre les différents ports (website actuel = /YoupiBanane)
+	-> avoir plusieurs conf files
+
 
 Pour tester les chunk request:
 	curl -H "Transfer-Encoding: chunked" -d "nom=Servane&age=20" http://localhost:8080/action.php

@@ -30,6 +30,7 @@ class execRequest
 		char 								**_argv;
 		std::list<Location>					_location_list;
 		bool								_cgi;
+		std::string							_file_ext;
 
 		// execRequest
 		bool	tryPath(Server &server, Request &request, const std::string &target);

@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/19 18:11:49 by schene            #+#    #+#             */
-/*   Updated: 2021/07/26 13:49:58 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/27 12:24:04 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,10 +16,21 @@ void	execRequest::exec_method()
 {
 	if (!this->_env["REQUEST_METHOD"].compare("DELETE"))
 		this->exec_delete();
+	else if (!this->_file_ext.compare("php"))
+	{
+		if (this->_cgi)
+			this->exec_CGI();
+		else
+		{
+			this->_env["STATUS_CODE"] = InternalServerError().what();
+			std::string no_cgi = "ERROR: No path to php-cgi in conf file\n";
+			this->append_body((unsigned char *)no_cgi.c_str(), no_cgi.size());
+		}
+	}
 	else if (!this->_env["REQUEST_METHOD"].compare("POST"))
 		this->exec_post();
-	else if (this->_cgi)
-		this->exec_CGI();
+	// else if (this->_cgi)
+	// 	this->exec_CGI();
 	else if (!this->_env["REQUEST_METHOD"].compare("GET"))
 		this->readFile();
 }

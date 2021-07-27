@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/08 16:33:16 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/26 14:06:33 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/27 11:27:21 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ std::string         getCurrentDirectory();
 
 std::string         parsingName(const std::string &conf);
 std::string         parsingRoot(const std::string &loc_conf, const Location &general);
-void                parsingIPAddress(const std::string &conf, unsigned int *ip, int *port);
+std::string         parsingIPAddress(const std::string &conf, unsigned int *ip, int *port);
 void                parsingLocations(std::list<Location*> &routes, const std::string &conf);
 
 // *********** PARSING LOCATIONS *********** //

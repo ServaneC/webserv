@@ -42,11 +42,11 @@ execRequest::execRequest(Server &serv)
 		this->_env["REQUEST_METHOD"] = this->_request.getMethod();
 		this->_env["SERVER_PROTOCOL"] = this->_request.getHTTPVersion();
 		autoindex = this->setPathQuery();
-		printEnv("execRequest ()");
 
 	}
 	else
 	{
+		// revoir la gestion ici
 		if (this->_request.getBadRequest() == 100)
 			this->_env["STATUS_CODE"] = "100 Continue";
 		if (this->_request.getBadRequest() == 400)
@@ -56,7 +56,6 @@ execRequest::execRequest(Server &serv)
 		if (this->_request.getBadRequest() == 413)
 			this->_env["STATUS_CODE"] = "413 Request Entity Too Large";
 	}
-	// printEnv("execRequest ()");
 	if (autoindex == false && !this->_env["STATUS_CODE"].compare("200 OK"))
 		this->exec_method();
 	else if (this->_env["STATUS_CODE"].compare("200 OK") != 0)  // cas d'erreur ou redirection (redirections pas encore gerees)
@@ -77,7 +76,6 @@ bool execRequest::tryPath(Server &server, Request &request, const std::string &t
 	if (loc.getCGIPath().size())
 		cgi_path = loc.getCGIPath();
 
-	std::cout << "CHDIR to [" << request.getDirPath() << ']' << std::endl;
     if (chdir(request.getDirPath().c_str()) == -1)
 	{
 		if (errno ==  EACCES)
@@ -157,7 +155,8 @@ bool	execRequest::setPathQuery()
 		object.erase(object.find('?'), object.size());
 		this->_request.setObject(object);
 	}	
-
+	if (object.find_last_of('.') != std::string::npos)
+		this->_file_ext = object.substr(object.find_last_of('.') + 1);
 	try {
 		this->_request.setDirPath(buildPath(_server, _request, target));
 		autoindex = tryPath(_server, _request, target);

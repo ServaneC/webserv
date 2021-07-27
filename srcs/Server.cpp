@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/07/26 15:34:12 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/27 11:44:07 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,15 +18,14 @@ Server::Server(Config &conf, std::string server_conf) :
     _rqst(*(new Request)), _main_conf(conf), _server_conf(server_conf),
     _client_socket(-1)//, _routes(1, Location(this, "/", server_conf))
 {
+    std::string ip_str;
     try
     {
-        std::cout << "---------------------" << std::endl;
+        // std::cout << "---------------------" << std::endl;
 
-        parsingIPAddress(server_conf, &this->_ip, &this->_port);
-        std::cout << "- ServerPort = " << _port << std::endl;
+        ip_str = parsingIPAddress(server_conf, &this->_ip, &this->_port);
 
         this->_name = parsingName(server_conf);
-        std::cout << "- ServerName = " << _name << std::endl;
 
         Location *general = new Location(std::string(), trimLocations(server_conf), Location());
         this->_routes.push_front(general);
@@ -36,11 +35,9 @@ Server::Server(Config &conf, std::string server_conf) :
 
         this->_host.sin_family = AF_INET;
         this->_host.sin_addr.s_addr = htonl(this->_ip);
-        std::cout << "- ServerAddress = " << this->_host.sin_addr.s_addr << std::endl;
         this->_host.sin_port = htons(this->_port);
         this->_addrlen = sizeof(this->_host);
         this->_socket = socket(PF_INET, SOCK_STREAM, 0);
-
 
         int enable = 1;
         if (setsockopt(this->_socket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
@@ -51,9 +48,23 @@ Server::Server(Config &conf, std::string server_conf) :
             throw InternalServerError();
         if (listen(this->_socket, 32) < 0)
             throw InternalServerError();
+
+        std::cout << "Server currently running on " << ip_str << ':' << this->_port;
+        if (!this->_name.empty())
+            std::cout << " (" << this->_name << ':' << this->_port << ')';
+        std::cout << std::endl;
     }
     catch (std::exception &e) {
-        std::cout << e.what() << std::endl; }
+        if (e.what() == InternalServerError().what())
+        {
+            std::cout << "ERROR: Server on " << ip_str << ':' << this->_port;
+            if (!this->_name.empty())
+                std::cout << " (" << this->_name << ':' << this->_port << ')';
+            std::cout << " was unable to start" << std::endl;
+        }
+        else
+            std::cout << e.what() << std::endl;
+    }
 }
 
 Server::~Server()

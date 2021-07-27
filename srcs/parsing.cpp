@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/26 16:09:10 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/27 12:25:20 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ std::string parsingRoot(const std::string &loc_conf, const Location &general)//,
     return (getCurrentDirectory().append(loc_conf.substr(root_index, root_end - root_index)));
 }
 
-void parsingIPAddress(const std::string &conf, unsigned int *ip, int *port)
+std::string  parsingIPAddress(const std::string &conf, unsigned int *ip, int *port)
 {
     size_t  addr_index = conf.find("listen");
     if (addr_index == std::string::npos)
@@ -63,6 +63,7 @@ void parsingIPAddress(const std::string &conf, unsigned int *ip, int *port)
     *port = std::atoi(conf.substr(port_index, port_length - port_index).c_str());
     if (*port < 0 || *port > 65535)
         throw confInvalidPortException();
+    return (conf.substr(addr_index, conf.find(':', addr_index) - addr_index));
 }
 
 void parsingLocations(std::list<Location*> &routes, const std::string &conf)
@@ -245,7 +246,6 @@ std::string buildPath(Server &server, Request &request, const std::string &targe
             request.setObject(tmp);
         }
     }
-    std::cout << "path [" << path << ']' << std::endl;
     return (path);
 }
 

@@ -64,7 +64,14 @@ execRequest::execRequest(Server &serv)
 
 execRequest::~execRequest() 
 {
-
+	if (this->_argv && this->_argv[0])
+	{
+		delete [] this->_argv[0];
+		if (this->_argv[1])
+			delete [] this->_argv[1];
+		delete [] this->_argv;
+	}	
+	
 }
 
 bool execRequest::tryPath(Server &server, Request &request, const std::string &target)
@@ -136,7 +143,7 @@ bool execRequest::tryPath(Server &server, Request &request, const std::string &t
 			}
 		}
 		catch (std::exception &e) {
-			std::cout << e.what() << std::endl; }
+			std::cout << "In TryPath: " << e.what() << std::endl; }
 		return false;
 	}
 }

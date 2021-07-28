@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/30 09:49:40 by schene            #+#    #+#             */
-/*   Updated: 2021/07/27 15:45:15 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/28 18:56:11 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,27 +134,38 @@ void	Config::startServers()
 			select_ret = select(FD_SETSIZE, &read_sockets, &write_sockets, NULL, NULL);
 			if (select_ret < 0)
 			{
-				for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
-					close ((*it)->getSocket());
+				// for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
+				// 	close ((*it)->getSocket());
+				std::cout << "ERREUR select" << std::endl;
 				throw InternalServerError();
 			}
-			else if (select_ret > 0)
+			if (select_ret > 0)
 			{
 				for (int i = 0; i < FD_SETSIZE; i++)
 				{
 					if (FD_ISSET(i, &read_sockets))
 					{
+						std::cout << "{" << i << "}"<< std::endl;
 						for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
 						{
+							std::cout << (*it)->getPort() << std::endl;
 							if (i == (*it)->getSocket() && (*it)->getClientSocket() < 0)
 							{
 								ret = (*it)->exec_accept();
 								FD_SET(ret, &this->_current_sockets);
+								// FD_CLR((*it)->getSocket(), &this->_current_sockets);
 							}
-							if (FD_ISSET(i, &write_sockets) && (*it)->getClientSocket() != -1)
+							else if (FD_ISSET(i, &write_sockets) && (*it)->getClientSocket() == i)
 							{
-								(*it)->exec_server();
+								std::cout << "port " << (*it)->getPort() << std::endl;;
+								std::cout << i << " / " <<  (*it)->getSocket() << " / " << (*it)->getClientSocket() << std::endl;;
+								if ((*it)->exec_server() != -1)
+								{
+									(*it)->send_response();
+								}
+								std::cout << "clear..." << std::endl;
 								FD_CLR(i, &this->_current_sockets);
+								FD_CLR(i, &read_sockets);
 							}
 						}
 					}

@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 11:20:51 by schene            #+#    #+#             */
-/*   Updated: 2021/07/27 11:22:53 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/28 17:41:41 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ class Server
 
 		int			exec_accept();
 		int			exec_server();
+		int			send_response();
 		int			getPort() const;
 		std::string	getName() const;
 		std::string	getRoot() const;

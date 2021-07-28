@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 14:42:45 by schene            #+#    #+#             */
-/*   Updated: 2021/07/27 13:08:22 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/28 18:56:35 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,9 +109,12 @@ std::string		Response::formatDate(time_t timestamp)
 void			Response::writeStatusLine()
 {
 	// Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase CRLF
-	this->_response = this->_data.getEnvVar("SERVER_PROTOCOL") + ' '; // HTTP-Version SP 
-	this->_response += this->_headers.find("Status")->second + "\r\n"; // Status-Code SP Reason-Phrase CRLF
-	this->_headers.erase("Status"); // Erase status from header to not print it as a header field
+	if (this->_headers.find("Status") != this->_headers.end())
+	{
+		this->_response = this->_data.getEnvVar("SERVER_PROTOCOL") + ' '; // HTTP-Version SP 
+		this->_response += this->_headers.find("Status")->second + "\r\n"; // Status-Code SP Reason-Phrase CRLF
+		this->_headers.erase("Status"); // Erase status from header to not print it as a header field
+	}
 }
 
 void			Response::format_header()
@@ -166,9 +169,9 @@ void			Response::send_response()
 		delete [] this->_buf;
 	}
 	//print on our cout to check
-	std::cout << "------------ RESPONSE -----------------" << std::endl;
-	write(1, to_send, size);
-	std::cout << "---------------------------------------" << std::endl;
+	// std::cout << "------------ RESPONSE -----------------" << std::endl;
+	// write(1, to_send, size);
+	// std::cout << "---------------------------------------" << std::endl;
 	// Actually sending to socket
 	send(this->_socket, to_send, size, 0);
 	delete [] to_send;

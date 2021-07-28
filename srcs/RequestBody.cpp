@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/26 15:54:48 by schene            #+#    #+#             */
-/*   Updated: 2021/07/26 15:55:15 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/28 18:07:09 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,6 +119,11 @@ unsigned char	Request::recv_one()
 			return (-1);
 		if (recv_ret > 0)
 			break ;
+		else
+		{
+			this->_stop = true;
+			break;
+		}
 	}
 	return (c);
 }

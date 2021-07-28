@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 16:24:53 by schene            #+#    #+#             */
-/*   Updated: 2021/07/26 15:49:02 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/28 16:23:59 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ class Request
 		unsigned char 						*_body;
 		int			 						_body_size;
 		int									_max_body_size;
+		bool								_stop;
 
 		void			resetHeaders();
 		int				recvHeader();

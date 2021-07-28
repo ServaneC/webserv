@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/07/28 12:28:50 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/28 18:17:51 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,29 +77,41 @@ Server::~Server()
 }
 
 int 	Server::exec_accept()
-{    
-        if ((this->_client_socket = accept(this->_socket, (struct sockaddr *)&this->_host, (socklen_t*)&this->_addrlen)) < 0)
-            throw InternalServerError();
-        return (this->_client_socket);
+{ 
+    std::cout << "exect accept..." << std::endl;   
+    if ((this->_client_socket = accept(this->_socket, (struct sockaddr *)&this->_host, (socklen_t*)&this->_addrlen)) < 0)
+        throw InternalServerError();
+    return (this->_client_socket);
 }
 
 int 	Server::exec_server()
 {
+    std::cout << "exect server..." << std::endl;   
     fcntl(this->_client_socket, F_SETFL, O_NONBLOCK);
     if (this->_rqst.parseRequest(this->_client_socket, this->_routes) < 0)
         return (-1);
-    if (this->_rqst.getBadRequest() == 100) // le body est envoye apres que le serveur est repondu (pour l'upload des fichier via Curl)
-    {
-        execRequest((*this));
-        if (this->_rqst.parseRequest(this->_client_socket, this->_routes) < 0)
-            return (-1);
-    }
-    execRequest((*this));
+    // if (this->_rqst.getBadRequest() == 100) // le body est envoye apres que le serveur est repondu (pour l'upload des fichier via Curl)
+    // {
+    //     execRequest((*this));
+    //     if (this->_rqst.parseRequest(this->_client_socket, this->_routes) < 0)
+    //         return (-1);
+    // }
+    // execRequest((*this));
 
+    // close(this->_client_socket);
+    // this->_client_socket = -1; 
+    return 1;
+}
+
+int		Server::send_response()
+{
+    std::cout << "send response..." << std::endl;   
+    execRequest((*this));
     close(this->_client_socket);
     this->_client_socket = -1; 
     return 1;
 }
+
 
 int			Server::getPort() const
 {

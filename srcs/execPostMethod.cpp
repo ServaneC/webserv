@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/19 18:25:24 by schene            #+#    #+#             */
-/*   Updated: 2021/07/28 13:10:44 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/28 16:06:06 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 
 void	        execRequest::exec_post()
 {
-	std::cout << "here post" << std::endl;
 	this->_cgi = false;
 	if (!this->_env["CONTENT_TYPE"].compare(0, 19, "multipart/form-data"))
 		this->upload_file();

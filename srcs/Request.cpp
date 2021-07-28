@@ -6,13 +6,13 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 16:24:45 by schene            #+#    #+#             */
-/*   Updated: 2021/07/27 13:08:10 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/28 18:56:41 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/Request.hpp"
 
-Request::Request() : _bad_request(0), _body(NULL)
+Request::Request() : _bad_request(0), _body(NULL), _stop(false)
 {
 
 }
@@ -28,15 +28,17 @@ int		Request::parseRequest(int socket, const std::list<Location*> &routes)
 	if (this->_bad_request == 100 && this->_body_size == 0)
 		return (this->recvBody(routes));
 	this->reset_body();
+	this->_stop = false;
 	this->_socket = socket;
 	this->resetHeaders();
 
 	this->recvHeader();
+	if (this->_stop == 1)
+		return (-1);
 	if (this->_buf.empty())
 		return (- 1);
-	std::cout << "========= REQUEST =========" << std::endl;
-	std::cout << this->_buf;
-
+	// std::cout << "========= REQUEST =========" << std::endl;
+	// std::cout << this->_buf;
 	if (gnlRequest() > 0)
 		this->parseRequestLine(this->_line);
 	while (gnlRequest() > 0)
@@ -53,19 +55,20 @@ int		Request::parseRequest(int socket, const std::list<Location*> &routes)
 	}
 	if (this->_method_code == METHOD_POST && !this->_bad_request)
 		this->recvBody(routes);
-	write(1, this->_body, this->_body_size);
-	std::cout << "========= END OF REQUEST =========" << std::endl;
+	// write(1, this->_body, this->_body_size);
+	// std::cout << "========= END OF REQUEST =========" << std::endl;
 	return 1;
 }
 
 int			Request::recvHeader() // recv byte per byte to stop at the end of the header fields
 {
-
 	unsigned char c = 0;
 	while (this->_buf.find("\r\n\r\n") == std::string::npos &&
 			this->_buf.find("\n\n") == std::string::npos)
 	{
 		c = this->recv_one();
+		if (this->_stop)
+			return (-1);
 		if (int(c) != 255)
 			this->_buf.push_back(c);
 		if (c == (unsigned char)-1)
@@ -82,8 +85,7 @@ int			Request::recvHeader() // recv byte per byte to stop at the end of the head
 			if (c == (unsigned char)-1)
 				return (-1);
 		}
-	}
-		
+	}	
 	return 1;
 }
 
@@ -104,6 +106,7 @@ int Request::gnlRequest()
 void		Request::parseRequestLine(std::string line)
 {
 	// request-line = method SP request-target SP HTTP-version CRLF
+
 	this->_method = line.substr(0, line.find(' ')); // parse method
 	this->_method_code = setMethodCode(this->_method);
 	line.erase(0, line.find(' ') + 1);

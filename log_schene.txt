@@ -799,20 +799,31 @@ AVANT CA:
 	-> tester dans la vm ! ✅
 -> afficher un message d'erreur si le path du conf file est invalide ✅
 
+28/07/2021
+-> ✅ make the route able to accept uploaded files and configure where it should be saved
+	-> parser upload_path ✅ -> _upload_path dans Location
+	-> upload les fichier dans l'upload_path precisé ✅
+-> créer un autre website pour bien voir la diff entre les différents ports (website actuel = /YoupiBanane)
+	-> retravailler le index.html de YoupiBanane ✅
+		=> il y a mnt plus de texte et pleins de test a faire !
+-> Il y a trop de probleme de chargement en boucle sur la VM 
 
 ================================== NOTES ==================================
 
 TO DO:
 correction:
 	-> error pages
-	-> make the route able to accept uploaded files and configure where it should be saved
 	=> reste a parser:
 		- les error pages par numero d'erreur
-		- la directive upload_path pour savoir où uploader les files
 
 pour faire un webserv encore plus bg:
 	-> créer un autre website pour bien voir la diff entre les différents ports (website actuel = /YoupiBanane)
 	-> avoir plusieurs conf files
+
+Avant de push:
+	-> enlever les fichier inutile du git + le testeur + les logs
+	-> enlever un max de std::cout
+	-> s'entrainer a repondre aux questions
 
 Pour tester les chunk request:
 	curl -H "Transfer-Encoding: chunked" -d "nom=Servane&age=20" http://localhost:8080/action.php

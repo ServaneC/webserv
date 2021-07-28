@@ -9,33 +9,54 @@
 <body>
 <h1>Welcome to my beautiful webserv!</h1>
 <p>If you see this page, the webserv is successfully installed and
-working. Congrats belle gosse.</p>
+working.</p>
 
-<p><em>Thank you for using webserv. (this is the index page btw)</em></p>
+<p><em>Thank you for using webserv. (this is the index page isn't it beautiful ?!)</em></p>
 
-<iframe src="https://giphy.com/embed/VDB85YZsrqMXx3c7DE" width="480" height="284" frameBorder="0" class="giphy-embed" allowFullScreen></iframe>
+<h2>Ok, Ok you want to test our webserv ? LET'S GO !</h2>
 
-<p> You can check this for fun: <a href="youpi.bla">YOUPI !</a></p>
+<h3><hr>First, thing first you can check this for fun (it will just bring you to another page):  <a href="youpi.bla">YOUPI !</a></h3>
+
+<h3><hr>Here you can test Query String, to send data with GET (check out the URL after !)</h3>
 
 <form action="qstest.php" method="GET">
     <p>Your name: <input type="text" name="name" /></p>
     <input type="submit" />
 </form>
+<hr>
 
-<form enctype="multipart/form-data" action="upload" method="POST">
-    <!-- <input type="hidden" name="MAX_FILE_SIZE" value="1000000" /> -->
-    Choose a file to upload: <input name="uploadedfile" type="file" /><br />
-    <input type="submit" value="Upload File"/>
-</form>
-
-<img src="/img/pot_casse.jpeg">
-<img src="/img/42.png">
-
+<h3><hr>Here you can send data with POST:</h3>
 <form action="action.php" method="POST">
     <p>Votre nom : <input type="text" name="nom" /></p>
     <p>Votre age : <input type="text" name="age" /></p>
     <p><input type="submit" value="OK"></p>
 </form>
+<hr>
+
+<h3><hr> Now let's get serious and upload a file to our webserv !</h3>
+<form enctype="multipart/form-data" action="" method="POST">
+    <p>Choose a file to upload: <input name="uploadedfile" type="file" /><br />
+    <input type="submit" value="Upload File"/></p>
+</form>
+
+<h3><hr> Yeah, I get it, now you want to test directory listing and routes  ? </h3>
+<p><em>You can either click the links below or write directly on the URL</em></p>
+<p>[directory listing] The directory with our images: <a href="img">/img</a></p>
+<p><a href="root_yeah">/root_yeah</a> is a real directory with an index page (check out the conf file)</p>
+<p><a href="Yeah">/Yeah</a> is a Location rooted to the /root_yeah directory with a different index page.</p>
+<p><a href="directory">/directory</a> is a Location rooted to the /root_yeah directory with no index page and autoindex on !</p>
+
+<h3><hr> What ? You want to test out the redirections ? I have exactly what you need ! </h3>
+<p><em> Same thing as before: You can either click the links below or write directly on the URL</em></p>
+<p>If you go to <a href="redirect">/redirect</a>, you will be redirected to <a href="redirect_here/redirect.html">/redirect_here/redirect.html</a>(check out the URL) </p>
+<h3><hr> What ? You love it so much you want to do it again ? </h3>
+<p>If you go to <a href="code_is_fun">/code_is_fun</a>, you will be redirected to somewhere you've been before</p>
+
+<h3><hr>And yes, we do display beautiful images, i mean look at that !</h3>
+
+<img src="/img/pot_casse.jpeg">
+<img src="/img/42.png">
+
 
 </body>
 </html>

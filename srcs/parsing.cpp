@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/27 15:33:52 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/28 12:30:01 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -218,6 +218,22 @@ std::string parsingRedirection(const std::string &loc_conf, const Location &gene
         return (loc_conf.substr(index, length));
     }
     return (general.getRedirectURL());
+}
+
+std::string parsingUploadPath(const std::string &loc_conf, const Location &general)
+{
+    size_t      index = loc_conf.find("upload_path");
+    std::string upload_path;
+
+    if (index == std::string::npos)
+        return (general.getUploadPath());
+    index += 12;
+    index = loc_conf.find_first_not_of(" \t\n\r\v\f", index);
+    size_t end = loc_conf.find(";", index);
+    if (end == std::string::npos)
+        throw confInvalidCGIException();
+    upload_path = loc_conf.substr(index, end - index);
+    return (upload_path);
 }
 
 // ******************************************** //

@@ -74,6 +74,9 @@ bool execRequest::tryPath(Server &server, Request &request, const std::string &t
 
 	if (loc.getCGIPath().size())
 		cgi_path = loc.getCGIPath();
+	
+	if (loc.getUploadPath().size())
+		this->_upload_path = loc.getUploadPath();
 
     if (chdir(request.getDirPath().c_str()) == -1)
 	{

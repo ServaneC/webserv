@@ -31,6 +31,7 @@ class execRequest
 		std::list<Location>					_location_list;
 		bool								_cgi;
 		std::string							_file_ext;
+		std::string							_upload_path;
 
 		// execRequest
 		bool	tryPath(Server &server, Request &request, const std::string &target);

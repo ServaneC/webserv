@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/08 17:06:46 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/20 14:54:34 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/28 12:17:15 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,6 +83,12 @@ class confInvalidCGIException : public std::exception {
     public :
         const char* what() const throw() {
             return ("Configuration file: Invalid cgi path"); }
+};
+
+class confInvalidUploadException : public std::exception {
+    public :
+        const char* what() const throw() {
+            return ("Configuration file: Invalid upload path"); }
 };
 
 class confInvalidErrorPageException : public std::exception {

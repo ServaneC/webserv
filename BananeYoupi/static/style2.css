@@ -2,7 +2,7 @@ body
 {
 	width: 35em;
 	margin: 0 auto;
-	background-color: #24d3f154;
+	background-color: black ;
 	display: flex;
     flex-direction: column;
 }
@@ -10,51 +10,31 @@ h1
 {
 	font-family: Tahoma, Verdana, Arial, sans-serif;
 	text-align: center;
-	color: black;
+	color: #D800FF;
 	font-size: 40px;
-    border: 5px black double;
+    border: 5px #D800FF double;
     border-radius: 10px;
     box-shadow: 6px 6px 20px black;
 }
 h2
 {
 	font-family: Tahoma, Verdana, Arial, sans-serif;
-	color: #258e8e;
-	font-size: 25px;
-    border-bottom: 3px black dashed;
-
+	text-align: center;
+	color: #FFF000;
+	font-size: 30px;
 }
-h3
+
+p
 {
 	font-family: Tahoma, Verdana, Arial, sans-serif;
-	color: black;
-	font-size: 15px;
-	font-weight: bold;
-}
-h4
-{
-	color: #258e8e;
-	font-family: Tahoma, Verdana, Arial, sans-serif;
-	font-size: 25px;
-	border-bottom: 2px black dotted;
-	font-weight: bold;
-
+	color: #04FF00 ;
+	font-size: 20px;
 }
 ul
 {
 	font-family: Tahoma, Verdana, Arial, sans-serif;
-	color: #003333;
+	color: #FF0000 ;
 	font-size: 20px;
-
-
-}
-p
-{
-	font-family: Tahoma, Verdana, Arial, sans-serif;
-	color: #003333;
-	font-size: 20px;
-
-
 }
 img
 {
@@ -65,7 +45,7 @@ img
 iframe
 {
 	margin: 0 auto;
-	box-shadow: 6px 6px 20px black;
+	box-shadow: 6px 6px 20px #24d3f154;
 }
 #abc
 {

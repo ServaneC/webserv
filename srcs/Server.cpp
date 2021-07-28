@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/07/27 11:44:07 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/28 12:28:50 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,6 @@ Server::Server(Config &conf, std::string server_conf) :
     std::string ip_str;
     try
     {
-        // std::cout << "---------------------" << std::endl;
-
         ip_str = parsingIPAddress(server_conf, &this->_ip, &this->_port);
 
         this->_name = parsingName(server_conf);
@@ -64,6 +62,7 @@ Server::Server(Config &conf, std::string server_conf) :
         }
         else
             std::cout << e.what() << std::endl;
+        exit(EXIT_FAILURE);
     }
 }
 

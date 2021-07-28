@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/19 18:25:24 by schene            #+#    #+#             */
-/*   Updated: 2021/07/27 13:02:09 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/28 13:10:44 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ std::string     execRequest::parseRequestBody()
 	filename.erase(0, filename.find('\"') + 1);
 	filename.erase(filename.find_last_of('\"'), 1);
 	this->_env["CONTENT_TYPE"] = type.substr(type.find(':') + 2);
-	filename.insert(0, this->_env["SCRIPT_NAME"] + '/');
+	filename.insert(0, this->_upload_path + '/');
     return (filename);
 }
 
@@ -58,6 +58,13 @@ void	        execRequest::upload_file()
 	std::string body;
     std::string filename = this->parseRequestBody();
 
+	if (this->_upload_path.empty())
+	{
+		body = "<!DOCTYPE HTML>\n<html><body><h1> There is no upload_path in conf for this Location !</h1>\n";
+		body += "Please configure one and then you can try again ! </body>\n</html>\n";
+		this->append_body((unsigned char *)body.c_str(), body.size());
+		return ;
+	}
 	if (lstat(filename.c_str(), &info) == 0)
 		body = "<!DOCTYPE HTML>\n<html><body><h1> This file was already uploaded!</h1>\n";
 	else
@@ -65,7 +72,8 @@ void	        execRequest::upload_file()
 		int fd = open(filename.c_str(), O_WRONLY | O_CREAT, 00755);
 		if (fd < 0)
 		{
-			std::cerr << "ERROR OPEN << std::endl";
+			body = "<!DOCTYPE HTML>\n<html><body><h1> ERROR while opening/creating file !</h1>\n";
+			this->append_body((unsigned char *)body.c_str(), body.size());
 			return ;
 		}
 		write(fd, &(this->_request.getBody()[this->_request_buf_start]), this->_request_buf_size);

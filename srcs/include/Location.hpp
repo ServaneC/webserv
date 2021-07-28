@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:43:38 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/27 14:17:24 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/28 12:24:35 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,9 @@ class Location
         std::string             _error_page;    // empty if not in conf
         bool                    _root_in_conf;
         std::string             _redirect_url;
+        std::string             _upload_path;
+
+        void                    _test_upload_path();
 
     public :
 
@@ -51,6 +54,8 @@ class Location
 		std::string                     getErrorPage() const;
         bool                            getRootInConf() const;
         std::string                     getRedirectURL() const;
+        std::string                     getUploadPath() const;
+
 
         void    setRoot(const std::string &root);
         void    setIndexes(const std::list<std::string> &indexes);

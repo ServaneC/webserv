@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:48:09 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/27 14:35:08 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/28 13:10:54 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 Location::Location() : _max_body_size(1000000) {
     this->_redirect_url = std::string();
+    this->_upload_path = std::string();
 }
 
 Location::~Location() 
@@ -57,7 +58,14 @@ Location::Location(const std::string path, const std::string location_conf,
     this->_redirect_url = parsingRedirection(location_conf, general);
     // if (!this->_redirect_url.empty())
     //     std::cout << "Redirect URL for " << path << " -> " << this->_redirect_url << std::endl;
-
+    
+    this->_upload_path = parsingUploadPath(location_conf, general);
+    this->_test_upload_path();
+    // if (!this->_upload_path.empty())
+    // {
+    //     this->_upload_path.insert(0, this->_root);
+    //     std::cout << "Upload Path for " << path << " -> " << this->_upload_path << std::endl;
+    // }
 }
 
 Location::Location(const Location &ref) : _path(ref._path), 
@@ -65,7 +73,8 @@ Location::Location(const Location &ref) : _path(ref._path),
     _accepted_methods(ref._accepted_methods), _indexes(ref._indexes), 
     _autoindex(ref._autoindex), _cgi_path(ref._cgi_path),
     _max_body_size(ref._max_body_size), _error_page(ref._error_page),
-    _root_in_conf(ref._root_in_conf)
+    _root_in_conf(ref._root_in_conf), _redirect_url(ref._redirect_url),
+    _upload_path(ref._upload_path)
 {
     std::cout << "copy constructor called" << std::endl; 
 }
@@ -79,8 +88,30 @@ const Location &Location::operator=(const Location &ref)
     _indexes = ref._indexes;
     _autoindex = ref._autoindex;
     _cgi_path = ref._cgi_path;
+    _max_body_size = ref._max_body_size;
+    _error_page = ref._error_page;
+    _root_in_conf = ref._root_in_conf;
+    _redirect_url = ref._redirect_url;
+    _upload_path = ref._upload_path;
     return (*this);
 }
+
+void                   Location:: _test_upload_path()
+{
+    if (!this->_upload_path.empty())
+    {
+        std::string     tmp = this->_root + this->_upload_path;
+        struct stat     statbuf;
+
+        if (lstat(tmp.c_str(), &statbuf) == - 1)
+        {
+            this->_upload_path.clear();
+            throw confInvalidUploadException();
+        }
+        this->_upload_path.erase(0, 1);
+    }
+}
+
 
 bool Location::isAcceptedMethod(int code) const
 {
@@ -139,6 +170,10 @@ bool            Location::getRootInConf() const
 
 std::string     Location::getRedirectURL() const {
     return this->_redirect_url;
+}
+
+std::string     Location::getUploadPath() const {
+    return this->_upload_path;
 }
 
 // void Location::addErrorPagePrefix(std::string prefix)

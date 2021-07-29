@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/07/28 18:17:51 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/29 14:24:52 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 
 Server::Server(Config &conf, std::string server_conf) : 
     _rqst(*(new Request)), _main_conf(conf), _server_conf(server_conf),
-    _client_socket(-1)//, _routes(1, Location(this, "/", server_conf))
+    _client_socket(-1)
 {
     std::string ip_str;
     try
@@ -40,8 +40,8 @@ Server::Server(Config &conf, std::string server_conf) :
         int enable = 1;
         if (setsockopt(this->_socket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
             throw InternalServerError();
-        if (fcntl(this->_socket, F_SETFL, O_NONBLOCK) < 0)
-            throw InternalServerError();
+        // if (fcntl(this->_socket, F_SETFL, O_NONBLOCK) < 0)
+        //     throw InternalServerError();
         if (bind(this->_socket, (struct sockaddr *)&this->_host, this->_addrlen) < 0)
             throw InternalServerError();
         if (listen(this->_socket, 32) < 0)
@@ -78,34 +78,27 @@ Server::~Server()
 
 int 	Server::exec_accept()
 { 
-    std::cout << "exect accept..." << std::endl;   
+    // std::cout << "exect accept..." << std::endl;   
     if ((this->_client_socket = accept(this->_socket, (struct sockaddr *)&this->_host, (socklen_t*)&this->_addrlen)) < 0)
         throw InternalServerError();
+    fcntl(this->_client_socket, F_SETFL, O_NONBLOCK);
     return (this->_client_socket);
 }
 
 int 	Server::exec_server()
 {
-    std::cout << "exect server..." << std::endl;   
-    fcntl(this->_client_socket, F_SETFL, O_NONBLOCK);
     if (this->_rqst.parseRequest(this->_client_socket, this->_routes) < 0)
+    {
+        close(this->_client_socket);
+        this->_client_socket = -1; 
         return (-1);
-    // if (this->_rqst.getBadRequest() == 100) // le body est envoye apres que le serveur est repondu (pour l'upload des fichier via Curl)
-    // {
-    //     execRequest((*this));
-    //     if (this->_rqst.parseRequest(this->_client_socket, this->_routes) < 0)
-    //         return (-1);
-    // }
-    // execRequest((*this));
-
-    // close(this->_client_socket);
-    // this->_client_socket = -1; 
+    }
     return 1;
 }
 
 int		Server::send_response()
 {
-    std::cout << "send response..." << std::endl;   
+    // std::cout << "send response..." << std::endl;   
     execRequest((*this));
     close(this->_client_socket);
     this->_client_socket = -1; 

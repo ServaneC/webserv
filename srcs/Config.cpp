@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/30 09:49:40 by schene            #+#    #+#             */
-/*   Updated: 2021/07/28 18:56:11 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/29 14:38:47 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ Config::Config(std::string conf_file) : _servers()
 	if (readConfFile(conf_file.c_str()) > 0)
 	{
 		createServers();
-		startServers();
+		select_loop();
 	}
 }
 
@@ -108,63 +108,73 @@ void				Config::terminate_serv()
 	exit(EXIT_SUCCESS);
 }
 
-void	Config::startServers()
+void	Config::init_fd_sets(int *max_socket, 
+	fd_set *current_sockets, fd_set *read_sockets, fd_set *write_sockets)
+{
+	FD_ZERO(current_sockets);
+	for (std::list<Server*>::iterator it = this->_servers.begin(); it != this->_servers.end(); ++it)
+	{
+		
+		if ((*it)->getClientSocket() == -1)
+		{
+			FD_SET((*it)->getSocket(), current_sockets);
+			if ((*it)->getSocket() > *max_socket)
+				*max_socket = (*it)->getSocket();
+		}
+		else
+		{
+			FD_SET((*it)->getClientSocket(), current_sockets);
+			if ((*it)->getClientSocket() > *max_socket)
+				*max_socket = (*it)->getClientSocket();
+		}
+	}
+	FD_ZERO(read_sockets);
+	FD_ZERO(write_sockets);
+	std::memcpy(read_sockets, current_sockets, sizeof(*current_sockets));
+	std::memcpy(write_sockets, current_sockets, sizeof(*current_sockets));
+}
+
+
+void	Config::select_loop()
 {
 	int ret;
-    fd_set read_sockets, write_sockets;
+	int max_socket = 0;
+    fd_set current_sockets, read_sockets, write_sockets;
 	std::list<Server*>::iterator it;
-
-	FD_ZERO(&this->_current_sockets);
-	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
-	{
-		if ((*it)->getSocket() > 0)
-			FD_SET((*it)->getSocket(), &this->_current_sockets);
-	}
+	int select_ret;
 
     while (1)
     {
-		int select_ret;
-		FD_ZERO(&read_sockets);
-		FD_ZERO(&write_sockets);
-		std::memcpy(&read_sockets, &this->_current_sockets, sizeof(this->_current_sockets));
-		std::memcpy(&write_sockets, &this->_current_sockets, sizeof(this->_current_sockets));
-
+		this->init_fd_sets(&max_socket, &current_sockets, &read_sockets, &write_sockets);
 		try
 		{
-			select_ret = select(FD_SETSIZE, &read_sockets, &write_sockets, NULL, NULL);
+			select_ret = select(max_socket + 1, &read_sockets, &write_sockets, NULL, NULL);
 			if (select_ret < 0)
 			{
-				// for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
-				// 	close ((*it)->getSocket());
-				std::cout << "ERREUR select" << std::endl;
+				for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
+					close ((*it)->getSocket());
 				throw InternalServerError();
 			}
 			if (select_ret > 0)
 			{
-				for (int i = 0; i < FD_SETSIZE; i++)
+				for (int i = 0; i < max_socket + 1; i++)
 				{
 					if (FD_ISSET(i, &read_sockets))
 					{
-						std::cout << "{" << i << "}"<< std::endl;
 						for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
 						{
-							std::cout << (*it)->getPort() << std::endl;
 							if (i == (*it)->getSocket() && (*it)->getClientSocket() < 0)
 							{
 								ret = (*it)->exec_accept();
-								FD_SET(ret, &this->_current_sockets);
-								// FD_CLR((*it)->getSocket(), &this->_current_sockets);
+								FD_SET(ret, &current_sockets);
+								if (ret > max_socket)
+									max_socket = ret;
 							}
 							else if (FD_ISSET(i, &write_sockets) && (*it)->getClientSocket() == i)
 							{
-								std::cout << "port " << (*it)->getPort() << std::endl;;
-								std::cout << i << " / " <<  (*it)->getSocket() << " / " << (*it)->getClientSocket() << std::endl;;
 								if ((*it)->exec_server() != -1)
-								{
 									(*it)->send_response();
-								}
-								std::cout << "clear..." << std::endl;
-								FD_CLR(i, &this->_current_sockets);
+								FD_CLR(i, &current_sockets);
 								FD_CLR(i, &read_sockets);
 							}
 						}

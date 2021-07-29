@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 11:20:51 by schene            #+#    #+#             */
-/*   Updated: 2021/07/28 17:41:41 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/29 14:24:57 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ class Server
 		int									_client_socket;
 		int									_addrlen;
 		const Location						*_root;
-		std::list<Location*>					_routes;
+		std::list<Location*>				_routes;
 	
 		void		start_server();
 		Server();
@@ -53,8 +53,6 @@ class Server
 		const Location *getRelevantLocation(std::string target);
 		const std::list<Location*>		&getRoutes() const;
 		const Location	&getRootLocation() const;
-
-
 };
 
 #endif

@@ -814,7 +814,13 @@ AVANT CA:
 	(c'est encore plus relou parce que ca marche bien hors VM)
 	il y a une boucle sur 8080 qui cause une erreur 🤷🏻‍♀️
 	=> pb meme avec un seul serveur 😩
-	
+
+29/07/2021
+-> essayer de resoudre le pb de select() dans la VM !
+	-> j'ai rajouter un max_socket pour eviter de devoir check FD_SETSIZE (=1024) a chaque fois 
+🎉 J'ai trouvé le pb !!! ca venait de l'initialisation du fd_set (_current_socket)
+
+
 ================================== NOTES ==================================
 
 TO DO:

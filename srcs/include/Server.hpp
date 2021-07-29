@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 11:20:51 by schene            #+#    #+#             */
-/*   Updated: 2021/07/29 14:24:57 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/29 16:05:28 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ class Server
 		std::list<Location*>				_routes;
 	
 		void		start_server();
+		int			exit_exec_server();
 		Server();
 			
 	public:
@@ -42,7 +43,6 @@ class Server
 
 		int			exec_accept();
 		int			exec_server();
-		int			send_response();
 		int			getPort() const;
 		std::string	getName() const;
 		std::string	getRoot() const;

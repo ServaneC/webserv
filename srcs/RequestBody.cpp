@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/26 15:54:48 by schene            #+#    #+#             */
-/*   Updated: 2021/07/28 18:07:09 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/29 16:25:42 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,11 @@ int			Request::recvBody(const std::list<Location*> &routes)
 	this->setMaxBodySize(routes);
 	if (!this->getHeaderField("Content-Length").empty())
 	{
+		if (std::atoi(this->_headers["Content-Length"].c_str()) > this->_max_body_size)
+		{
+			this->_bad_request = 413;
+			return 1;
+		}
 		for (int i = 0; i < std::atoi(this->_headers["Content-Length"].c_str()); i++)
 			this->recvBodyCL(1);
 	}
@@ -34,11 +39,6 @@ int			Request::recvBodyCL(int size)
 	unsigned char *recv_buf;
 	int  recv_ret;
 
-	if (size > this->_max_body_size)
-	{
-		this->_bad_request = 413;
-		return -1;
-	}
 	try {
 		recv_buf = new unsigned char [size + 1];
 	}

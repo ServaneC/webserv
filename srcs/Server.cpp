@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/07/29 14:24:52 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/29 16:24:48 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,21 +88,26 @@ int 	Server::exec_accept()
 int 	Server::exec_server()
 {
     if (this->_rqst.parseRequest(this->_client_socket, this->_routes) < 0)
+        return (this->exit_exec_server());
+    if (this->_rqst.getBadRequest() == 100) // le body est envoye apres que le serveur est repondu (pour l'upload des fichier via Curl)
     {
-        close(this->_client_socket);
-        this->_client_socket = -1; 
-        return (-1);
+        execRequest((*this));
+        if (this->_rqst.parseRequest(this->_client_socket, this->_routes) < 0)
+        {
+            std::cout << this->_rqst.getBadRequest() << std::endl;
+            return (this->exit_exec_server());
+        }
     }
+    execRequest((*this));
+    this->exit_exec_server();
     return 1;
 }
 
-int		Server::send_response()
+int			Server::exit_exec_server()
 {
-    // std::cout << "send response..." << std::endl;   
-    execRequest((*this));
     close(this->_client_socket);
     this->_client_socket = -1; 
-    return 1;
+    return (-1);
 }
 
 

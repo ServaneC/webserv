@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/30 09:49:40 by schene            #+#    #+#             */
-/*   Updated: 2021/07/29 14:38:47 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/29 16:03:04 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -172,8 +172,7 @@ void	Config::select_loop()
 							}
 							else if (FD_ISSET(i, &write_sockets) && (*it)->getClientSocket() == i)
 							{
-								if ((*it)->exec_server() != -1)
-									(*it)->send_response();
+								(*it)->exec_server();
 								FD_CLR(i, &current_sockets);
 								FD_CLR(i, &read_sockets);
 							}

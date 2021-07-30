@@ -1,12 +1,12 @@
 <html>
  <head>
-  <title>Test PHP</title>
+  <title>POST test</title>
   <link rel="stylesheet" type="text/css" href="/static/style1.css">
  </head>
  <body>
- <?php echo '<p>Bonjour le monde</p>'; ?>
- <p> Bonjour, <?php echo htmlspecialchars($_POST['nom']); ?>.
-    Tu as <?php echo (int)$_POST['age']; ?> ans.</p>
+ <h1> <?php echo 'Hello World !'; ?> </h1>
+ <p> Hello, <?php echo htmlspecialchars($_POST['nom']); ?>.
+    You are <?php echo (int)$_POST['age']; ?> years old !</p>
 
  </body>
 </html>

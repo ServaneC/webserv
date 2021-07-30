@@ -826,11 +826,10 @@ AVANT CA:
 30/07/2021
 -> gerer les error pages ✅
 	-> dans YoupiBanane, J'ai créé un dossier error_page avec des error pages pour chaque erreurs.
+-> refaire certaine page HTML ✅
 
 
--> refaire certaine page HTML
 -> faire une correction blanche dans la VM
-
 
 ================================== NOTES ==================================
 

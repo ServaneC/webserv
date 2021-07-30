@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/30 13:24:55 by schene            #+#    #+#             */
-/*   Updated: 2021/07/26 14:26:30 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/30 16:03:18 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,24 +112,5 @@ void	execRequest::exec_CGI()
 
 	if (!pid)
 		exit(0);
-}
-
-void execRequest::serveErrorPage(const std::string &path)
-{
-	int					fd;
-	unsigned char		*buffer;
-	struct stat			info;
-
-	fd = open(path.c_str(), O_RDONLY);
-	if (fstat(fd, &info) == 0)
-	{
-		buffer = new unsigned char [info.st_size];
-		if (read(fd, buffer, info.st_size) < 0)
-			this->_env["STATUS_CODE"] = "500 Internal Server Error";
-		else
-			this->append_body((unsigned char *)buffer, info.st_size);
-		delete [] buffer;
-	}
-	close(fd);
 }
 

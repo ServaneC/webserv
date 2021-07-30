@@ -21,6 +21,7 @@ class execRequest
 	private:
 		Server								&_server;
 		Request								&_request;
+		int									_error_code;
 		int									_request_buf_start;
 		int									_request_buf_size;
 		unsigned char						*_buf;
@@ -32,6 +33,7 @@ class execRequest
 		bool								_cgi;
 		std::string							_file_ext;
 		std::string							_upload_path;
+		std::map<int, std::string>			_error_pages;
 
 		// execRequest
 		bool	tryPath(Server &server, Request &request, const std::string &target);
@@ -44,6 +46,8 @@ class execRequest
 		void	exec_method();
 		void	readFile();
 		void	exec_delete();
+		void	serveErrorPage();
+		void	setStatusCode();
 
 		// execPostMethod
 		void			exec_post();
@@ -55,8 +59,6 @@ class execRequest
 		void	exec_CGI();
 
 		void  	printEnv(std::string);
-		// bool	tryPath(Server &server, Request &request, const std::string &target);
-		void	serveErrorPage(const std::string &path);
 	
 public:
 		execRequest(Server &serv);

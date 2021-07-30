@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:43:38 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/28 12:24:35 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/30 14:03:22 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,20 +20,19 @@ class Location
     private :
 
         // const Server            *_server;
-        std::string             _path;
-        std::string             _location_conf;
-        std::string             _root;
-        std::vector<int>        _accepted_methods;
-        std::list<std::string>  _indexes;
-        bool                    _autoindex;
-		std::string 			_cgi_path;      // empty if not in conf
-        size_t                  _max_body_size; // default = 1000000
-        std::string             _error_page;    // empty if not in conf
-        bool                    _root_in_conf;
-        std::string             _redirect_url;
-        std::string             _upload_path;
-
-        void                    _test_upload_path();
+        std::string                 _path;
+        std::string                 _location_conf;
+        std::string                 _root;
+        std::vector<int>            _accepted_methods;
+        std::list<std::string>      _indexes;
+        bool                        _autoindex;
+		std::string 			    _cgi_path;      // empty if not in conf
+        size_t                      _max_body_size; // default = 1000000
+        std::map<int, std::string>  _error_page;     // empty if not in conf
+        bool                        _root_in_conf;
+        std::string                 _redirect_url;
+        std::string                 _upload_path;
+        void                        _test_upload_path();
 
     public :
 
@@ -43,18 +42,19 @@ class Location
         ~Location();
         const Location &operator=(const Location &ref);
 
-        std::string                     getPath() const;
-        std::string                     getConf() const;
-        std::string                     getRoot() const;
-        std::vector<int>                getAcceptedMethods() const;
-        const std::list<std::string>    &getIndexes() const;
-		bool                            getAutoIndex() const;
-        std::string                     getCGIPath() const;
-		size_t                          getMaxBodySize() const;
-		std::string                     getErrorPage() const;
-        bool                            getRootInConf() const;
-        std::string                     getRedirectURL() const;
-        std::string                     getUploadPath() const;
+        std::string                         getPath() const;
+        std::string                         getConf() const;
+        std::string                         getRoot() const;
+        std::vector<int>                    getAcceptedMethods() const;
+        const std::list<std::string>        &getIndexes() const;
+		bool                                getAutoIndex() const;
+        std::string                         getCGIPath() const;
+		size_t                              getMaxBodySize() const;
+		const std::map<int, std::string>    &getErrorPage() const;
+		std::string                         getErrorPath(int code) const;
+        bool                                getRootInConf() const;
+        std::string                         getRedirectURL() const;
+        std::string                         getUploadPath() const;
 
 
         void    setRoot(const std::string &root);
@@ -62,7 +62,7 @@ class Location
         void    setAutoIndex(bool autoindex);
         void    setCGIpath(const std::string &cgi_path);
         void    setMaxBodySize(const std::string &error_page);
-        void    setErrorPage(const std::string &error_page);
+        // void    setErrorPage(const std::string &error_page);
         
         bool    isAcceptedMethod(int code) const;
 };

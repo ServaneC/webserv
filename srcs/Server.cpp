@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/07/29 16:24:48 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/30 12:54:41 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,8 +40,6 @@ Server::Server(Config &conf, std::string server_conf) :
         int enable = 1;
         if (setsockopt(this->_socket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
             throw InternalServerError();
-        // if (fcntl(this->_socket, F_SETFL, O_NONBLOCK) < 0)
-        //     throw InternalServerError();
         if (bind(this->_socket, (struct sockaddr *)&this->_host, this->_addrlen) < 0)
             throw InternalServerError();
         if (listen(this->_socket, 32) < 0)
@@ -78,7 +76,6 @@ Server::~Server()
 
 int 	Server::exec_accept()
 { 
-    // std::cout << "exect accept..." << std::endl;   
     if ((this->_client_socket = accept(this->_socket, (struct sockaddr *)&this->_host, (socklen_t*)&this->_addrlen)) < 0)
         throw InternalServerError();
     fcntl(this->_client_socket, F_SETFL, O_NONBLOCK);
@@ -93,10 +90,7 @@ int 	Server::exec_server()
     {
         execRequest((*this));
         if (this->_rqst.parseRequest(this->_client_socket, this->_routes) < 0)
-        {
-            std::cout << this->_rqst.getBadRequest() << std::endl;
             return (this->exit_exec_server());
-        }
     }
     execRequest((*this));
     this->exit_exec_server();

@@ -14,7 +14,7 @@
 #define _BUFSIZE 2000
 
 execRequest::execRequest(Server &serv) 
-	: _server(serv), _request(serv.getRequest()), _request_buf_start(0), 
+	: _server(serv), _request(serv.getRequest()), _error_code(200), _request_buf_start(0), 
 		_request_buf_size(_request.getBodySize()), _buf(NULL),
 		_buf_size(0), _last_modified(0), _argv(NULL), _cgi(false)
 {
@@ -31,34 +31,26 @@ execRequest::execRequest(Server &serv)
 	this->_env["REQUEST_URI"] = _request.getTarget();
 	this->_env["HTTP_ACCEPT"] = this->_request.getHeaderField("Accept"); 
 	this->_env["CONTENT_TYPE"] = this->_request.getHeaderField("Content-Type");
-
+	this->_error_pages = getRelevantLocation(_server.getRoutes(), this->_request.getTarget()).getErrorPage();
+	this->_env["STATUS_CODE"] = "200 OK";
+	
 	if (this->_request_buf_size > 0)
 		this->_env["CONTENT_LENGTH"] = ft_itoa_cpp(this->_request_buf_size);
 	
 	if (!this->_request.getBadRequest())
 	{
-		this->_env["STATUS_CODE"] = "200 OK";
 		this->_env["REDIRECT_STATUS"] = "200"; 
 		this->_env["REQUEST_METHOD"] = this->_request.getMethod();
 		this->_env["SERVER_PROTOCOL"] = this->_request.getHTTPVersion();
 		autoindex = this->setPathQuery();
 	}
 	else
-	{
-		// revoir la gestion ici
-		if (this->_request.getBadRequest() == 100)
-			this->_env["STATUS_CODE"] = "100 Continue";
-		if (this->_request.getBadRequest() == 400)
-			this->_env["STATUS_CODE"] = "400 Bad Request";
-		if (this->_request.getBadRequest() == 411)
-			this->_env["STATUS_CODE"] = "411 Length Required";
-		if (this->_request.getBadRequest() == 413)
-			this->_env["STATUS_CODE"] = "413 Request Entity Too Large";
-	}
-	if (autoindex == false && !this->_env["STATUS_CODE"].compare("200 OK"))
+		_error_code = this->_request.getBadRequest();
+	if (this->_env["STATUS_CODE"].compare("200 OK") != 0)
+		this->_error_code = std::atoi(this->_env["STATUS_CODE"].substr(0, 3).c_str());
+	this->setStatusCode();
+	if (autoindex == false)
 		this->exec_method();
-	else if (this->_env["STATUS_CODE"].compare("200 OK") != 0)  // cas d'erreur ou redirection (redirections pas encore gerees)
-		this->serveErrorPage(this->_env["PATH_INFO"]);  // en ayant change path info dans setPathQuery pour le fichier d'erreur au lieu de la target + le status code
 	Response((*this), this->_server.getClientSocket());
 }
 
@@ -71,7 +63,6 @@ execRequest::~execRequest()
 			delete [] this->_argv[1];
 		delete [] this->_argv;
 	}	
-	
 }
 
 bool execRequest::tryPath(Server &server, Request &request, const std::string &target)
@@ -79,6 +70,7 @@ bool execRequest::tryPath(Server &server, Request &request, const std::string &t
 	const Location  &loc = getRelevantLocation(server.getRoutes(), target);
 	std::string		cgi_path;
 
+	this->_error_pages = loc.getErrorPage();
 	if (loc.getCGIPath().size())
 		cgi_path = loc.getCGIPath();
 	
@@ -96,6 +88,7 @@ bool execRequest::tryPath(Server &server, Request &request, const std::string &t
 	
 	if (!loc.getRedirectURL().empty())
 	{
+		this->_error_code = 301;
 		this->_env["STATUS_CODE"] = "301 Moved Permanently";
 		this->_env["LOCATION"] = loc.getRedirectURL();
 		return false;
@@ -104,16 +97,15 @@ bool execRequest::tryPath(Server &server, Request &request, const std::string &t
 	this->_last_modified = autoidx.getLastModified();
 	if (!autoidx.path_exist())
 	{
-        this->_env["PATH_INFO"] = loc.getErrorPage();
-		throw targetNotFoundException();
+		this->_error_code = 404;
+		return false;
 	}
 	else if (autoidx.isDir() && !autoidx.getIndex() && !this->_env["REQUEST_METHOD"].compare("GET"))
 	{
 		if (!loc.getAutoIndex())
 		{
-			this->_env["PATH_INFO"] = loc.getErrorPage();
-			throw ForbiddenException();
-			// throw targetNotFoundException();
+			this->_error_code = 403;
+			return false;
 		}
 		else
 		{
@@ -218,6 +210,7 @@ void		execRequest::append_body(unsigned char *buffer, int size)
 	catch (std::exception &e) {
         std::cout << e.what() << std::endl; }
 }
+
 
 // GETTERS
 std::string const	&execRequest::getEnvVar(std::string var_name) const

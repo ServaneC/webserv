@@ -2,7 +2,7 @@ body
 {
 	width: 35em;
 	margin: 0 auto;
-	background-color: black ;
+	background-color: #69650D;
 	display: flex;
     flex-direction: column;
 }
@@ -10,7 +10,8 @@ h1
 {
 	font-family: Tahoma, Verdana, Arial, sans-serif;
 	text-align: center;
-	color: #D800FF;
+	color: #BB00CA ;
+	background-color: #69650D;
 	font-size: 40px;
     border: 5px #D800FF double;
     border-radius: 10px;

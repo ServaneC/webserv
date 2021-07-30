@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:48:09 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/28 13:10:54 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/30 15:19:55 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 Location::Location() : _max_body_size(1000000) {
     this->_redirect_url = std::string();
     this->_upload_path = std::string();
+    _error_page = std::map<int, std::string>();
 }
 
 Location::~Location() 
@@ -26,46 +27,31 @@ Location::Location(const std::string path, const std::string location_conf,
     _autoindex(false), _max_body_size(1000000)
 {
     this->_accepted_methods = parsingAcceptedMethods(location_conf);
-    // std::cout << "LOCATION -> " << _path << " : ";
-    // for (std::vector<int>::iterator it = _accepted_methods.begin(); it != _accepted_methods.end(); it++)
-    //     std::cout << *it << " ";
-    // std::cout << std::endl;
 
     if (location_conf.find("root") != std::string::npos)
         this->_root_in_conf = true;
     this->_root = parsingRoot(location_conf, general);
-    // std::cout << "Local root f or <" << path << "> is -> |" << _root << "|" << std::endl;
-
 
     this->_indexes = parsingIndexes(location_conf, general);
-    // std::cout << "Local indexes = ";
-        // for (std::list<std::string>::iterator it = _indexes.begin(); it != _indexes.end(); it++)
-            // std::cout << *it << " ";
-        // std::cout << std::endl;
     
     this->_autoindex = parsingAutoIndex(location_conf, general);
-    // std::cout << "Local autoindex -> " << _autoindex << std::endl;
 
     this->_cgi_path = parsingCGIconf(location_conf, general);
-    // std::cout << "Local cgi path -> " << _cgi_path << std::endl;
 
     this->_max_body_size = parsingBodySize(location_conf, general);
-    // std::cout << "Local max body size -> " << _max_body_size << std::endl;
 
     this->_error_page = parsingErrorPage(*this, general);
-    // std::cout << "Local error_page -> " << _error_page << std::endl;
+    // for (std::map<int, std::string>::iterator it = this->_error_page.begin(); it != this->_error_page.end(); it++)
+    // {
+    //     std::cout << it->first << " -> " << it->second << std::endl;
+    // }
+    // std::cout << "--------------------------------" << std::endl;
+
 
     this->_redirect_url = parsingRedirection(location_conf, general);
-    // if (!this->_redirect_url.empty())
-    //     std::cout << "Redirect URL for " << path << " -> " << this->_redirect_url << std::endl;
     
     this->_upload_path = parsingUploadPath(location_conf, general);
     this->_test_upload_path();
-    // if (!this->_upload_path.empty())
-    // {
-    //     this->_upload_path.insert(0, this->_root);
-    //     std::cout << "Upload Path for " << path << " -> " << this->_upload_path << std::endl;
-    // }
 }
 
 Location::Location(const Location &ref) : _path(ref._path), 
@@ -153,9 +139,18 @@ std::string         Location::getCGIPath() const
     return (this->_cgi_path);
 }
 
-std::string     Location::getErrorPage() const {
+const std::map<int, std::string>    &Location::getErrorPage() const {
     return (this->_error_page);
 }
+
+std::string      Location::getErrorPath(int code) const {
+    std::string empty;
+
+    if (this->_error_page.find(code) != this->_error_page.end())
+        return (this->_error_page.find(code)->second);
+    return (empty);
+}
+
 size_t          Location::getMaxBodySize() const {
     return (this->_max_body_size);
 }
@@ -175,6 +170,8 @@ std::string     Location::getRedirectURL() const {
 std::string     Location::getUploadPath() const {
     return this->_upload_path;
 }
+
+
 
 // void Location::addErrorPagePrefix(std::string prefix)
 // {

@@ -823,14 +823,16 @@ AVANT CA:
 -> regerer les 100-Continue
 	-> pb si erreur max_body_size avec le 100-continue ✅
 
+30/07/2021
+-> gerer les error pages ✅
+	-> dans YoupiBanane, J'ai créé un dossier error_page avec des error pages pour chaque erreurs.
+
+
+-> refaire certaine page HTML
+-> faire une correction blanche dans la VM
+
 
 ================================== NOTES ==================================
-
-TO DO:
-correction:
-	-> error pages
-	=> reste a parser:
-		- les error pages par numero d'erreur
 
 Avant de push:
 	-> enlever les fichier inutile du git + le testeur + les logs

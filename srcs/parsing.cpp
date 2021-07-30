@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/28 18:13:56 by schene           ###   ########.fr       */
+/*   Updated: 2021/07/30 14:28:42 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -177,25 +177,43 @@ size_t parsingBodySize(const std::string &loc_conf, const Location &general)//co
     return (max_body_size);
 }
 
-std::string    parsingErrorPage(const Location &location, const Location &general)//, const std::list<Location*> &list)
+// gerer les error pages par numero d'erreur !
+std::map<int, std::string>    parsingErrorPage(const Location &location, const Location &general)//, const std::list<Location*> &list)
 {
     struct stat statbuf;
-    std::string page_path;
+    std::map<int, std::string> error_pages;
+    size_t                      length;
+    int                         code;
+    std::string                 page_path;
     std::string location_conf = location.getConf();
-    size_t      index = location_conf.find("error_page");
+    size_t      index = 0;
 
-    if (index == std::string::npos)
+    while (1)
+    {
+        index = location_conf.find("error_page", index);
+        if (index == std::string::npos)
+            break ;
+        index += 11;
+        index = location_conf.find_first_not_of(" \t\n\r\v\f", index);
+        // code 
+        length = location_conf.find_first_not_of("0123456789", index) - index;
+        code = std::atoi(location_conf.substr(index, length).c_str());
+        index += length;
+        index = location_conf.find_first_not_of(" \t\n\r\v\f", index);
+        // path
+        size_t end = location_conf.find(";", index);
+        if (end == std::string::npos)
+            throw confInvalidErrorPageException();
+        page_path = location_conf.substr(index, end - index);
+        page_path.insert(0, location.getRoot() + "/");
+        index += end - index;
+        if (lstat(page_path.c_str(), &statbuf) == - 1)
+            throw confInvalidErrorPageException();
+        error_pages[code] = page_path;
+    }
+    if (error_pages.empty())
         return (general.getErrorPage());
-    index += 11;
-    index = location_conf.find_first_not_of(" \t\n\r\v\f", index);
-    size_t end = location_conf.find(";", index);
-    if (end == std::string::npos)
-        throw confInvalidErrorPageException();
-    page_path = location_conf.substr(index, end - index);
-    page_path.insert(0, location.getRoot() + "/");
-    if (lstat(page_path.c_str(), &statbuf) == - 1)
-        throw confInvalidErrorPageException();
-    return (page_path);
+    return (error_pages);
 }
 
 std::string parsingRedirection(const std::string &loc_conf, const Location &general)

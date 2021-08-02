@@ -6,27 +6,35 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:48:09 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/08/02 16:44:10 by schene           ###   ########.fr       */
+/*   Updated: 2021/08/02 19:42:08 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/Location.hpp"
 
 Location::Location() : _max_body_size(1000000) {
+
+    this->_path = std::string();
+    this->_location_conf = std::string();
+    this->_root = std::string();
     this->_redirect_url = std::string();
     this->_upload_path = std::string();
     _error_page = std::map<int, std::string>();
+    
 }
 
-Location::~Location() 
+Location::~Location()
 {
+    this->_accepted_methods.clear();
+    this->_indexes.clear();
+    this->_error_page.clear();
 }
 
 Location::Location(const std::string path, const std::string location_conf, 
     const Location &general) : _path(path), _location_conf(location_conf), 
     _autoindex(false), _max_body_size(1000000)
 {
-    this->_accepted_methods = parsingAcceptedMethods(location_conf);
+    parsingAcceptedMethods(this->_accepted_methods, location_conf);
 
     if (location_conf.find("root") != std::string::npos)
         this->_root_in_conf = true;
@@ -55,7 +63,7 @@ Location::Location(const Location &ref) : _path(ref._path),
     _max_body_size(ref._max_body_size), _error_page(ref._error_page),
     _root_in_conf(ref._root_in_conf), _redirect_url(ref._redirect_url),
     _upload_path(ref._upload_path)
-{ }
+{  }
 
 const Location &Location::operator=(const Location &ref)
 {

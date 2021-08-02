@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 11:20:51 by schene            #+#    #+#             */
-/*   Updated: 2021/07/29 16:05:28 by schene           ###   ########.fr       */
+/*   Updated: 2021/08/02 18:54:38 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,7 @@ class Server
 		const Location *getRelevantLocation(std::string target);
 		const std::list<Location*>		&getRoutes() const;
 		const Location	&getRootLocation() const;
+		void			clearServer();
 };
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/19 18:11:49 by schene            #+#    #+#             */
-/*   Updated: 2021/08/02 16:55:23 by schene           ###   ########.fr       */
+/*   Updated: 2021/08/02 17:36:55 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,10 +31,7 @@ void	execRequest::exec_method()
 			this->readFile();
 	}
 	if (this->_error_code != 200)
-	{
-		this->setStatusCode();
 		this->serveErrorPage();	
-	}
 }
 
 void		execRequest::readFile()
@@ -76,6 +73,7 @@ void execRequest::serveErrorPage()
 	unsigned char		*buffer;
 	struct stat			info;
 
+	this->setStatusCode();
     if (this->_error_pages.find(this->_error_code) != this->_error_pages.end())
         path = this->_error_pages.find(this->_error_code)->second;
 	if (path.empty())

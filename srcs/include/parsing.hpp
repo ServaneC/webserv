@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/08 16:33:16 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/30 12:59:35 by schene           ###   ########.fr       */
+/*   Updated: 2021/08/02 19:18:10 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ void                parsingLocations(std::list<Location*> &routes, const std::st
 
 // *********** PARSING LOCATIONS *********** //
 
-std::vector<int>            parsingAcceptedMethods(const std::string &location_conf);
+void                        parsingAcceptedMethods(std::vector<int> &methods, const std::string &location_conf);
 std::list<std::string>      parsingIndexes(const std::string &loc_conf, const Location &general);
 bool                        parsingAutoIndex(const std::string &loc_conf, const Location &general);
 std::string                 parsingCGIconf(const std::string &loc_conf, const Location &general);

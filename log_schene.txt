@@ -845,6 +845,9 @@ AVANT CA:
 
 Avant de push:
 	-> s'entrainer a repondre aux questions
+	-> enlever log sur vogshere 
+	-> Atention a bien avoir un dossier Upload dans YoupiBanane
+
 
 Pour tester les chunk request:
 	curl -H "Transfer-Encoding: chunked" -d "nom=Servane&age=20" http://localhost:8080/action.php

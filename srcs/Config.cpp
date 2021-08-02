@@ -6,15 +6,13 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/30 09:49:40 by schene            #+#    #+#             */
-/*   Updated: 2021/07/29 16:03:04 by schene           ###   ########.fr       */
+/*   Updated: 2021/08/02 20:18:09 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/Config.hpp"
 
 # define BUFF_SIZE 1000
-static int     g_ctrl_c;
-
 
 Config::Config() { g_ctrl_c = 0;}
 
@@ -23,6 +21,7 @@ Config::Config(std::string conf_file) : _servers()
 	if (readConfFile(conf_file.c_str()) > 0)
 	{
 		createServers();
+		this->_content.clear();
 		select_loop();
 	}
 }
@@ -30,7 +29,13 @@ Config::Config(std::string conf_file) : _servers()
 Config::~Config()
 {
 	this->_content.clear();
-	this->_servers.clear();
+	std::list<Server*>::iterator it = _servers.begin();
+    for (; it != _servers.end(); it++)
+	{
+		
+        delete (*it);
+	}
+	// this->_servers.clear();
 }
 
 int 	Config::readConfFile(char const *path)
@@ -55,6 +60,9 @@ int 	Config::readConfFile(char const *path)
 		conf_stream.getline(line, BUFF_SIZE);
 		if (!isCommentLine(line))
 		{
+			// int i = -1;
+			// while (line[++i])
+			// 	this->_content.push_back(line[i]);
 			this->_content.append(line);
 			this->_content.push_back('\n');
 		}
@@ -62,6 +70,7 @@ int 	Config::readConfFile(char const *path)
 		if (conf_stream.eof())
 			break ;
 	}
+	delete [] line;
 	conf_stream.close();
 	return 1;
 }
@@ -134,7 +143,6 @@ void	Config::init_fd_sets(int *max_socket,
 	std::memcpy(write_sockets, current_sockets, sizeof(*current_sockets));
 }
 
-
 void	Config::select_loop()
 {
 	int ret;
@@ -145,15 +153,22 @@ void	Config::select_loop()
 
     while (1)
     {
+		if (g_ctrl_c)
+		{
+			std::cout << "break..." << std::endl;
+			break ;
+		}
 		this->init_fd_sets(&max_socket, &current_sockets, &read_sockets, &write_sockets);
 		try
 		{
 			select_ret = select(max_socket + 1, &read_sockets, &write_sockets, NULL, NULL);
 			if (select_ret < 0)
 			{
-				for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
-					close ((*it)->getSocket());
-				throw InternalServerError();
+				break ;
+				// for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
+				// 	close ((*it)->getSocket());
+				// exit(EXIT_FAILURE);
+				// throw InternalServerError();
 			}
 			if (select_ret > 0)
 			{
@@ -184,9 +199,6 @@ void	Config::select_loop()
 		catch(const std::exception& e)
 		{
 			std::cerr << e.what() << '\n';
-			exit(EXIT_FAILURE);
 		}
 	}
-	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
-		close ((*it)->getSocket());
 }

@@ -6,16 +6,21 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/25 10:54:51 by schene            #+#    #+#             */
-/*   Updated: 2021/07/27 13:15:07 by schene           ###   ########.fr       */
+/*   Updated: 2021/08/02 19:47:49 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../webserv.hpp"
 
-#include "../webserv.hpp"
+static void			ctr_c(int num)
+{
+	(void)num;
+	g_ctrl_c = 1;
+}
 
 int main (int ac, char **av) //the conf file is the only possible argument 
 {
+	signal(SIGINT, &ctr_c);
 	if (ac == 2) // use the given conf file
 		Config(std::string(av[1]));
 	else if (ac == 1) // use a defautl conf file

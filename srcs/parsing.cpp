@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/10 14:13:12 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/30 14:28:42 by schene           ###   ########.fr       */
+/*   Updated: 2021/08/02 19:47:17 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,18 +91,17 @@ void parsingLocations(std::list<Location*> &routes, const std::string &conf)
 // ***********  PARSING LOCATIONS  *********** //
 // ******************************************* //
 
-std::vector<int> parsingAcceptedMethods(const std::string &location_conf)
+void     parsingAcceptedMethods(std::vector<int> &methods, const std::string &location_conf)
 {
-    std::vector<int>    methods;
+    // std::vector<int>    methods;
     size_t              index = location_conf.find("accepted_method");
     size_t              end = location_conf.find(';', index);
 
     if (index == std::string::npos || end == std::string::npos)
-        return (methods);
+        return ;
     index += 15;
     while (index != end)
         methods.push_back(parseMethod(location_conf, &index));
-    return (methods);
 }
 
 std::list<std::string> parsingIndexes(const std::string &loc_conf, const Location &general)//, const std::string &server_conf)

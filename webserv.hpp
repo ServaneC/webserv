@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 15:34:32 by schene            #+#    #+#             */
-/*   Updated: 2021/07/21 13:37:44 by schene           ###   ########.fr       */
+/*   Updated: 2021/08/02 19:36:29 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,8 @@
 #ifndef WEBSERV_HPP
 # define WEBSERV_HPP
 
-# define DEFAULT_INDEX "index.html"
+static int     g_ctrl_c;
+
 // 42 MAC
 // # define CGI_PATH "/Users/schene/.brew/bin/php-cgi"
 // OTHER MAC

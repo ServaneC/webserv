@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/08/02 16:45:17 by schene           ###   ########.fr       */
+/*   Updated: 2021/08/02 19:39:25 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,10 +63,9 @@ Server::~Server()
 {
     close(this->_socket);
     delete &this->_rqst;
-    delete &this->_main_conf;
     std::list<Location*>::iterator it = _routes.begin();
     for (; it != _routes.end(); it++)
-        delete [] (*it);
+        delete (*it);
 }
 
 int 	Server::exec_accept()
@@ -97,6 +96,16 @@ int			Server::exit_exec_server()
     close(this->_client_socket);
     this->_client_socket = -1; 
     return (-1);
+}
+
+void		Server::clearServer()
+{
+    close(this->_socket);
+    delete &this->_rqst;
+    delete &this->_main_conf;
+    std::list<Location*>::iterator it = _routes.begin();
+    for (; it != _routes.end(); it++)
+        delete [] (*it);
 }
 
 

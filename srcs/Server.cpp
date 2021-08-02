@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 12:02:34 by schene            #+#    #+#             */
-/*   Updated: 2021/07/30 12:54:41 by schene           ###   ########.fr       */
+/*   Updated: 2021/08/02 16:45:17 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,17 +45,12 @@ Server::Server(Config &conf, std::string server_conf) :
         if (listen(this->_socket, 32) < 0)
             throw InternalServerError();
 
-        std::cout << "Server currently running on " << ip_str << ':' << this->_port;
-        if (!this->_name.empty())
-            std::cout << " (" << this->_name << ':' << this->_port << ')';
-        std::cout << std::endl;
+        std::cout << "Server currently running on " << ip_str << ':' << this->_port << std::endl;
     }
     catch (std::exception &e) {
         if (e.what() == InternalServerError().what())
         {
             std::cout << "ERROR: Server on " << ip_str << ':' << this->_port;
-            if (!this->_name.empty())
-                std::cout << " (" << this->_name << ':' << this->_port << ')';
             std::cout << " was unable to start" << std::endl;
         }
         else

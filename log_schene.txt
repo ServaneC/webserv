@@ -828,14 +828,22 @@ AVANT CA:
 	-> dans YoupiBanane, J'ai créé un dossier error_page avec des error pages pour chaque erreurs.
 -> refaire certaine page HTML ✅
 
+02/08/2021
+-> relancer le stress test dans la vm
+	-> il marchent bof mais ils marhent mieux qu'avant !
+	-> je pense que ca vient ddu fait qu'on ne gere pas POST de la même façon
+-> reorganiser les fichiers
+	-> j'ai suprimé le testeur et le dissier /div
+	-> ajout d'une conf simple.conf, j'ai suprrimmeer toutes les autre (hors  webserv.conf et vm_webserv.conf)
+	-> faudra supprimer les log avant du push sur vogsphere (on les gardes sur github)
+-> j'ai supprimé la plupart des std::cout
+-> j'ai rajouté une error page 500.html
 
 -> faire une correction blanche dans la VM
 
 ================================== NOTES ==================================
 
 Avant de push:
-	-> enlever les fichier inutile du git + le testeur + les logs
-	-> enlever un max de std::cout
 	-> s'entrainer a repondre aux questions
 
 Pour tester les chunk request:
@@ -907,12 +915,6 @@ Accept-Language: en-us
 	-> on a que des 200 OK meme quand ca echoue
 	-> reussir a avoir le bon retour avec le cgi
 
-To do:
-- [ ] Recoder l’appel au cgi (pour l’instant c’est un cp de GitHub 😬)
-- [ ] Error pages
-- [ ] truc fun a faire : remplir les fichiers de test (Youpi banane et cie)
-- [ ] revoir tout les retour d'erreur dans Response
-
 Piste:
 -> ne définir qu’un server
 -> commencer par juste implement GET et faire les autres méthodes après (ou juste HEAD)
@@ -949,57 +951,3 @@ Transfer-Encoding 	✅		  ✅
 User-Agent 			✅		  ❌
 WWW-Authenticate	❌		  ✅
 TOTAL				10		   12
-
-============================ THERVIEU's TESTER ============================
-basic
-
-All tests  are done requesting on http://localhost:port
-
-test : GET /                                                             | result : ✅
-test : GET /auto autoindex                                               | result : ✅ 
-404
-test : GET /forbidden (403)                                              | result : ❌ Bad status code	// ✅  on avait un 404 et il faut un 403 pour le tester  (ca semble plus logique a mes yeux un 404 mais bon...)
-test : GET non_existing_dir (404)                                        | result : ❌ Bad Content		// ✅  j'ai mis 404.html en error page (ca sera parfait quand on gere les pages en fonction du code d'erreur !)
-test : GET / ports 8080 and 8081                                         | result : ✅ 
-test : GET / 1 worker 50 times                                           | result : ✅ 
-test : POST / method not authorized (405)                                | result : ✅ 
-405
-test : POST /post                                                        | result : ❌ Bad status code. // On ne gere pas l'upload des fichiers de la meme façon...
-405
-test : POST /post content length = 0                                     | result : ❌ Bad status code. // On ne gere pas l'upload des fichiers de la meme façon...
-405
-test : POST /post request too big (413)                                  | result : ❌ Bad status code. 
-test : POST /post_upload upload in /upload                               | result : ❌ couldn't connect // parcequ'on as pas encore gere upload_path
-File exists
-200
-test : DELETE /delete_folder/index.html                                  | result : ❌ Bad status code for DELETE. // ✅ renvoi 204 au lieu de 200
-File doesn't exist
-test : DELETE /delete_folder/index.html (404)                            | result : ✅ 
-test : GET http://webserv:port use of server_name                        | result : ✅ 
-404
-test : GET /redirect_me/please redirect 301 in /redirection/index.html   | result : ❌ Bad status code 	// pas encore géré
-test : GET /redirect_me/wrong redirect 301 in /redirection/lol.html      | result : ✅ 
-test : POST /post_upload upload in /upload                               | result : ❌ couldn't connect	// pas encore géré
-test : POST /post_upload upload in /upload                               | result : ❌ couldn't connect	// pas encore géré
-test : POST /post_upload upload in /upload                               | result : ❌ couldn't connect	// pas encore géré
-500
-test : GET /use_location_root/                                           | result : ❌ Bad status code // ✅ on gerait pas bien les root
-405																										
-test : POST /use_location_root/                                          | result : ❌ Bad status code / On ne gere pas l'upload des fichiers de la meme façon...
-
-CGI TESTS & CHUNKED REQUESTS:
-test : GET /cgi/file.tester                                              | result : ✅ 
-test : POST /cgi/file.tester                                             | result : ❌ Bad content / On ne gere pas l'upload des fichiers de la meme façon...
-test : GET /use_location_root_cgi/file.tester                            | result : ❌ Bad status code // ✅ on gerait pas bien les root
-test : POST /use_location_root_cgi/file.tester                           | result : ❌ Bad status code
-0
-test : POST /cgi/file.tester 20 bits                                     | result : ❌ Bad Length Response Body
-0
-test : POST /cgi/file.tester 500 bits                                    | result : ❌ Bad Length Response Body
-
-0
-test : POST /post-upload/another_file.tester 20 bits                     | result : ❌ Bad Length Response Body
-0
-test : POST /post-upload/another_file.tester 500 bits                    | result : ❌ Bad Length Response Body
-
-==============================================================

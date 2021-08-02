@@ -57,8 +57,6 @@ class execRequest
 		// execCGI
 		char	**env_to_char_array();
 		void	exec_CGI();
-
-		void  	printEnv(std::string);
 	
 public:
 		execRequest(Server &serv);

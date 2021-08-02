@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:48:09 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/07/30 15:19:55 by schene           ###   ########.fr       */
+/*   Updated: 2021/08/02 16:44:10 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,12 +41,6 @@ Location::Location(const std::string path, const std::string location_conf,
     this->_max_body_size = parsingBodySize(location_conf, general);
 
     this->_error_page = parsingErrorPage(*this, general);
-    // for (std::map<int, std::string>::iterator it = this->_error_page.begin(); it != this->_error_page.end(); it++)
-    // {
-    //     std::cout << it->first << " -> " << it->second << std::endl;
-    // }
-    // std::cout << "--------------------------------" << std::endl;
-
 
     this->_redirect_url = parsingRedirection(location_conf, general);
     
@@ -61,9 +55,7 @@ Location::Location(const Location &ref) : _path(ref._path),
     _max_body_size(ref._max_body_size), _error_page(ref._error_page),
     _root_in_conf(ref._root_in_conf), _redirect_url(ref._redirect_url),
     _upload_path(ref._upload_path)
-{
-    std::cout << "copy constructor called" << std::endl; 
-}
+{ }
 
 const Location &Location::operator=(const Location &ref)
 {
@@ -170,13 +162,3 @@ std::string     Location::getRedirectURL() const {
 std::string     Location::getUploadPath() const {
     return this->_upload_path;
 }
-
-
-
-// void Location::addErrorPagePrefix(std::string prefix)
-// {
-//     std::cout << "prefixe = " << prefix << std::endl;
-//     std::cout << "error avant = " << _error_page << std::endl;
-//     this->_error_page.insert(0, prefix);
-//     std::cout << "error apres = " << _error_page << std::endl;
-// }

@@ -251,34 +251,3 @@ bool				execRequest::getCgi() const
 {
 	return this->_cgi;
 }
-
-void  execRequest::printEnv(std::string details)
-{
-	std::cout << " *** CGI ENVIRONEMENT ***\t\t" << details << std::endl;
-
-	std::cout << "\t{ SERVER VARIABLES }" << std::endl;
-	std::cout << "\t\t-> SERVER_SOFTWARE -> |" << this->_env["SERVER_SOFTWARE"] << "|" << std::endl;
-	std::cout << "\t\t-> SERVER_NAME -> |" << this->_env["SERVER_NAME"] << "|" << std::endl;
-	std::cout << "\t\t-> GATEWAY_INTERFACE -> |" << this->_env["GATEWAY_INTERFACE"] << "|" << std::endl;
-	std::cout << "\t\t-> HTTP_HOST = |" << this->_env["HTTP_HOST"] << '|' << std::endl;
-
-	std::cout << "\t{ REQUEST-SPECIFIC VARIABLES }" << std::endl;
-	std::cout << "\t\t-> SERVER_PROTOCOL = |" << this->_env["SERVER_PROTOCOL"] << '|' << std::endl;
-	std::cout << "\t\t-> SERVER_PORT = |" << this->_env["SERVER_PORT"] << '|' << std::endl;
-	std::cout << "\t\t-> REQUEST_METHOD = |" << this->_env["REQUEST_METHOD"] << '|' << std::endl;
-	std::cout << "\t\t-> REQUEST_URI = |" << this->_env["REQUEST_URI"] << '|' << std::endl;
-	std::cout << "\t\t-> PATH_INFO = |" << this->_env["PATH_INFO"] << '|' << std::endl;
-	std::cout << "\t\t-> PATH_TRANSLATED = |" << this->_env["PATH_TRANSLATED"] << '|' << std::endl;
-	std::cout << "\t\t-> SCRIPT_NAME = |" << this->_env["SCRIPT_NAME"] << '|' << std::endl;
-	std::cout << "\t\t-> SCRIPT_FILENAME = |" << this->_env["SCRIPT_FILENAME"] << '|' << std::endl;
-	std::cout << "\t\t-> QUERY_STRING -> |" << this->_env["QUERY_STRING"] << "|" << std::endl;
-	std::cout << "\t\t-> REMOTE_HOST -> |" << this->_env["REMOTE_HOST"] << "|" << std::endl;
-	std::cout << "\t\t-> REMOTE_ADDR -> |" << this->_env["REMOTE_ADDR"] << "|" << std::endl;
-	std::cout << "\t\t-> AUTH_TYPE -> |" << this->_env["AUTH_TYPE"] << "|" << std::endl;
-	std::cout << "\t\t-> CONTENT_TYPE = |" << this->_env["CONTENT_TYPE"] << '|' << std::endl;
-	std::cout << "\t\t-> CONTENT_LENGTH = |" << this->_env["CONTENT_LENGTH"] << '|' << std::endl;
-	
-	std::cout << "\t{ RESPONSE-SPECIFIC VARIABLES }" << std::endl;
-	std::cout << "\t\t-> STATUS_CODE -> |" << this->_env["STATUS_CODE"] << "|" << std::endl;
-	std::cout << "\t\t-> REDIRECT_STATUS = |" << this->_env["REDIRECT_STATUS"] << '|' << std::endl;
-}

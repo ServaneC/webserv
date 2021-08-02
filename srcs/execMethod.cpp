@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/19 18:11:49 by schene            #+#    #+#             */
-/*   Updated: 2021/07/30 16:04:08 by schene           ###   ########.fr       */
+/*   Updated: 2021/08/02 16:55:23 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,11 +23,7 @@ void	execRequest::exec_method()
 			if (this->_cgi)
 				this->exec_CGI();
 			else
-			{
 				this->_error_code = 500;
-				std::string no_cgi = "ERROR: No path to php-cgi in conf file\n";
-				this->append_body((unsigned char *)no_cgi.c_str(), no_cgi.size());
-			}
 		}
 		else if (!this->_env["REQUEST_METHOD"].compare("POST"))
 			this->exec_post();
@@ -80,7 +76,6 @@ void execRequest::serveErrorPage()
 	unsigned char		*buffer;
 	struct stat			info;
 
-	std::cout << "error = " << this->_error_code << std::endl;
     if (this->_error_pages.find(this->_error_code) != this->_error_pages.end())
         path = this->_error_pages.find(this->_error_code)->second;
 	if (path.empty())
@@ -115,5 +110,5 @@ void	execRequest::setStatusCode()
 	if (this->_error_code == 413)
 		this->_env["STATUS_CODE"] = "413 Request Entity Too Large";
 	if (this->_error_code == 500)
-		this->_env["STATUS_CODE"] = "500 nternal Server Error";	
+		this->_env["STATUS_CODE"] = "500 Internal Server Error";	
 }

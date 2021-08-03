@@ -6,7 +6,7 @@
 #    By: schene <schene@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/25 14:21:19 by schene            #+#    #+#              #
-#    Updated: 2021/08/02 17:48:56 by schene           ###   ########.fr        #
+#    Updated: 2021/08/03 20:41:32 by schene           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -26,7 +26,7 @@ DPDCS		= $(OBJS:.o=.d)
 
 INCLUDES = -I include/
 
-CFLAGS		= -Wall -Wextra -Werror -std=c++98 -g #-fsanitize=address
+CFLAGS		= -Wall -Wextra -Werror -std=c++98
 
 RM			= rm -f
 

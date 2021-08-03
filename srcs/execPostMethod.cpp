@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/19 18:25:24 by schene            #+#    #+#             */
-/*   Updated: 2021/07/28 16:06:06 by schene           ###   ########.fr       */
+/*   Updated: 2021/08/03 19:58:33 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,10 +24,12 @@ void	        execRequest::exec_post()
 std::string     execRequest::parseRequestBody()
 {
 	std::string boundary;
-    std::string	filename;
+    std::string	filename = std::string();
 	std::string	type;
     int		    next_n; 
 
+	if (!this->_request.getBody())
+		return filename;
 	if (this->_env["CONTENT_TYPE"].find("boundary=") != std::string::npos)
 	{
 		boundary = this->_env["CONTENT_TYPE"].substr(this->_env["CONTENT_TYPE"].find("boundary=") + 9);
@@ -41,12 +43,18 @@ std::string     execRequest::parseRequestBody()
 	this->_request_buf_size -= next_n + 1;
 	next_n = ft_gnl(this->_request.getBody(), this->_request_buf_start);
 	type = std::string((char *)(this->_request.getBody() + this->_request_buf_start), next_n - 1);
-	this->_request_buf_start += next_n + 3;
-	this->_request_buf_size -= next_n + 3;
+	if (!type.empty())
+	{
+		this->_request_buf_start += 2;
+		this->_request_buf_size -= 2;
+	}
+	this->_request_buf_start += next_n + 1;
+	this->_request_buf_size -= next_n + 1;
 	filename.erase(0, filename.find("filename=\""));
 	filename.erase(0, filename.find('\"') + 1);
 	filename.erase(filename.find_last_of('\"'), 1);
-	this->_env["CONTENT_TYPE"] = type.substr(type.find(':') + 2);
+	if (!type.empty())
+		this->_env["CONTENT_TYPE"] = type.substr(type.find(':') + 2);
 	filename.insert(0, this->_upload_path + '/');
     return (filename);
 }
@@ -57,6 +65,8 @@ void	        execRequest::upload_file()
 	std::string body;
     std::string filename = this->parseRequestBody();
 
+	if (filename.empty())
+		return ;
 	if (this->_upload_path.empty())
 	{
 		body = "<!DOCTYPE HTML>\n<html><body><h1> There is no upload_path in conf for this Location !</h1>\n";

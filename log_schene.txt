@@ -1,0 +1,955 @@
+Webserv 
+(12/03/2021)
+
+Simplification des RFC: https://docs.google.com/document/d/1_hyiqjK-wjBFPsQX040qw0_vOuAsTEjliU7gOI8rHkk/edit?usp=sharing
+Fonctions: https://docs.google.com/document/d/1kAKD5ucdXaoeX5MRfoqCjVR78kADcq030BgyIGOLoUk/edit?usp=sharing
+
+La libft n'est plus autorisé !
+Authorized functions: everything in c++98
+htons, htonl, ntohs, ntohl, select, poll, epoll, kqueue, socket, accept, listen, send, recv, bind, connect, inet_addr, setsockopt, getsockname, fcntl
+
+HTTP Methods :
+
+Minimum in a webserv:
+-> GET
+-> POST
+-> DELETE
+
+Vm = little endian
+
+- [x] Lire les RFC + prendre des notes / surligner 
+- [x] Faire des test avec nginx et telnet 
+
+25/03/2021
+curl -I example.com	=> Renvoi le header HTTP comme un webserver (mais marche si Nginx ne run pas)
+curl -I 'localhost'		=> ne marche que si Nginx run 
+✅ Makefile fait + libft dans le dossier
+-> prise de notes sur les nouvelles fonctions 
+
+29/03/2021
+-> création d’une classe server
+-> essai de faire un server fonctionnel très très simplifié
+	> class Server
+	> class Request
+
+30/03/2021
+- [x] Trier les req. Header / response Header 
+- [x] Faire un map stockant toutes les valeurs des request header field possible
+- [x] Parse request (manque le message body) -> pas utile pour GET
+-> début du setup du CGI (env)
+
+01/04/2021
+- [x] Faire un simple cgi qui ouvre et renvoi un simple fichier html
+- [x] Faire un .hpp avec tout les includes commun = plus propre
+
+02/03/2021
+- [x] Envoyer la réponse au socket 
+- [x] Faire marcher dans la vm !!!
+-> safari dit que la demande est en HTPP/0.9 ?!
+-> j’ai écrit les header fields de la réponse sur cout au lieu du socket 🙄
+- [x] pouvoir la visualiser dans le moteur de recherche (mac + VM 🎉)
+-> to format the date we have gettimeofday(), strftime() and strptime()-> we should probably ignore  strptime()
+- [x] Gérer date avec les fonctions appropriés ‼️ Utilisation de gmtime (fonction apparement non autorisé)
+
+05/04/2021
+- [x] Mettre la request dans un fichier a part et le client lit le fichier puis envoie la request (= plus facilement modifiable)
+- [x] Gérer le last-modified
+- [x] Faire une fonction pour formater les dates 
+—> sur la vm la request arrives vide au server 
+- [x] Faire marcher dans la vm ! (C’est chelou quand même)
+
+06/04/2021
+- [x] Mettre sur github
+- [x] Faire un page index.html
+- [x] Gérer les target avec ‘/‘ (absolut path)
+
+07/04/2021
+- [x] Faire un test simple faisant appelle a php-cgi 
+- [x] Réussir a appeler php-cgi et avoir un retour avec execve
+—> ca marche pas de ouf, la réponse n’arrives pas, ca bloque apparement a un endroit
+(J’avais oublié d’appeler la fonctions execCGI 🤦🏻‍♀️ )
+
+
+08/04/2021
+- [x] Trouver un cgi qui marche pour autre chose que php et surtout pour mac  => CGI dans les ressources !!!
+- [x] Tester les cgi des ressources 
+-> le cgi_tester marche avec execve mais ne renvois rien 
+-> le cgi tourne dans le vide… 💀
+👉 on se re-concentre sur php-cgi
+- [x] Faire marcher php-cgi avec notre WebServ
+-> ça affiche aussi le header field dans le web but on verra ca plus tard !
+👉 Plus le choix faut réussir a faire marcher cgi_tester !
+->execve crash avec cgi_tester 
+- [x] Faire marcher cgi_tester avec execve (meme si retour pas bon)
+🤦🏻‍♀️ a.out était dans srcs et donc pas dans le meme repo que cgi_tester et index.html
+- [x] Comprendre comment bien appeler cgi_tester
+😕 Il n’y a pas de body dans la réponse du cgi…
+
+09/04/21
+- [x] Essayer de passer le file en argument du cgi -> voir si le body apparait
+-> le body apparait pas …
+- [x] Retrouver ce qui marchait avec php-cgi parce que la ca marche plus lol
+🤦🏻‍♀️ J’avais mis HEAD en méthode dans le test.cpp donc forcement y avait plus le body 
+😩 Le cgi_tester ne renvois toujours pas de body !
+- [x] Bosser sur le repo git !
+-> on verra le body plus tard, je tourne en rond !
+-> php-cgi renvoie en header field puis un \n et le body
+- [x] Parser le header field renvoyé par le cgi
+	-> ca marche pour le header renvoyé par cgi_tester (sans body du coup) mais ca diminue le fichier dans la vm avec php-cgi
+	-> il y avais un souci car php-cgi renvoi un header ‘Content-type’ au lieu de ‘Content-Type’  (j’ai régler le souci de manière un peu moche)
+    - [x] Arriver a arrêter le parsing a la fin des headers fields. 
+		-> j’essayais de trouver un \n en début de ligne pour arrêter mais c’était un \r qu’il y avait (CRLF = \r\n)
+	👉 Ca marche aussi avec un 404 (on récupère le bon status)
+
+12/04/2021
+-> ajout des CRLF (\r\n)  au lieu de juste \n dans la réponse HTTP
+- [x] Réorganiser toutes les fonctions => diviser les gros blocs
+	-> J’ai créer une fonction send_response (qui imprime les header_fields dans une boucle)
+	=> réorganisation faite pour Response
+- [x] Deux \n entre header et body dans la response ? -> le \n est deja dans le body
+- [x] Utilisation de select pour read
+
+14/04/2021
+-> J’ai mis tout les .hpp dans un dossier include dans les srcs
+-> J’ai fait un dossier test_dir avec tout les fichier test = c’est un peu moins le bordel 
+‼️ T=� 1 fois sur deux en fin de réponse ?
+	-> J’ai bien terminer le buf avec un 0 au lieu de juste le ft_memcpy
+- [x] Gérer les leak avec -fsanitize=address
+    - [x] Memory access after free dans le response destructor
+	-> juste un clear au lieu dans erase en boucle + clear
+- [x] Parse la request au CRLF et pas juste \n
+- [x] Parse url of type ->  http://localhost:80/
+    - [x] Améliorer le parsing de la request line
+	-> ajout d’une fonction ParseRequestLine
+=> PUSH GitHub
+
+15/04/2021
+-> Réglage du décalage horaire (+ 2h)		 / / je viens du futur, c’etait inutile !
+- [x] Gérer les OWS dans le parsing des header field de la request
+
+
+20/04/2021
+- [x] Modifier ce qu’il faut  car mnt on peut utiliser  ctime  et cstring
+	-> time() au lieu de gettimeofday() = +simple (j’ai enlever le réglage du décalage horaire car GMT n’est pas sensé être l’heure exacte en France)
+	-> gmtime() est mnt autorisé
+    - [x] utiliser cstring plutôt que la libft
+- [x] Utiliser des ref sur string dans les getter
+	-> j’ai mis search_header en private (dans response)
+- [x] Voir pour utiliser getline() au lieu de gnl
+	-> ca semble compliqué il faudrait ouvrir le file avec fstream mais c’est pas autorisé…
+	-> peut être lire tout le file dans un buf puis créer une stream sur le buf ? ->semble pas très optimal
+	-> voir pour lire le socket dans server.cpp et ensuite l’envoyé a request.cpp qui parsera le tout -> on pourra se débarrasser de gnl
+	=> on continue avec gnl pour le moment a voir si ils autorisent fstream a l’avenir…
+- [x] Mieux comprendre le conf file et ce qu’il fait exactement
+
+21/04/2021
+👉 avec php-cgi ubuntu_tester renvoi « FATAL ERROR ON LAST TEST: unexpected EOF » au premier test
+	-> pourquoi ?!
+	-> overflow dans gnl apres plusieur lancement du tester  // on verra plus tard
+    - [x] ajouter un CRLF a la fin du body. // je viens du futur et fallais pas faire ca 
+	🎉 Passage du premier test avec php-cgi (le pb venais juste du CRLF)
+	—> je passe apparement le test POST (j’ai fait en sorte qu’il renvoi une erreur mais de maniere tres moche pour le moment) 
+		-> ca marche pas tout le temps…
+- [x] faire une GET method pas ouf et voir si on passe le premier test
+👉 J’ai fait une fonction  execGET mais elle semble pas parfaite et a retravailler…
+- [x] mieux gérer les CRLF entre les header et le body et a la fin si y a pas de body.
+📝 J’aurais apparement eu raison au début en créant moi meme la reponse a GET, je crois que le CGI est a utiliser seulement pour certaine méthodes
+Sur mac: 2eme test
+	Test POST http://localhost:8080/ with a size of 0
+	2021/04/21 20:02:11 Unsolicited response received on idle HTTP channel starting with "\r\n"; err=<nil>
+✅ Ca marche ! 👉 il ne faut pas mettre de CRLF apres le message-body (juste entre header et body/fin)
+Pour le moment GET ignore le path et ouvre juste index.html
+
+22/04/2021
+- [x] faire ouvrir le bon path / renvoyer le bon message d’erreur pour GET
+Abort apres plusieur refresh et un client en not found 
+	✅ Résolu: création d’une fonction free_buf appelle dans response (a revoir pour quelque chose de plus propre)
+- [x] pb avec last modified (indique 1970)
+	👉 Ajout d’un getter last-modified dans myCGI
+
+23/04/2021
+Tester dans la VM:
+-> probleme de parsing, un buf doit etre mal vidé ou autre… ca fait des trucs chelou
+-> peut etre une erreur avec write ? (write: broken pipe)
+👉 C’est chelou le premier test marche mais les autres passe une fois sur 3
+Tester mac:
+✅ Les trois premiers test passe a chaque fois sans pb (c’est normal j’ai pas géré la réponse du 4ème)
+‼️ Le 2ème et 3ème je renvois juste l’erreur qu’il veut c ‘est pas pro et ca passerais pas c’est complètement a revoir 
+
+🤦🏻‍♀️ Nouveau problème le tester bloque a POST (2eme test)
+-> les meme test en passant par client ne bloques pas
+🙄 Régler j’avais oublié de close le socket (je l’avais commenté pour tester un truc vite fait)
+
+- [x] gérer le body dans request
+	-> c’est géré faudrait juste bien check qu’il y a le CRLF avant et ca sera parfait 
+	+ faire une ( ou 2 ) fonction(s) en plus pour alleger parseRequest()
+👉 essayer de passer les trois premiers test sur la VM
+	-> POST =  read: connection reset by peer / write: broken pipe
+	-> ca vient peut etre de gnl 🤔
+	-> des fois tout passe et des fois ca bloque a POST… 😡
+
+
+27/04/2021
+- [x] mettre dans une fonction a part le parsing des headers field dans request
+	+ ajout d’une fonction free_null_line
+- [x] essayer de créer un container docker pour tester avec nginx
+	-> j’ai juste lancer un container sur la vm et j’ai pu envoyer un GET mais faudrait faire bcppppp plus de test
+- [x] améliorer le check si CRLF dans request 
+- [x] ‘use the parsed data to determine if a message body is expected’ 👉 Le parsing du body est peut être a revoir 
+	👉 Content-Lenght ou transfer encoding = message body
+	✅ C ‘est fait mais pas testé
+🤦🏻‍♀️ Leaks gnl  avec le testeur dans la vm (mais rien sur mac) (dans parseRequest)
+- [x] bien check la request et renvoyé erreur si incorrect
+    - [x] renvoyé la bonne réponse si pas de CRLF (bad Request je crois) -> actuellement c’est juste un perror tout pourri et un exit
+		✅  + si space entre field-name et colon = renvoi un 400 bad request
+		👉 peut être a revoir pour mieux gérer mais ca marche 
+
+28/04/2021
+- [x] résoudre la leak dans parse request (sur vm)
+	🤷🏻‍♀️ Je la retrouve pas, j’ai du la résoudre sans faire exprès
+👉 Pour le moment les test bug parfais dans la vm et parfois passent, ca vient peut etre du select ? Je verrais plus tard…
+	👉 En tout cas les trois premier passent a chaque fois sans pb sur mac
+- [x] mieux gérer les erreurs possible dans le parsing de la request line
+    - [x] accepter tout les ws pas just sp comme séparateur 
+		👉MAY instead parse on whitespace-delimited word boundaries 
+		👉 C’est pas obligatoire a géré ❌
+    - [x] renvoyer un bad request si plus que 1 ws entre item
+
+30/04/2021
+👉 Création de la classe config qui serviras a mettres les infos du conf file
+    - [x] lire le file dans une string
+
+03/05/2021
+pistes pour le parsing:
+	-> split tout les server {} puis les traiter chacun dans une autre classe
+	-> Avoir une classe config de base avec un vector de pointeur sur les différents serveurs
+	-> Dans la classe confServer:
+		- server_name
+		- map des routes -> peut etres il faut une class config pour les routes aussi (pour stocker les accepteds method et autre
+			-> un map<string, ConfigRoute> peut-être avec dans configRoute
+				- root =  a directory or a file from where the file should be search 
+				- Vector ou list des méthodes acceptés
+				- default file to answer if the request is a directory 
+				- client body size
+		-  bool pour  « turn on or off directory list »		- limit client body size
+		- map avec les error pages 
+		- host:port
+
+04/05/2021
+- [ ] Comprendre ce que fait chaque méthodes -> écrire une explication avec exemple pour chaque 
+- [x] tester la méthode DELETE avec le cgi_tester -> bad request
+
+06/05/2021
+- [x] modifier le client pour qu’il ajoute le CRLF entre les headers et le body/la fin
+	-> c’est fait mais mnt le serveur capte plus rien 
+    - [x] re tester avec le tester -> Ca marche ✅
+	-> le serveur ne lit pas la request en entier… pourquoi ?
+	-> Je suis revenu a comme avant faut que j’essaye autre chose
+	-> j’ai tenté autre chose mais mnt j’ai un segfault dans le parserequest 🤦🏻‍♀️
+	-> Abandon …
+- [x] Au lieu de check si CRLF entre header et body -> check si CRLF ou juste LF
+- [x] retester DELETE avec cgi_tester -> ca marche pas j’ai peut etre pas compris DELETE
+- [x] tester dans la vm avec php-cgi
+	-> la réponse a un body alors qu’elle ne devrait pas 
+
+‼️ On dirait que le parsing du header du cgi ne marche plus 🤔
+    - [x] revoir la fonction parse_cgi_buf()
+	✅ Résolu -> je returnais si le buf n’étais pas empty donc forcément ca returnais a chaque fois… 🙄
+
+01/06/2021 (NEW SUBJECT !)
+- [x] comprendre ce qu'est 'poll' => variation de select ( a voir si c'est mieux)
+- [x] modifier le code afin de ne plus utiliser la libft
+	-> ft_isspace -> isspace
+	-> ! PB: gnl n'est plus utilisable, il faut donc revoir tout les appels a gnl
+	-> il faut surement remplacer par l'utilisation des streams
+	-> pb: stream ne marche pas sur les fd, il faut probablement lire toutes la requete et ensuite la parser
+
+03/06/2021 
+!! ERREUR "In select: Bad file descriptor" sur le mac de l'ecole avec localhost:8080" dans google chrome
+	-> en revanche sa marche avec safari... 
+- [x] parser la request sans utiliser gnl
+	-> je lis la request avec recv 
+	-> il faut mnt la transformer en string puis la parser. 
+		- [x] recu et transformer en string 
+		!! pb: les request s'empilent au lieu de s'effacer => clear a la fin de parseRequest
+		- [x] parser la request
+		✅ Ça marche comme avec gnl !! 
+- [x] enlever la libft
+	-> pb avec itoa dans response (j'ai commenter en attendant de trouver mieux)
+	-> pb avec strdup dans myCGI (env_to_char_array), j'ai fait un mini strdup pas ouf dans la fonction
+
+
+04/06/2021 
+- [x] tester dans la vm -> ça marche tres bien
+- [x] voir pour remplacer ou faire autrement pour itoa
+	-> creation de la foncton itoa_cpp qui utilise une stream
+- [x] modifier le env to char array -> en fait c'est pas si mal
+- [>] remplacer select par poll
+	-> poll est plus performant que select (et il a l'air plus simple a comprendre)
+	-> epoll pourrait aussi être  interessant mais c'est specifique a linux
+	=> A faire apres le parsing du conf file quandd on aura plusieurs server a gérer
+- [x] faire un conf file pour ensuite le parser -> webserv.conf
+
+07/06/2021 
+-> j'ai modifié + bouger client.cpp (parce que en vrai il avait rien a faire dans les srcs) => directory client
+-> le cgi est php-cgi et marche aussi sur mac 
+	-> j'ai testé avec GET ca marche nickel
+		=> Du coup j'ai supprimé la fonction execGET
+	-> j'ai fait quelque test pour POST mais je comprend pas grand chose et du coup ca marche pas
+	-> j'ai l'impression que quelque soit la méthode ca repond comme un GET
+LEILA:
+	=> modification de config et debut du parsing du conf file
+	=> modif dans main -> appel a config et non Server 
+
+
+08/06/2021 	
+(dire a leila d'ecrire dans log / se faire un log a elle)
+-> voir comment gere les locations (maybe faire une classe / struct pour stocker les infos)
+	=> class is better bc we are in C++
+-> verifier ce qu'a fait leila puis merge
+	!! pas de merge tant que c'est pas fonctionnel
+	-> revoir completement start_server
+-> bon alors j'ai modifie plein de trucs et ca marche pas de ouf ca arrive a repondre a une requete avant de abort...
+=> je bosse (enfin) sur ma branche git je peux donc faire toutes les modifs que je veux tranquillou
+-> il va surement falloir changer de CGI parceque php-cgi marche pas sur les macs de l'ecole 
+	=> ou peut etre qu'il faut mettre l'executable php-cgi dans les sources ? ✅
+-> ca marche exactement comme avant avec un seul server dans le conf file
+	-> la gestion de plusieurs serveur est donc a revoir 
+	-> en profiter pour remplacer select par poll
+		=> poll est trop prise de tete et ca marche pas 
+->pb avec les dates dans reponses (last modified a revoir)
+	-> comme on passe par le cgi on a pas direct acces au fichier pour faire un fstat
+		=> On oublie Last-Modified pour le moment
+
+10/06/2021 	
+-> il faut absolument merge a un moment les branches vers master sinon ca va devenir un casse tête !
+	a faire avant:
+		-> reussir a bien gerer plusieurs "server"
+			- bon j'ai retenté de remplacer select par poll mais ca fait que bloquer donc je pense completement abbandonne cette piste
+✅ Tout est merge ! bon par contre j'ai quelque soucis pour acceder aux adresse ip autre que localhost:8081 avec le webserv.conf de leila...
+-> l'executable de php-cgi ne suffit pas a le faire marcher quand php n'est pas installé sur un ordi ...
+	-> On va surement etre oblige de demander a installer php
+
+11/06/2021
+-> Il y a 2 champs Content-Type dans le header de reponse -> le compare etait mal fait mais c'est regle 
+	-> header 'X-Powered-By'  ? _> c'est un header non standard qu'il est recommande d'enlever, j'ai rajouter un if qui ne stocke pas le header si il commence par 'X'
+-> le CGI est mnt appelé avec le file en argument (comme demandé dans le sujet mais je sais pas ce que ca change)
+-> reussir a accéder a un fichier autre que index.html avec le cgi
+	-> on peut mais a chaque lancement de webserv on ne peut plus changer le path du fichier auquel on veut accéder, pourquoi ???
+-> reussir a lire le body d'une request
+	✅ Il fallait parser le header, trouver Content-Lenght puis recv en boucle jusqu'a recevoir le body !
+-> trouver comment passer les infos du body au cgi !!!
+
+13/06/2021
+-> il audrait merge aujourd'hui (max demain), avant j'aimerais bien:
+	(au moins un des 4)
+	✅ -> reussir a acceder a differentes pages
+		- je pense que c'est lie a un buf/ une string qui ne se renouvelle pas
+			- l'heure change bien dans Date de response
+			-> remplacer le buf std:string en char * dans response => revoir tout le parsing du buf !
+			-> j'ai fait plein de modif et au final j'ai garder la forme std::string (qu'il faudra peut etre modifier plus tard) et...
+			=> Ça marche !!!! on peut acceder a plein de page diférentes avec un seul lancement de webserv 🎉
+-> avant de push + merge, tout tester surla vm ! ✅
+-> ameliorer la gestion des 400 bad request (y a un segfault actuellement) -> plus de segfault
+	- renvoyer 405 method not allowed si autre que methode autorise
+	
+14/06/2021
+-> reussir une request POST
+	🎉 Ca marche avec le formulaire HTML dans index ! (fallait juste faire un write sur stdin avant le fork)
+	!! Ca marche une seule fois -> surement encore un pb de buf qui se renouvelle pas ?
+		✅ C'etait bien ca le pb j'ai ajouté un clear avant de lire le body dans Request.
+-> reussir a appliquer une css stylesheet
+	-> le client envoi 2 requete GET: 
+		1. pour index.html
+		2. pour la page CSS
+		-> pq le CSS n'est pas appliqué ?!
+	🎉 Ca marche c'est juste que php-cgi renvoyait html en Content-Type au lieu de css	
+		-> j'ai changer de maniere moche, faudrait faire ça plus propre ✅
+		-> et apres go faire un css stylé ! ✅ -> y a moyen de faire un truc plus beau plus tard
+!! Y a un pb avec select et je peux plus vraiment acceder au lien YOUPI, c'est bizzare...
+	-> Je pense que c'etait a cause du CSS comme c'est pas un fichier html ?
+	-> je l'ai enlevé et ça marche nickel
+-> tester dans la VM puis PUSH
+	-> La POST request avec le form HTML bloque sur la vm...
+		-> je crois que c'est parce que le body est recu du premier coup 
+			-> modifier le parsing pour s'adapter au cas où il y a le body avec la request / si il arrive après.
+		=> ✅ C'est bon ca marche go PUSH
+-> reussir a faire un GET avec une image ?
+	-> tout n'est pas stocker dans le body mais tout est bien recu du CGI
+	- il doit y avoir une perte a un moment...
+	-> Je crois que y a pas le choix il va falloir remplacer le body string en char * 😩
+	-> pour le moment juste dans CGI et response mais ca ser peut a faire dans request aussi...
+		- commencer par faire un char * dans execCGI et voir si il peut stocker l'integralite des bytes
+
+15/06/2021
+!! ca bloque apres avoir envoyer un formulaire pui cliquer sur le lien Youpi... 🤔
+	-> il faut reset tout les header field a chaque request ! ✅
+-> remplacer un max de malloc par des new/ delete
+	-> j'en ai remplace quelques Uns
+- L'erreur "In select: Bad file descriptor" arrete pas de se repeter 
+	-> voir si c'est a cause des dernières modifs (tester sur la version push)
+		-> C'est pas lié, il faut revoir la gestion de select !
+	-> j'ai remplacer le '=' par un memcpy dans la copy des fd_set
+	✅ Ca semble resoudre le pb pour le moment...
+	-> ca rebug, ça viens d'ailleur ...
+> reussir a faire un GET avec une image ? [SUITE]
+	- commencer par faire un char * dans execCGI et voir si il peut stocker l'integralite des bytes
+	-> c'est fait mnt tout est bien stocker dans un char*, il faut revoir tout le parsing
+		dans Response (parser un char * au lieu d'une string)
+		-> Bon alors c'est plus compliquer que ce que je pensais...
+	-> Content-Length affiche des nombre negatif ???
+	-> essayer de tout traiter en char * sans la gestion de l'image...
+	-> Bon ca me prend la tête ! on dirait que tout n'est pas bien recu par recv 
+		ou c'est juste un pb avec std::cout qui n'affiche pas tout ?  -> essayer avec un write
+		=> OUF c'est bon tout s'affiche bien avec write, donc tout est bien reçu 
+		-> par contre je crois pas que tout se concatene / stock bien dans le buf 🤔
+	-> Response: faire une string pour le header puis créer un char* avec le header + le buf 
+		-> c'est chelou y a tout une ligne de char ilisible qui apparait en bas
+			=> ����������������������������������������������������������������
+			-> essayer de bien mettre un 0 a la fin
+			- le pb venais de buf_size (la partit ou je decrementait etait commenté)
+			- il m'en reste juste un que j'arrive pas a enlever...
+			-> C'est bon mnt faut tester avec une photo dans l'index
+				-> bon alors ca marche pas mais c'est peut etres parcequ'il faut des unsigned char !
+				- avant de remplacer par des unsigned char il faut changer tout les strcpy/strcat par des memcpy
+					-> Y a un pb avec strchr...
+					-> Tout marche bien, go remplacer les char * par des unsigned char *
+					-> pb avec strcspn dans parse_cgi_buf dans response -> trouver une autre solution qui utilise que des memprout
+					😡 CA MARCHE TOUJOURS PAS 
+
+17/06/2021
+GOAL OF THE DAY: merge les deux branches sur main !
+AVANT CA:
+-> réussir a afficher une image !!!
+-> si select pouvait ne plus bugger ca serait cool aussi
+> reussir a faire un GET avec une image ? [SUITE 2]
+	-> changer le content-type dans response ✅
+	-> mettre le retour du cgi dan un fichier et voir la dif avec l'image de base !
+		- le retour du php-cgi est bien stocké dans le buf.
+		-> c'st bizarre car ce que renvoi le cgi est beaucoup plus grand que l'image de base ...?
+		- avec un 'cat file | more', on voit bien que plein de char ne passe pas dans le retour du cgi
+	🎉 CA MARCHE !!!!!!!!!!!!!!!!! (il fallait enlever le '\r\n' apres le header du cgi)
+-> modifier select pour ne plus avoir d'erreur 
+	=> Je crois que c'est bon 
+-> tester dans la VM
+=> MERGE ✅
+->continuer a changer les mallocs en new ✅
+✅ Le CSS marche sur les fichier qui sont pas .html (youpi.bla et action.php)
+-> remplacer recvRequest et recvBodyCL en 1 seule fonction = recvData() ✅
+-> j'ai changer la variable _request en _buf (+ logique)
+
+18/06/2021
+-> J'avais commencer a voir comment gere les upload de fichier mais j'avais pas 
+	bcp avance et j'ai oublie de push 😅
+
+21/06/2021
+-> plein de pb avec le merge de la branche de leila, le css et les images ne marche plus...
+	- pareil pour la post request du form
+-> j'ai commenter le chdir et ca marche, je vais push comme ca sur main 
+	en attendant de trouver comment tout bien implementer
+-> reussir a bien implementer tout ce que leila a fait
+	- tout marche a peu pres hors les Location dans execCGI qui abort avec :
+		'libc++abi.dylib: terminating with uncaught exception of type std::out_of_range: basic_string'
+		-> le pb viens de 'Server::getRelevantLocations' dans la comparaison '*'
+		-> j'ai rajouté "(target.size() > extension_length)" dans le if
+	location /Yeah {
+	    root                /root_yeah;
+	} => path = /root_yeah/Yeah 
+-> petite incompréhension je crois, je vais changer les files dans YoupiBanane pour que ca corresponde
+	-> actuellement le path est /Yeah/root_yeah
+	=> "the URI will be added to the path specified in the root directive" (src: http://nginx.org/en/docs/beginners_guide.html)
+	-> BON EN FAIT C'EST PAS CLAIR AVEC CE QUE DIT LE SUJET VS NGINX (une personne sur slack se pose la meme question)
+-> réapparition de l'erreur 'In select: Bad file descriptor' avec plusieurs server 😩
+	-> ca apparait plus apres plusieur lancement ca doit etre lie au fait que la connexion ne se ferme pas avec le ctrl+C
+	-> je vais essayer de catch CTRL_C avec signal mais ca semble compliqué	
+		-> C'est fait mais ca n'as pas regler le pb...
+	-> j'ai changer le deuxieme 'if' dans select en 'else if' et ca semble avoir reglé le pb 
+-> gerer l'upload de fichier
+	-> le fichier est envoye 2 fois en reponse (avec google chrome sur mac et firefox dans la vm, mais pas safari... ?)
+	=> Ca doit juste être un pb d'affichage, le body est bien constitue d'une seule requete 
+	-> j'ai changer le while body enmpty en while size < content-Lenght 
+		(sinon le body n'est pas lu en entier si il arrive en plsr fois)
+	-> il faudra surement transformer le _body (string) en unsigned char * pour gérer l'upload de n'importe quel fichier
+	-> mnt il faut voir comment parser le multipart/form-data pour upload le file.
+
+22/06/2021
+-> reussir l'upload de fichier
+	-> je vois pas comment faire, si je commence a tout parser et qu'au final il ne faut pas ca auras ete inutile...
+-> apparement il ne faudrait pas appeler le cgi a chaque fois ?
+-> gerer les chunk request
+	-> je pense qu'il faut completement revoir comment la request est lu, il faudrait:
+		- stocker (au - le body) dans un unsigned char *
+		- lire juste le header, puis le body si y en as un
+-> j'ai modifie isAcceptedMethod pourqu'elle prenne une string au lieu d'un int en argument
+-> gerer les accepted method ✅
+	-> on passe les 3 premiers test du tester (en enlevant POST dans la location '/')!
+
+24/06/2021
+-> turn on or off directory listing (autoindex)
+	- When a request end with '/' (= is a directory) and there is no index file + the autoindex is on => a directory listing is returned
+	-> faire un simple directory listing (sans dates/ tailles) (opendir, readdir et closedir)
+	-> Ca marche !
+	-> l'affiché que si il n'y as pas de file index ✅
+!! LEAK dans la vm apres ctrl-c (ca vient de parsingLocations apparement)
+-> mini modif dans isAcceptedMethod() qui fait mnt appel a setMethodCode()
+	+ j'ai remplacé les if par du ternaire dans setMethodCode()
+
+25/06/2021
+-> gerer les chunk request
+	-> commencer par lire la requete (au moins le body) dans un unsigned char * (au lieu de std::string)
+		- revoir la fonction recvData -> faire deux fontion (une pour recevoir les hedaer, une autre pour le body)
+		-> Tout les headers sont lu dans une string (on s'aarrete bien a la fin des headers fields, 
+			avant c'etait pas le cas, on lisait tout ce qu'on recevait et après on parsait)
+		-> lire le body dans un unsigned char * (juste pour une request avec Content-Length pour le moment) ✅
+		-> lire les chunk requests
+			-> parser les chunk jusqu'a la chunk de fin (0\r\n) 
+				-> c'est fait mais les data ne passe pas cest bizarre
+			-> read jusqu'au \r\n de fin 
+				!! (il peut y avoir des header fields après le body ! -> https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Trailer )
+
+28/06/2021
+-> re une erreur "In select: Bad file descriptor" quand on veut accdeder a plusieurs adresse IP 🙄 
+	-> le pb vient peut etre de recv Header qui essaye de lire en boucle.
+	-> bon j'ai rien fait et l'erreur a disparu 🤷🏻‍♀️
+-> finir la gestion des chunks request 😩
+	-> tout est bien lu et stocké mais ca ne passe pas dans execCGI et jsp pq...
+	-> bon j'ai essayé plein de truc mais je ne comprend pas POURQUOI LA DATA NE PASSE PAS !!!!
+	-> peut etre tester dans la vm et voir si ca passe dessus => ca marche pas non plus 🤦🏻‍♀️
+	-> j'abandonne pour le moment, ca fait presque 2h que je me prend la tête !
+-> faire marcher les query string ✅
+	-> Bonne nouvelle ! ca a l'air de marcher !!!
+	-> je vais faire plus de test pour m'assurer que ca marche bien
+	-> Ont peut faire une requete GET avec query string dans le index.html via un form 
+-> utiliser les routes
+	-> revoir setPathQuery pour que la Location soit prise en commpte
+	 -  marche si pas de fichier preciser = autoindex (http://localhost:8080/Yeah/)
+	 -> modifier Location pour qu'elle stocke aussi juste la root correspondant au plus du path root en entier
+	🎉 Ca marche pour la redirection Yeah -> root_yeah
+	-> j'ai enlever le dernier '/' dans l'autoindex (y en a pas dans nginx)
+	-> On peut mnt avoir l'index d'un directory meme si y a pas le dernier '/' dans l'url,
+		(PB: ont peut pas acceder au fichier après a cause de ce manque de '/' donc a voir si on garde comme ça)
+		-> bon mnt ont peut y acceder mais l'url est chelou comme il concatenne sans le '/' (http://localhost:8080/Yeahhappy.bad_extension)
+		🎉 C'est bon, ont peut acceder a l'index avec oui sans le '/' a la fin et tout est bien accessible
+	-> il faudrait se debarrasser de location list et n'avoir qu'une location !
+		(peut être regrouper les infos de la location + l'extension de fichier)
+	-> On passe une dizaine de test du tester
+!! Il y a des bug, parfois le terminal est impossible a quitter et on doit le kill
+
+29/06/2021
+-> resoudre le pb de select (pbblmt revoir recvHeader)
+	-> j'ai commeneter la gestion du ctrl_c, ca a apparement regler les blocages ou on doit kill le terminal
+	-> y a toujours le programme de blocage sur un port alors qu'on se connecte a un autre
+	-> bon alors j'ai repris la gestion du select comme sur la branche main et ca a l'air de mieux marcher
+		(je pense qu'il va encore avoir des erreurs mais bcp moins)
+	-> bon enfait y en a quasi toujours autant 🤦🏻‍♀️
+	-> j'ai l'impression que ca viens de recvHeader mais on pourrais peut etre gerer plus tot
+	-> bon la jai aucune erreurs mais je suis sûr qu'a un moment elles vont toutes revenir d'un coup
+	-> le if que j'ai ajuté dans recvHeader semble regler les pb
+-> les test passent toujours sur le tester
+-> essayer de gerer les chunk request avec l'envoi d'eof apres le body !
+	-> Ca marche toujours pas !!! -> je re abbandonne
+-> mieux gerer le Content-Type (voir avec le header Accept)
+	-> je vois pas vraiment comment faire actuelement ca marche, 
+		mais si c'est un fichier dont on gere pas l'extension ca serait la merde
+-> bon je vais merge sur main , ca fait lgt
+
+	#LEILA:
+	#Je reviens Lundi 5 Juillet mais hesite pas a m'appeler/ m'envoyer des message si t'as des question !
+	#-> si tu pouvait parser dans le conf le autoindex (on/off) -> default off 
+	#	(je pense que un bool dans Location initialisé en false serait parfait pour gerer)
+	#-> et aussi le champs 'index' qui est deja dans le conf file mais actuellement pas parser (sauf erreur de ma part)
+	#	=> default index.html (donc si y a pas de champs index tu stocke inde.html en valeur)
+	#	!! il peut y avait plusieur index possible (donc a stocker dans une liste)
+	#une fois que ca sera fait, si c'est une request sur un directory on pourra :
+	#	- renvoyer le bon fichier index (ou index.html si pas precise)
+	#	- si pas d'index présent, et autoindex on -> renvoyer le directory listing
+	#	- si pas d'index et autoindex off (renvoyer un 404 ou autre)
+	#-> Voir si tu peux renvoyer une seule Location au lieu d'une liste dans getRelevantLocations
+	#	- si c'est un fichier avec extension + une location precise 
+	#		(voir ou est la priorite dans les metchodes et stocker toutes les infos dans ue Location)
+	#	-> exemple: /Yeah
+	#		-> au lieu de renvoyer '/' et '/Yeah' en relevant Location, tu renvois juste '/Yeah'
+	#		(pour le moment j'ai gerer ca en enlevant dans execCGI la premiere Location dans la liste
+	#			mais ca seait mieux de gerer direct dans getRelevantLocations en ne renvoyant qu'une seule Location)
+
+06/07/2021
+-> J'ai merge tout les changements de leila meme si c'est pas fonctionnel, ca renvois que des 404 not found
+	- trouver ou est le pb puis tout re-merge
+	-> J'ai commenté setPathInfo()
+	+ j'ai remodifié l'index.html je l.'avais changer avant de push la derniere fois jsp pq c'etait pas passé
+-> les methodes autorisés ne sont plus checkés ?! 
+	-> C'est parce que ca doit etre geré dans setpathinfo et ca marche pas du tout pour le moment 
+		j'arrives juste a avoir l'index.html mais apres il y a que des 404 pour les images et le css
+	-> Je comprend pas pq ca ne marche pas c'est le bon path dans path info !
+		[/Users/schene/Desktop/webserv/YoupiBanane/img/42.png] -> ne marche pas
+		[/Users/schene/Desktop/webserv/YoupiBananeimg/42.png] -> marche ????
+	->Ca marche, j'enleve le '/' dans target apres setPathInfo
+		-> sinon y avait le '/' du debut dans SCRIPT_FILENAME et cie et 
+			c'est a a cause de ca que ca marchait pas 
+	-> par contre la gestion des allowed methode ne marche pas (on peut toute les faires meme si pas autorisé)
+		-> l'exception est bien envoye mais son catch ne fait rien
+		-> c'etait parce que 'this->_env["STATUS_CODE"] = "200 OK";'
+			 etait definis apres la fonction setPathQuery
+-> J'ai mis le PATH_INFO en tant que variable pour tout les SCRIPT_FILENAME et cie dans le cgi et ca marche sans pb
+-> autoindex:
+	- ca se liste bien mais y a des 404 not found quand on clique sur les liens
+	-> C'est bon ca marche on peut cliquer sur tout les liens, en revanche 
+		la gestion des routes que j'avais fait semble ne plus marcher
+	(*)	/Yeah renvois sur /root_yeah/Yeah et /directory sur /root_yeah/directory
+		au lieu de juste /root_yeah
+		-> c'est bon j'ai rejouter dans setPathInfo le fait de erase le path de l'url 
+	-> faudra aussi linker au bool autoindex implementé par leila et gerer comme il faut
+		+ renvoyer le bon index au lieu de index.html par defaut
+
+07/07/2021
+-> commencer a créer des fonctions pour gérer les méthodes sans passer par le CGI.
+	-> j'ai commencer en faisant une simple fonction readfile en utilisant les stream
+		mais comme ca ne lis que des char les images ne passent pas. 
+	-> j'ai utiliser les read/open de C basique avec des fd et ca marchent pour les images.
+	! quand on essaye d'acceder a un lien j'ai l'impression que ca prend plus de temp que d'habitude
+	! les query string ne sont pas gérés avec cette methode -> y a besoin de php donc php-cgi 
+		c'est peut etre normal que ca soit pas gere sans cgi du coup
+-> Il y a un pb avec le cgi, il ne trouve plus l'index, il ne prenqis pqs celui dqns YoupiBanane
+	meme si on lui donne le bon path, je pense que fqut revoir les vqriqble du cgi 
+	-> J'ai bien set le PATH_INFO = toutes les autre variable PATH/SCRIPT et ca marche.
+
+08/07/2021
+-> implementer tout ce que leila a commencé pour que tout remarche comme avant
+-> l'index s'affiche bien comme avant avec le css et les images , j'ai commenté 
+	"request.setObject("");" dans buildPath parceque ca empechait au PATH de bien se set
+	et j'ai remplacé replace par insert (tjr dans buildPath)
+-> acceder a l'autoindex sans mettre le '/' a la fin ne marche plus non plus 
+		-> /img = 404 not found 
+		-> /img/ = work fine
+	✅ J'ai rajouté un '/' entre le dirPath et l'object dns PATH_INFO (quand y a un object)
+-> !! Les routes ne marchent plus 😢
+	-> c'etait un pb de method allowed et de cgi dans le conf file
+	-> il reste re le pb ou ca concatene au lieu de remplacer (cf (*) du 06/07/2021)
+	-> Le pb vient du request.setObject(""); que j'ai commenté, mais si je la remet 
+		plein d'autre chose ne marche plus, faut trouver une autre solution. (c'était ecrit a côté 🤦🏻‍♀️)
+	-> J'ai modifié BuilPath et mnt les routes marchent (sauf si pas de '/' a la fin des directory).
+	✅ Tout marche niquel juste un souci avec le parsing des query string
+	✅ apres avoir set Query String je la retire de target et object + je reset l'object dans request
+
+09/07/2021
+-> J'ai supprimé plein de fichier inutile
+-> faire un fonction GET qui marche quand on as pas de CGI. ✅
+-> POST sans CGI renvoi juste un code erreur 
+-> DELETE ne passe jamais par le CGI
+-> J'ai rajouter un if dans l'autoindex + un getter et un bool pour check si le path existe = stat echoue
+	=> On a un beau "404 Not Found" des qu'on essaye de GET/DELETE sur un file qu n'existe pas/ plus
+		(avant c'etait un code aleatoire et parfois meme des 200 OK)
+
+13/07/2021
+-> J'ai merge les changements de leila, faut revoir les path pour les redirections.
+	- les root des location sans root ont 2 /YoupiBanane au lieu d'un (/Users/servanechene/Desktop/webserv_git/YoupiBanane/YoupiBanane)
+		✅ J'ai rajouté un if/else pour ne pas reparser la root du serveur si on l'as déja trouvé
+	- l'autoindex a l'air de plutot bien marcher
+	-> la gestion des path est a revoir:
+		- dans le path du CSS il y a // entre static et style1.css ✅
+		- Les images ne marches plus du tout, que des 404, surement un pb de path. ✅
+		- la resolution de ces pb a créé un soucis dans les path des routes
+			quand c'est plus que juste le dir de base : /directory marche bien
+				/directory/Yeah ça ne marche pas (/Users/servanechene/Desktop/webserv_git/YoupiBanane/root_yeah/directory/Yeah)
+			=> ✅ Tout marche bien !
+	- l'acces au directory /img avec autoindex on ne marche que si on demande /img/ (/img ne marche pas)
+		🤷🏻‍♀️ Ca marche bien pour root_yeah (en plus ca devrait pas comme l'autoindex est pas précisé (je crois))
+		✅ J'ai ajouté un if pour erase dans object (dans buildPath())
+
+15/07/2021
+-> commencer a gérer l'upload de fichier
+	-relevant extension renvoi la location de '/' si rien n'est trouvé
+		pb: ça créé un conflit sur les allowed methods comme on compare entre notre location et '/' si ont as pas d'extension de fichier.
+		✅  => on renvois la relevantLocation si pas de location pour extension trouvé.
+	- 404 automatique comme c'est un dir où fait la requete POST.
+		-> modifier le throw de l'exception targetNotFoundException
+		✅ => on check bien que c'est une request GET avant d'envoyer l'autoindex/404/index file !
+	-> je parse CONTENT_TYPE pour obtenir la boundary
+		=> on obtient le buf sans les lignes ----WebKit...
+	-> mnt il faut parser les header fields present avant le contenu du fichier.
+	=> l'upload des fichiers marche !
+		- il faut completement retravailler la fonction qui ai actuellement degueulasse ✅
+
+18/07/2021
+!! pb quand on veut delete juste apres upload (p-ê un pb dans recv ?)
+	-> les request DELETE ne marche que si c'est la premiere request envoyé après le lancement du serveur
+		- le pb semble venir du fait que la requete viennent de curl
+	-> si on envoi une autre requete apres la requete du curl sera lu
+-> repasser le testeur 42
+	- fail au test POST (le 2eme, a cause du chunk) ✅  (c'etait un pb dans le conf file)
+	-> parfois erreur broken pipe, la requete n'est pas entierement recu...
+		=> j'ai rajouter un for qui essaye de lire 100 fois avant de declarer que c'est la fin du header.
+	✅ Tous les test passent jusqu'au premier PUT
+-> teste dans la VM
+	-> l'upload ne marche pas tout le temps 🤷🏻‍♀️
+-> gerer parfaitement l'upload des fichiers
+	-> revoir ce qui est renvoyé apres l'upload.
+		-> ajout du header Location
+		-> ajouter un body avec le lien vers la ressource créé ✅
+	-> voir quoi renvoyer si on upload un file qui a déja ete upload (actuellement on renvoi quand meme un 201 Created)
+	✅ on renvois un 200 OK et toujours un body avec le lien vers le fichier.
+-> créer une autre classe pour séparer les fonctions dans execCGI
+	- j'ai créé la classe execMethod et j'ai mis dedans tout ce qu'il y avait dans execCGI (qui est mnt vide)
+	-> j'ai commencé a réeorganiser, je continuerais demain 
+
+19/07/2021
+-> j'ai revu toutes l'organisation des fonctions dans execCGI qui est mnt diviser en 4 fichier cpp 
+	relié a execRequest.hpp
+
+20/07/2021
+-> faire marcher les chunks request !
+	- il y a exactement la même chose ecrit sur fdIn (entre chunk ou pas chunk)
+		 regarder du côté des variable d'env
+	🎉 RESOLU ! -> le pb venait de CONTENT_LENGTH qui etait set a partir du header Content-Length 
+		de la requete donc y en avait pas ans le cas d'une chunk request 🤦🏻‍♀️
+	=> mnt on le set a partir du _request_buf_size.
+-> J'ai le sujet de correction !
+	-> le test avec siege marche niquel ! avec 100% d'Availibility !!
+	-> request on forbidden file ✅
+
+21/07/2021
+-> tester siege dans la vm
+	- les lignes ne s'affichent pas mais ça marche.
+-> limit client body size ! + tester
+	-> nginx default max_body_size = 1000000 (j'ai changé le default du coup)
+-> different server names, on les parse mais on ne gère rien !
+	- 127.0.0.1 n'autorise pas la connexion.
+		- ca crash dans la vm, revoir le retour d'erreur d'accept !
+
+23/07/2021
+-> le client max bodysize afiche toujours un default avec ulong max 🤔
+	-> le pb vient de la location general..
+	✅ Le pb venait du constructeur Location() où maxBodySize n'etait pas initialisé !
+-> gérer les server names
+	! impossible de se connecter a l'adresse 127.0.0.1 
+	-> le pb vient peut être du parsing d'ip adress comme jusqu'ici on avais tout le temps 0
+		-   INADDR_LOOPBACK = 2130706433
+		- parsing 127.0.0.1 = 2130706433
+		=> le pb vient pas du parsing 
+	- continuer a regarder du côté des fonctions bind(), accept() ...
+	🎉 🎉 il fallait juste ajouter htonl() dans l'assignation de this->_host.sin_addr.s_addr 🤦🏻‍♀️
+	-> ont peut mnt se connecter sans pb a 127.0.0.1 !
+	-> s'intéresser au header "Host:" ?
+-> vm_webserv.conf (pour eviter de devoir changer le path du cgi a chaque fois)
+
+25/07/2021
+-> enlever toute la gestion des extensions de fichier ✅
+-> passer le testeur de thervieu
+	-> il y a pas mal de test que l'on passe pas ... 
+	-> stress test => In select: Bad file descriptor + plein de leaks après
+	-> GET /use_location_root/ -> chdir =  /media/sf_Desktop/webserv/tester_documents/tester_documents
+		-> on gere pas les root de la meme facon -> voir comment gere nginx 
+		-> c'est nous qui le geront pas bien root de server est a utilisé seulement si il n'y en as pas dans la location !
+			✅  Mnt on prend soit la root de location soit celle de server, on ne concatene pas les deux !
+			❗️ ATTENTION a bien mettre /YoupiBanane avant /root_yeah dans le conf file !
+-> Dans la Location /use_location_root on parse 2 fois ?!  juste root est parsé ensuite 🤷🏻‍♀️
+	🙄 Le pb vient du fait que l'on cherche la 'location' suivante et il ya location dans le nom...
+	-> RESOLU: on cherche '}' avant de chercher la location suivante.
+
+26/07/2021
+-> gérer le header Last-Modified ✅ (on le set dans Autoindex avec stat)
+-> 411 Length Required pour POST sans body ✅ _bad_request n'est plus un bool mais un int (dans Request)
+-> limit client body size ! '
+	-> 413	Request Entity Too Large (si body superieur a ce qui est autorisé) ✅
+	=> on check la loc dans Request + on set Max Body Size + 
+		on set _bad_request a 413 si la size du body dépasse max body size
+-> regler toutes les leaks en cas d'erreur de select
+	-> les destructeurs ne semblent pas êtres appellés
+	=> j'ai transforme routes en une liste de pinteur <Location*> (au lieu de <Location>)
+		= on peu bien delete chaque element
+	-> il n'y as plus de leaks apres le stress test
+-> L'upload via Curl : curl -F  "data=@YoupiBanane/youpi.bla"  http://localhost:8080/upload
+	avec 100-Continue marche a moitié
+	=> le fichier est bien créé mais la data n'est pas reçu 😩
+	+ ca marche une fois ensuite ca segfault 
+	=> en recevant la reponse avec recv_one au lieu de direct recv(Content-Length), ca marche niquel
+		tout est bien recu. Je ne sais pas pourqoi mais apres le premier upload (quan le file est deja dans upload)
+		c'est pas exactement cont-Length qui est envoye par curl 🤷🏻‍♀️
+	-> But don't care ca marche !!!! 🎉
+-> réeorganiser un peu les fonctions dans Request.cpp ✅ => creation du file RequestBody.cpp
+-> 😩 Les routes ne marchent plus (/Yeah et /directory, ca renvoi un retour chelou)
+	-> HTTP/1.1 basic_string
+	-> ça marche avec le '/' a al fin (http://localhost:8080/Yeah/)
+	-> le pb semble venir de ce aue j'avais rajouter pour modifier la gestion des root hier ! 🤦🏻‍♀️
+	✅ Le path etait entierement effacé, j'ai ajouté une condition qui fait que si le path est vide on le set a '/'
+
+27/07/2021
+-> faire un fonction pour write les conf sur std::cout
+-> what happen if we set up same port multiple time in conf file ? (should not work)
+	-> actuellement il y a 500 d'ecrit mais le programme s'execute quand même.
+	=> "Server currently running on 127.0.0.1:8080 (localhost:8080)" <- quand le serveur se lance
+	=> "ERROR: Server on 127.0.0.1:8080 (localhost:8080) was unable to start" <- quand il y a une erreur (hors pb conf file)
+-> different server names
+	-> il faut modifier le fichier host (sudo vim /etc/hosts dans la vm)
+-> execute CGI based on certain file extension (for example .php) ? 
+	- la correction ne dit rien sur les CGI, je propose qu'on simplifie et qu'on 
+		execute que si l'extension de fichier est '.php' (comme on est sensé gérer qu'un cgi)
+		-> si '.php' et pas de cgi, renvoyer une erreur.
+	✅  => erreur 500 si .php sans CGI
+-> j'ai enlevé plein de header fields qu'on gerait pas mais qu'on initialisait
+-> j'ai mis toutes les confs dans un repo (confs) = plus propre
+-> redirected url ? -> erreur 301 / 302 / 303 comment gerer ?
+	-> nginx return rule ?
+		ex: return 301 URL;
+	-> p-ê juste gérer la redirection 301
+-> il y a un pb car relvantLocation considere que 
+	/redirect_here/redirect.html appartient a la loc /redirect !
+	-> c'est un pb dans le compare qui prend la taille de /redirect donc forcement ca dit que c'est egal !
+	✅ J'ai modifié la fct getRelevantLocation() et ca marche niquel !
+	-> tester dans la vm ! ✅
+-> afficher un message d'erreur si le path du conf file est invalide ✅
+
+28/07/2021
+-> ✅ make the route able to accept uploaded files and configure where it should be saved
+	-> parser upload_path ✅ -> _upload_path dans Location
+	-> upload les fichier dans l'upload_path precisé ✅
+-> créer un autre website pour bien voir la diff entre les différents ports (website actuel = /YoupiBanane)
+	-> retravailler le index.html de YoupiBanane ✅
+		=> il y a mnt plus de texte et pleins de test a faire !
+-> Il y a trop de probleme de chargement en boucle sur la VM 
+	-> revoir la gestion de select !
+	-> le probleme semble plutot venir de parse Request
+	- fcntl semble servir a rien !
+	=> 😩 Faut recoder la gestion de select() !!! (et j'ai pas du tout envie !)
+	(c'est encore plus relou parce que ca marche bien hors VM)
+	il y a une boucle sur 8080 qui cause une erreur 🤷🏻‍♀️
+	=> pb meme avec un seul serveur 😩
+
+29/07/2021
+-> essayer de resoudre le pb de select() dans la VM !
+	-> j'ai rajouter un max_socket pour eviter de devoir check FD_SETSIZE (=1024) a chaque fois 
+🎉 J'ai trouvé le pb !!! ca venait de l'initialisation du fd_set (_current_socket)
+-> on dirait que max_body_size ne marche plus 🤔 ✅ Ca remarche
+-> regerer les 100-Continue
+	-> pb si erreur max_body_size avec le 100-continue ✅
+
+30/07/2021
+-> gerer les error pages ✅
+	-> dans YoupiBanane, J'ai créé un dossier error_page avec des error pages pour chaque erreurs.
+-> refaire certaine page HTML ✅
+
+02/08/2021
+-> relancer le stress test dans la vm
+	-> il marchent bof mais ils marhent mieux qu'avant !
+	-> je pense que ca vient ddu fait qu'on ne gere pas POST de la même façon
+-> reorganiser les fichiers
+	-> j'ai suprimé le testeur et le dissier /div
+	-> ajout d'une conf simple.conf, j'ai suprrimmeer toutes les autre (hors  webserv.conf et vm_webserv.conf)
+	-> faudra supprimer les log avant du push sur vogsphere (on les gardes sur github)
+-> j'ai supprimé la plupart des std::cout
+-> j'ai rajouté une error page 500.html
+
+-> faire une correction blanche dans la VM
+
+================================== NOTES ==================================
+
+Avant de push:
+	-> s'entrainer a repondre aux questions
+
+Pour tester les chunk request:
+	curl -H "Transfer-Encoding: chunked" -d "nom=Servane&age=20" http://localhost:8080/action.php
+
+POST request from google chrome after an upload of a file
+-------------------------------------------------------------------------------
+POST /upload HTTP/1.1
+Host: localhost:8080
+Connection: keep-alive
+Content-Length: 463
+Cache-Control: max-age=0
+sec-ch-ua: " Not;A Brand";v="99", "Google Chrome";v="91", "Chromium";v="91"
+sec-ch-ua-mobile: ?0
+Upgrade-Insecure-Requests: 1
+Origin: http://localhost:8080
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryUid4GZZPaM6cz0Sq
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Referer: http://localhost:8080/
+Accept-Encoding: gzip, deflate, br
+Accept-Language: en-US,en;q=0.9
+
+
+------WebKitFormBoundary9Q72TepSoYiOaCwf
+Content-Disposition: form-data; name="uploadedfile"; filename="to_upload.html"
+Content-Type: text/html
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>UPLOAD!</title>
+</head>
+    <body>
+        <h1> this is an... </h1>
+        <h2> Uploaded file ! </h2>
+    </body>
+</html>
+
+------WebKitFormBoundary9Q72TepSoYiOaCwf--
+
+
+-------------------------------------------------------------------------------
+
+
+POST request from safari after HTML form:
+-----------------------------------------
+POST /action.php HTTP/1.1
+Host: localhost:8080
+Origin: http://localhost:8080
+Content-Type: application/x-www-form-urlencoded
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+Upgrade-Insecure-Requests: 1
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.2 Safari/605.1.15
+Referer: http://localhost:8080/
+Content-Length: 18
+Accept-Language: en-us
+-----------------------------------------
+
+-> comment parser le conf file ?
+	-> il va fallor modifier la classe server pour qu'elle puisse stocker toutes les infos du conf file
+	- probablement qu'il faudras une classe au dessus de Server pour gérer tous les serveurs
+
+-> revoir tout les retour d'erreur dans Response
+	-> on a que des 200 OK meme quand ca echoue
+	-> reussir a avoir le bon retour avec le cgi
+
+Piste:
+-> ne définir qu’un server
+-> commencer par juste implement GET et faire les autres méthodes après (ou juste HEAD)
+-> utiliser signal pour détecter le quit du programme et bien unlink le/les sockets 
+-> Faire un fichier conf de base et faire le serveur avec ses conf (voir pour stocker dans une structure ou autre) 
+-> the CGI est celui qui traite la request (si chunk le serveur doit unchunk avant de l’envoyer au CGI)
+-> faire une classe ‘env’ avec toutes les meta-variables a passer au CGI 
+-> stocker les meta-variables dans un container map ✅
+
+ Test simple:
+telnet example.com 80
+HEAD /index.html HTTP/1.1
+Host: example.com
+
+Write = send avec 0 a la fin
+
+				  Request	Response
+Accept-Charsets		✅		  ❌
+Accept-Language		✅		  ❌
+Allow				❌		  ✅
+Authorization		✅		  ❌
+Content-Language	❌		  ✅
+Content-Length		✅		  ✅
+Content-Location	❌		  ✅
+Content-Type 		✅		  ✅
+Date 				✅		  ✅
+Host 				✅		  ❌
+Last-Modified 		❌		  ✅
+Location 			❌		  ✅
+Referer 			✅		  ❌
+Retry-After 		❌		  ✅
+Server 				❌		  ✅
+Transfer-Encoding 	✅		  ✅
+User-Agent 			✅		  ❌
+WWW-Authenticate	❌		  ✅
+TOTAL				10		   12

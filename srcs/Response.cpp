@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/01 14:42:45 by schene            #+#    #+#             */
-/*   Updated: 2021/08/02 18:51:19 by schene           ###   ########.fr       */
+/*   Updated: 2021/08/03 17:12:11 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -169,9 +169,9 @@ void			Response::send_response()
 		delete [] this->_buf;
 	}
 	//print on our cout to check
-	// std::cout << "------------ RESPONSE -----------------" << std::endl;
-	// write(1, to_send, size);
-	// std::cout << "---------------------------------------" << std::endl;
+	std::cout << "------------ RESPONSE -----------------" << std::endl;
+	write(1, to_send, size);
+	std::cout << "---------------------------------------" << std::endl;
 	// Actually sending to socket
 	send(this->_socket, to_send, size, 0);
 	delete [] to_send;

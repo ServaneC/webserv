@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/13 12:10:03 by schene            #+#    #+#             */
-/*   Updated: 2021/07/19 20:35:05 by schene           ###   ########.fr       */
+/*   Updated: 2021/08/03 19:58:11 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,9 @@ int             hexa_to_int(std::string hexa)
 int             ft_gnl(unsigned char *buf, int buf_start)
 {
     int		next_n = 0;
+
+    if (!buf)
+        return -1;
 	while (1)
 	{
 		if (std::memchr(buf + buf_start + next_n, '\n', 1))

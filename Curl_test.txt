@@ -1,0 +1,21 @@
+# !/bin/bash 
+
+PURPLE='\x1b[1m\x1b[35m'
+CYAN='\x1b[36m'
+NC='\033[0m' # No Color
+
+printf "${PURPLE}GET test:${NC}\n"
+printf "${CYAN}curl -X GET http://localhost:8080/youpi.bla ${NC}\n"
+curl -X GET http://localhost:8080/youpi.bla
+
+printf "$\n\n${PURPLE}POST test:${NC}\n"
+printf "${CYAN}curl -X POST -d \'nom=Servane&age=20\' http://localhost:8080/action.php ${NC}\n"
+curl -X POST -d "nom=Servane&age=20" http://localhost:8080/action.php
+
+printf "\n\n${PURPLE}Upload a file via CURL${NC}\n"
+printf "${CYAN}curl -X POST -F \'data=@to_upload.html\' http://localhost:8080/ ${NC}\n"
+curl -X POST -F 'data=@to_upload.html' http://localhost:8080/
+
+printf "\n\n${PURPLE}To delete something:${NC}\n"
+printf "${CYAN}curl -X DELETE http://localhost:8080/upload/to_upload.html ${NC}\n"
+curl -X DELETE http://localhost:8080/upload/to_upload.html

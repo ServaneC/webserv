@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/26 15:54:48 by schene            #+#    #+#             */
-/*   Updated: 2021/07/29 16:25:42 by schene           ###   ########.fr       */
+/*   Updated: 2021/08/03 20:16:24 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,10 @@ int			Request::recvBodyCL(int size)
 	{
 		recv_ret = recv(this->_socket, recv_buf, size, 0);
 		if (recv_ret < 0)
+		{
+			delete [] recv_buf;
 			return (-1);
+		}
 		if (recv_ret > 0)
 		{
 			recv_buf[recv_ret] = '\0';
@@ -108,7 +111,7 @@ int			Request::recvChunk()
 
 unsigned char	Request::recv_one()
 {
-	unsigned char	c;
+	unsigned char	c = 0;
 	int				recv_ret;
 
 	while (1)
@@ -122,7 +125,7 @@ unsigned char	Request::recv_one()
 		else
 		{
 			this->_stop = true;
-			break;
+			break ;
 		}
 	}
 	return (c);

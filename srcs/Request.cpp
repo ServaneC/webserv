@@ -6,7 +6,7 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 16:24:45 by schene            #+#    #+#             */
-/*   Updated: 2021/08/02 19:43:41 by schene           ###   ########.fr       */
+/*   Updated: 2021/08/03 17:12:26 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,8 @@ int		Request::parseRequest(int socket, const std::list<Location*> &routes)
 		return (-1);
 	if (this->_buf.empty())
 		return (- 1);
-	// std::cout << "========= REQUEST =========" << std::endl;
-	// std::cout << this->_buf;
+	std::cout << "========= REQUEST =========" << std::endl;
+	std::cout << this->_buf;
 	if (gnlRequest() > 0)
 		this->parseRequestLine(this->_line);
 	while (gnlRequest() > 0)
@@ -54,8 +54,8 @@ int		Request::parseRequest(int socket, const std::list<Location*> &routes)
 	}
 	if (this->_method_code == METHOD_POST && !this->_bad_request)
 		this->recvBody(routes);
-	// write(1, this->_body, this->_body_size);
-	// std::cout << "========= END OF REQUEST =========" << std::endl;
+	write(1, this->_body, this->_body_size);
+	std::cout << "========= END OF REQUEST =========" << std::endl;
 	return 1;
 }
 

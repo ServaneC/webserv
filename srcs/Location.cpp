@@ -6,13 +6,13 @@
 /*   By: schene <schene@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/11 18:48:09 by lemarabe          #+#    #+#             */
-/*   Updated: 2021/08/02 19:42:08 by schene           ###   ########.fr       */
+/*   Updated: 2021/08/03 16:40:49 by schene           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/Location.hpp"
 
-Location::Location() : _max_body_size(1000000) {
+Location::Location() : _max_body_size(1000000), _root_in_conf(false) {
 
     this->_path = std::string();
     this->_location_conf = std::string();
@@ -32,7 +32,7 @@ Location::~Location()
 
 Location::Location(const std::string path, const std::string location_conf, 
     const Location &general) : _path(path), _location_conf(location_conf), 
-    _autoindex(false), _max_body_size(1000000)
+    _autoindex(false), _max_body_size(1000000), _root_in_conf(false)
 {
     parsingAcceptedMethods(this->_accepted_methods, location_conf);
 
